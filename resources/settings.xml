@@ -501,30 +501,35 @@
     <category id="meta_accounts" label="30179">
 
       <group id="1" label="30020">
-        <setting id="trakt.client" type="string" label="30180" help="30181">
+        <setting id="trakt.authenticate" label="30403" type="action" help="30404">
+          <level>0</level>
+          <control type="button" format="action">
+            <data>RunPlugin(plugin://plugin.video.bacterio/?mode=trakt.trakt_authenticate)</data>
+          </control>
+        </setting>
+        <setting id="trakt.user" type="string" label="30402">
+          <default></default>
+          <constraints>
+            <allowempty>true</allowempty>
+          </constraints>
+          <control type="edit" format="string" />
+        </setting>
+        <setting id="trakt.token" type="string" label="30401">
+          <default></default>
           <level>2</level>
-          <default>1038ef327e86e7f6d39d80d2eb5479bff66dd8394e813c5e0e387af0f84d89fb</default>
+          <constraints>
+            <allowempty>true</allowempty>
+          </constraints>
+          <control type="edit" format="string" />
+        </setting>
+        <setting id="trakt.client" type="string" label="30180" help="30181">
+          <default>e4a935fb153dfb977aba0b565e8cb6240316ca603fceb79dfe7e288143f904fa</default>
+          <level>4</level>
           <control type="edit" format="string" />
         </setting>
         <setting id="trakt.secret" type="string" label="30182" help="30183">
-          <level>2</level>
-          <default>8d27a92e1d17334dae4a0590083a4f26401cb8f721f477a79fd3f218f8534fd1</default>
-          <control type="edit" format="string" />
-        </setting>
-        <setting id="trakt.token" type="string" label="30020">
-          <default></default>
-          <level>3</level>
-          <constraints>
-            <allowempty>true</allowempty>
-          </constraints>
-          <control type="edit" format="string" />
-        </setting>
-        <setting id="trakt.user" type="string" label="30020">
-          <default></default>
-          <level>3</level>
-          <constraints>
-            <allowempty>true</allowempty>
-          </constraints>
+          <default>9acab525f674ebead791dd5687ea2947f09c5f3cead4c07a7603b244e6bd3d18</default>
+          <level>4</level>
           <control type="edit" format="string" />
         </setting>
       </group>
@@ -574,29 +579,6 @@
           <control type="edit" format="string" />
         </setting>
       </group>
-
-      <group id="5" label="30193">
-        <setting id="google_api" type="string" label="30194" help="30195">
-          <level>2</level>
-          <default></default>
-          <constraints>
-            <allowempty>true</allowempty>
-          </constraints>
-          <control type="edit" format="string" />
-        </setting>
-      </group>
-
-      <group id="6" label="30196">
-        <setting id="groq_api" type="string" label="30197" help="30198">
-          <level>2</level>
-          <default></default>
-          <constraints>
-            <allowempty>true</allowempty>
-          </constraints>
-          <control type="edit" format="string" />
-        </setting>
-      </group>
-
     </category>
 
     <!-- ======================== SOURCES ACCOUNTS ======================== -->
@@ -1792,4 +1774,4 @@
     </category>
 
   </section>
-</settings>
+  </settings>

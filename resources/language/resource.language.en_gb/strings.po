@@ -917,11 +917,11 @@ msgctxt "#30178"
 msgid "Choose how many future days will be shown within the Trakt Calendar"
 msgstr ""
 
-# ---- META ACCOUNTS ----
+# ---- METADATA ACCOUNTS ----
 
 #: /resources/settings.xml
 msgctxt "#30179"
-msgid "Meta Accounts"
+msgid "Metadata Accounts"
 msgstr ""
 
 #: /resources/settings.xml
@@ -931,7 +931,7 @@ msgstr ""
 
 #: /resources/settings.xml
 msgctxt "#30181"
-msgid "Enter here your Trakt Client ID key"
+msgid "Change this if you want to use your own trakt application"
 msgstr ""
 
 #: /resources/settings.xml
@@ -941,7 +941,7 @@ msgstr ""
 
 #: /resources/settings.xml
 msgctxt "#30183"
-msgid "Enter here your Trakt Client Secret key"
+msgid "Change this if you want to use your own trakt application"
 msgstr ""
 
 #: /resources/settings.xml
@@ -2043,4 +2043,14 @@ msgstr ""
 #: /resources/settings.xml
 msgctxt "#30402"
 msgid "Account ID"
+msgstr ""
+
+#: /resources/settings.xml
+msgctxt "#30403"
+msgid "Authenticate"
+msgstr ""
+
+#: /resources/settings.xml
+msgctxt "#30404"
+msgid "Use a url/qr code to log in to your account with Bacterio"
 msgstr ""
