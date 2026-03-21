@@ -647,7 +647,7 @@
       </group>
 
       <group id="2" label="30209">
-        <setting id="rd.token" type="string" label="30209">
+        <setting id="rd.token" type="string" label="30401">
           <default></default>
           <level>3</level>
           <constraints>
@@ -655,7 +655,7 @@
           </constraints>
           <control type="edit" format="string" />
         </setting>
-        <setting id="rd.account_id" type="string" label="30209">
+        <setting id="rd.account_id" type="string" label="30402">
           <default></default>
           <level>3</level>
           <constraints>
@@ -755,7 +755,7 @@
       </group>
 
       <group id="3" label="30228">
-        <setting id="pm.token" type="string" label="30228">
+        <setting id="pm.token" type="string" label="30401">
           <default></default>
           <level>3</level>
           <constraints>
@@ -763,7 +763,7 @@
           </constraints>
           <control type="edit" format="string" />
         </setting>
-        <setting id="pm.account_id" type="string" label="30228">
+        <setting id="pm.account_id" type="string" label="30402">
           <default></default>
           <level>3</level>
           <constraints>
@@ -852,7 +852,7 @@
       </group>
 
       <group id="4" label="30231">
-        <setting id="ad.token" type="string" label="30231">
+        <setting id="ad.token" type="string" label="30402">
           <default></default>
           <level>3</level>
           <constraints>
@@ -860,7 +860,7 @@
           </constraints>
           <control type="edit" format="string" />
         </setting>
-        <setting id="ad.account_id" type="string" label="30231">
+        <setting id="ad.account_id" type="string" label="30401">
           <default></default>
           <level>3</level>
           <constraints>
@@ -949,7 +949,7 @@
       </group>
 
       <group id="5" label="30234">
-        <setting id="ed.token" type="string" label="30234">
+        <setting id="ed.token" type="string" label="30401">
           <default></default>
           <level>3</level>
           <constraints>
@@ -978,7 +978,7 @@
       </group>
 
       <group id="6" label="30237">
-        <setting id="tb.token" type="string" label="30237">
+        <setting id="tb.token" type="string" label="30401">
           <default></default>
           <level>3</level>
           <constraints>

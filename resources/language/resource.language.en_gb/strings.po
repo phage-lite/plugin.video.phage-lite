@@ -2034,3 +2034,13 @@ msgstr ""
 msgctxt "#30400"
 msgid "TELE"
 msgstr ""
+
+#: /resources/settings.xml
+msgctxt "#30401"
+msgid "Token"
+msgstr ""
+
+#: /resources/settings.xml
+msgctxt "#30402"
+msgid "Account ID"
+msgstr ""
