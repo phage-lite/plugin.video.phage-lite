@@ -19,7 +19,7 @@ on:
         type: string
 
 env:
-  PLUGIN_NAME: plugin.video.phagelite
+  PLUGIN_NAME: plugin.video.bacterio
 
 jobs:
   build:
