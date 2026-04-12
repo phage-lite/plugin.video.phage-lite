@@ -18,7 +18,6 @@ from modules.utils import (
 from modules.meta_lists import networks, movie_genres, tvshow_genres
 from modules.metadata import movieset_meta, episodes_meta, movie_meta, tvshow_meta
 from modules.episode_tools import EpisodeTools
-# logger = kodi_utils.logger
 
 
 class Extras(BaseDialog):
@@ -109,7 +108,7 @@ class Extras(BaseDialog):
         if self.starting_position:
             try:
                 self.set_returning_focus(*self.starting_position)
-            except:
+            except Exception:
                 self.set_default_focus()
 
     def run(self):
@@ -121,7 +120,7 @@ class Extras(BaseDialog):
     def onClick(self, controlID):
         self.control_id = None
         if controlID in Extras.button_ids:
-            return exec("self.%s()" % self.button_action_dict[controlID])
+            return getattr(self, self.button_action_dict[controlID])()
         else:
             self.control_id = controlID
 
@@ -181,7 +180,7 @@ class Extras(BaseDialog):
                         {"user": user, "list_slug": list_slug, "refresh": "false"}
                     ):
                         list_item.setProperty("liked_status", new_value)
-                except:
+                except Exception:
                     return self.notification("Error with Trakt List")
                 kodi_utils.hide_busy_dialog()
             else:
@@ -193,7 +192,7 @@ class Extras(BaseDialog):
                 chosen_var = self.get_listitem(self.control_id).getProperty(
                     self.item_action_dict[self.control_id]
                 )
-            except:
+            except Exception:
                 return
             if not chosen_var:
                 return
@@ -240,7 +239,7 @@ class Extras(BaseDialog):
                     chosen_var = self.get_listitem(self.control_id).getProperty(
                         self.item_action_dict[self.control_id]
                     )
-                except:
+                except Exception:
                     return
                 if not chosen_var:
                     return
@@ -262,7 +261,7 @@ class Extras(BaseDialog):
                         }
                     )
                     self.close()
-                except:
+                except Exception:
                     return
             else:
                 return
@@ -320,7 +319,7 @@ class Extras(BaseDialog):
                     listitem.setProperty("role", item["role"])
                     listitem.setProperty("thumbnail", item["thumbnail"] or icon)
                     yield listitem
-                except:
+                except Exception:
                     pass
 
         try:
@@ -329,7 +328,7 @@ class Extras(BaseDialog):
             self.setProperty("cast.number", "x%s" % len(item_list))
             self.item_action_dict[Extras.cast_id] = "name"
             self.add_items(Extras.cast_id, item_list)
-        except:
+        except Exception:
             pass
 
     def make_recommended(self):
@@ -346,7 +345,7 @@ class Extras(BaseDialog):
             self.setProperty("recommended.number", "x%s" % len(item_list))
             self.item_action_dict[Extras.recommended_id] = "tmdb_id"
             self.add_items(Extras.recommended_id, item_list)
-        except:
+        except Exception:
             pass
 
     def make_related(self):
@@ -372,7 +371,7 @@ class Extras(BaseDialog):
                 )
                 listitem.setProperty("tmdb_id", str(details["tmdb_id"]))
                 item_list_append((listitem, position))
-            except:
+            except Exception:
                 pass
 
         if self.media_type == "movie":
@@ -413,7 +412,7 @@ class Extras(BaseDialog):
                 )
                 listitem.setProperty("tmdb_id", str(details["tmdb_id"]))
                 item_list_append((listitem, position))
-            except:
+            except Exception:
                 pass
 
         data = imdb_api.imdb_more_like_this(self.imdb_id)
@@ -451,7 +450,7 @@ class Extras(BaseDialog):
                 )
                 listitem.setProperty("tmdb_id", str(details["tmdb_id"]))
                 item_list_append((listitem, position))
-            except:
+            except Exception:
                 pass
 
         try:
@@ -468,7 +467,7 @@ class Extras(BaseDialog):
             self.setProperty("ai_similar.number", "x%s" % len(item_list))
             self.item_action_dict[Extras.ai_similar_id] = "tmdb_id"
             self.add_items(Extras.ai_similar_id, item_list)
-        except:
+        except Exception:
             pass
 
     def make_reviews(self):
@@ -482,7 +481,7 @@ class Extras(BaseDialog):
                     listitem.setProperty("text", item)
                     listitem.setProperty("content_list", "all_reviews")
                     yield listitem
-                except:
+                except Exception:
                     pass
 
         try:
@@ -491,7 +490,7 @@ class Extras(BaseDialog):
             self.setProperty("imdb_reviews.number", "x%s" % len(item_list))
             self.item_action_dict[Extras.reviews_id] = "content_list"
             self.add_items(Extras.reviews_id, item_list)
-        except:
+        except Exception:
             pass
 
     def make_comments(self):
@@ -505,7 +504,7 @@ class Extras(BaseDialog):
                     listitem.setProperty("text", item)
                     listitem.setProperty("content_list", "all_comments")
                     yield listitem
-                except:
+                except Exception:
                     pass
 
         try:
@@ -514,7 +513,7 @@ class Extras(BaseDialog):
             self.setProperty("trakt_comments.number", "x%s" % len(item_list))
             self.item_action_dict[Extras.comments_id] = "content_list"
             self.add_items(Extras.comments_id, item_list)
-        except:
+        except Exception:
             pass
 
     def make_in_lists(self):
@@ -551,7 +550,7 @@ class Extras(BaseDialog):
                     listitem.setProperty("thumbnail", icon)
                     listitem.setProperty("liked_status", liked)
                     yield listitem
-                except:
+                except Exception:
                     pass
 
         try:
@@ -562,7 +561,7 @@ class Extras(BaseDialog):
                     (i["list"]["ids"]["slug"], i["list"]["user"]["ids"]["slug"])
                     for i in liked_lists
                 ]
-            except:
+            except Exception:
                 liked_lists = []
             template, replacements = (
                 "%02d.[CR][B]%s[/B]%s[CR][CR]by %s[CR](x%02d)",
@@ -575,7 +574,7 @@ class Extras(BaseDialog):
             self.setProperty("trakt_in_lists.number", "x%s" % len(item_list))
             self.item_action_dict[Extras.in_lists_id] = "content_list"
             self.add_items(Extras.in_lists_id, item_list)
-        except:
+        except Exception:
             pass
 
     def make_trivia(self):
@@ -589,7 +588,7 @@ class Extras(BaseDialog):
                     listitem.setProperty("text", item)
                     listitem.setProperty("content_list", "all_trivia")
                     yield listitem
-                except:
+                except Exception:
                     pass
 
         try:
@@ -598,7 +597,7 @@ class Extras(BaseDialog):
             self.setProperty("imdb_trivia.number", "x%s" % len(item_list))
             self.item_action_dict[Extras.trivia_id] = "content_list"
             self.add_items(Extras.trivia_id, item_list)
-        except:
+        except Exception:
             pass
 
     def make_blunders(self):
@@ -612,7 +611,7 @@ class Extras(BaseDialog):
                     listitem.setProperty("text", item)
                     listitem.setProperty("content_list", "all_blunders")
                     yield listitem
-                except:
+                except Exception:
                     pass
 
         try:
@@ -621,7 +620,7 @@ class Extras(BaseDialog):
             self.setProperty("imdb_blunders.number", "x%s" % len(item_list))
             self.item_action_dict[Extras.blunders_id] = "content_list"
             self.add_items(Extras.blunders_id, item_list)
-        except:
+        except Exception:
             pass
 
     def make_parentsguide(self):
@@ -644,7 +643,7 @@ class Extras(BaseDialog):
                     listitem.setProperty("thumbnail", icon)
                     listitem.setProperty("content", item["content"])
                     yield listitem
-                except:
+                except Exception:
                     pass
 
         try:
@@ -653,7 +652,7 @@ class Extras(BaseDialog):
             self.setProperty("imdb_parentsguide.number", "x%s" % len(item_list))
             self.item_action_dict[Extras.parentsguide_id] = "content"
             self.add_items(Extras.parentsguide_id, item_list)
-        except:
+        except Exception:
             pass
 
     def make_videos(self):
@@ -705,7 +704,7 @@ class Extras(BaseDialog):
                     )
                     listitem.setProperty("key_id", key)
                     yield listitem
-                except:
+                except Exception:
                     pass
 
         try:
@@ -714,7 +713,7 @@ class Extras(BaseDialog):
             self.setProperty("youtube_videos.number", "x%s" % len(item_list))
             self.item_action_dict[Extras.videos_id] = "key_id"
             self.add_items(Extras.videos_id, item_list)
-        except:
+        except Exception:
             pass
 
     def make_year(self):
@@ -731,7 +730,7 @@ class Extras(BaseDialog):
             self.setProperty("more_from_year.number", "x%s" % len(item_list))
             self.item_action_dict[Extras.year_id] = "tmdb_id"
             self.add_items(Extras.year_id, item_list)
-        except:
+        except Exception:
             pass
 
     def make_genres(self):
@@ -753,7 +752,7 @@ class Extras(BaseDialog):
             self.setProperty("more_from_genres.number", "x%s" % len(item_list))
             self.item_action_dict[Extras.genres_id] = "tmdb_id"
             self.add_items(Extras.genres_id, item_list)
-        except:
+        except Exception:
             pass
 
     def make_network(self):
@@ -779,7 +778,7 @@ class Extras(BaseDialog):
             self.setProperty("more_from_networks.number", "x%s" % len(item_list))
             self.item_action_dict[Extras.networks_id] = "tmdb_id"
             self.add_items(Extras.networks_id, item_list)
-        except:
+        except Exception:
             pass
 
     def make_collection(self):
@@ -789,7 +788,7 @@ class Extras(BaseDialog):
             return
         try:
             coll_id = self.extra_info_get("collection_id")
-        except:
+        except Exception:
             return
         if not coll_id:
             return
@@ -810,7 +809,7 @@ class Extras(BaseDialog):
             self.setProperty("more_from_collection.number", "x%s" % len(item_list))
             self.item_action_dict[Extras.collection_id] = "tmdb_id"
             self.add_items(Extras.collection_id, item_list)
-        except:
+        except Exception:
             pass
 
     def get_omdb_ratings(self):
@@ -827,7 +826,7 @@ class Extras(BaseDialog):
                 release_data = "N/A"
             else:
                 release_data = release_data.split("-")[0]
-        except:
+        except Exception:
             pass
         return release_data
 
@@ -908,7 +907,7 @@ class Extras(BaseDialog):
                     ep_data.get("season"),
                     ep_data.get("episode"),
                 )
-            except:
+            except Exception:
                 orig_season, orig_episode = 1, 0
             season_data = self.meta_get("season_data")
             watched_info = watched_status.watched_info_episode(
@@ -933,7 +932,7 @@ class Extras(BaseDialog):
                     self.nextep_season,
                     self.nextep_episode,
                 )
-        except:
+        except Exception:
             pass
         return value
 
@@ -976,7 +975,7 @@ class Extras(BaseDialog):
                 listitem.setProperty("thumbnail", thumbnail)
                 listitem.setProperty("tmdb_id", str(item["id"]))
                 yield listitem
-            except:
+            except Exception:
                 pass
 
     def set_artwork(self):
@@ -1119,13 +1118,13 @@ class Extras(BaseDialog):
         )
         if not function:
             return
-        exec("EpisodeTools(self.meta).%s()" % function)
+        getattr(EpisodeTools(self.meta), function)()
         self.close()
 
     def show_director(self):
         try:
             director = self.meta_get("director", None)[0]
-        except:
+        except Exception:
             return self.notification("No Director Information Available")
         if not director:
             return
@@ -1255,7 +1254,7 @@ class Extras(BaseDialog):
     def set_default_focus(self):
         try:
             self.setFocusId(10)
-        except:
+        except Exception:
             self.close_all()
             self.close()
 
@@ -1264,7 +1263,7 @@ class Extras(BaseDialog):
             self.sleep(sleep_time)
             self.setFocusId(list_id)
             self.select_item(list_id, focus)
-        except:
+        except Exception:
             self.set_default_focus()
 
     def set_current_params(self, set_starting_position=True):
@@ -1365,7 +1364,7 @@ class Extras(BaseDialog):
         if self.media_type == "tvshow" and self.status == "Returning":
             try:
                 next_aired_date = self.extra_info_get("next_episode_to_air")["air_date"]
-            except:
+            except Exception:
                 next_aired_date = None
             if next_aired_date:
                 status_str = "%s %s" % (
@@ -1388,7 +1387,7 @@ class Extras(BaseDialog):
                         for i in keywords["keywords"]
                         if i["name"] in ("duringcreditsstinger", "aftercreditsstinger")
                     ]
-                except:
+                except Exception:
                     pass
             if stinger_keys:
                 stinger_names = tuple(
@@ -1443,7 +1442,7 @@ class Extras(BaseDialog):
                         == 1
                         else "0"
                     )
-                except:
+                except Exception:
                     percent_watched = "0"
                 if not percent_watched:
                     percent_watched = 0

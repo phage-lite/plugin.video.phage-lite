@@ -3,6 +3,7 @@ import time
 from os import path
 import sqlite3 as database
 from modules import kodi_utils
+from modules.providers import PM_CLOUD, RD_CLOUD, AD_CLOUD, ED_CLOUD, TB_CLOUD, FOLDERS, REAL_DEBRID, PREMIUMIZE, ALLDEBRID, EASYDEBRID, TORBOX
 logger = kodi_utils.logger
 
 def table_creators():
@@ -177,7 +178,7 @@ def clear_cache(cache_type, silent=False):
 		from apis import easynews_api
 		results = []
 		results.append(easynews_api.clear_media_results_database())
-		for item in ('pm_cloud', 'rd_cloud', 'ad_cloud', 'ed_cloud', 'tb_cloud', 'folders'): results.append(clear_cache(item, silent=True))
+		for item in (PM_CLOUD, RD_CLOUD, AD_CLOUD, ED_CLOUD, TB_CLOUD, FOLDERS): results.append(clear_cache(item, silent=True))
 		success = False not in results
 	elif cache_type == 'external_scrapers':
 		from caches.external_cache import external_cache
@@ -239,10 +240,12 @@ def clear_all_cache():
 	if not kodi_utils.confirm_dialog(): return
 	progressDialog = kodi_utils.progress_dialog()
 	line = 'Clearing....[CR]%s'
-	caches = (('meta', 'Meta Cache'), ('internal_scrapers', 'Internal Scrapers Cache'), ('external_scrapers', 'External Scrapers Cache'), ('trakt', 'Trakt Cache'),
-			('imdb', 'IMDb Cache'), ('list', 'List Data Cache'), ('ai_functions', 'AI Data Cache'), ('tmdb_list', 'TMDb Personal List Cache'), ('main', 'Main Cache'),
-			('pm_cloud', 'Premiumize Cloud'), ('rd_cloud', 'Real Debrid Cloud'), ('ad_cloud', 'All Debrid Cloud'), ('ed_cloud', 'Easy Debrid Cloud'),
-			('tb_cloud', 'TorBox Cloud'))
+	caches = (
+		('meta', 'Meta Cache'), ('internal_scrapers', 'Internal Scrapers Cache'), ('external_scrapers', 'External Scrapers Cache'), ('trakt', 'Trakt Cache'),
+		('imdb', 'IMDb Cache'), ('list', 'List Data Cache'), ('ai_functions', 'AI Data Cache'), ('tmdb_list', 'TMDb Personal List Cache'), ('main', 'Main Cache'),
+		(PM_CLOUD, '%s Cloud' % PREMIUMIZE), (RD_CLOUD, '%s Cloud' % REAL_DEBRID), (AD_CLOUD, '%s Cloud' % ALLDEBRID),
+		(ED_CLOUD, '%s Cloud' % EASYDEBRID), (TB_CLOUD, '%s Cloud' % TORBOX),
+	)
 	for count, cache_type in enumerate(caches, 1):
 		try:
 			progressDialog.update(line % (cache_type[1]), int(float(count) / float(len(caches)) * 100))
@@ -282,7 +285,7 @@ def check_and_insert_new_columns(database, table, new_column, new_column_propert
 		if not columns_in_table(database, table, new_column):
 			success = insert_new_column_in_table(database, table, new_column, new_column_properties)
 			if not success: kodi_utils.notification('Error with [B]%s[/B] Database. Missing Column [B]%s[/B]' % (database.upper(), new_column.upper()))
-	except: kodi_utils.notification('Error Checking Database Table/s: %s' % database)
+	except: kodi_utils.notification(f'Error Checking Database Table/s: {database}')
 
 class BaseCache(object):
 	def __init__(self, dbfile, table):

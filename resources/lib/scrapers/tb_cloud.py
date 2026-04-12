@@ -2,13 +2,13 @@
 # Thanks to kodifitzwell for allowing me to borrow his code
 from apis.torbox_api import TorBox
 from modules import source_utils
+from modules.providers import TB_CLOUD
 from modules.utils import clean_file_name, normalize
 from modules.settings import enabled_debrids_check, filter_by_name
-# from modules.kodi_utils import logger
 
 class source:
 	def __init__(self):
-		self.scrape_provider = 'tb_cloud'
+		self.scrape_provider = TB_CLOUD
 		self.sources = []
 		self.extensions = source_utils.supported_video_extensions()
 

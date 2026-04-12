@@ -3,7 +3,6 @@ import json
 from urllib.parse import parse_qsl, unquote
 from caches.navigator_cache import navigator_cache
 from modules import kodi_utils
-# logger = kodi_utils.logger
 
 class MenuEditor:
 	def __init__(self, params):
@@ -237,7 +236,8 @@ class MenuEditor:
 				self._db_execute('set', x[0], new_list, refresh=False)
 			except: pass
 
-	def _db_execute(self, db_action, list_name, list_contents=[], list_type='edited', refresh=True):
+	def _db_execute(self, db_action, list_name, list_contents=None, list_type='edited', refresh=True):
+		if list_contents is None: list_contents = []
 		if db_action == 'set': navigator_cache.set_list(list_name, list_type, list_contents)
 		elif db_action == 'delete': navigator_cache.delete_list(list_name, list_type)
 		elif db_action == 'make_new_shortcut_folder': navigator_cache.set_list(list_name, 'shortcut_folder', list_contents)

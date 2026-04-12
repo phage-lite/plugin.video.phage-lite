@@ -6,7 +6,6 @@ from apis.real_debrid_api import RealDebrid
 from modules import kodi_utils
 from modules.source_utils import supported_video_extensions
 from modules.utils import clean_file_name, normalize, jsondate_to_datetime
-# logger = kodi_utils.logger
 
 def rd_cloud():
 	def _builder():

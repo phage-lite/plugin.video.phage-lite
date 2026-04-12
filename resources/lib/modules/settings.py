@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
+from logging import log
 from modules.settings_manager import get_setting, set_setting
-from modules.kodi_utils import translate_path, get_property
+from modules.kodi_utils import logger, translate_path, get_property
 
 # Previously sourced from default_setting_values('context_menu.order')['setting_default'].
 # Inlined here now that settings_cache.py is removed.
@@ -439,6 +440,7 @@ def check_prescrape_sources(scraper, media_type):
 
 def external_scraper_info():
     module = get_setting("bacterio.external_scraper.module")
+    logger("Scraper", "Checked setting for external_scraper.module found: " + module)
     if module in ("empty_setting", ""):
         return None, ""
     return module, module.split(".")[-1]
@@ -740,7 +742,7 @@ def cm_sort_order():
             i: c
             for c, i in enumerate(get_setting("bacterio.context_menu.order").split(","))
         }
-    except:
+    except Exception:
         return {i: c for c, i in enumerate(_CONTEXT_MENU_DEFAULT_ORDER.split(","))}
 
 

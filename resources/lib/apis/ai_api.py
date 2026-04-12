@@ -10,9 +10,6 @@ from modules.utils import TaskPool, normalize, get_datetime, get_current_timesta
 from modules.settings import ai_model_order, ai_model_limit, max_threads, tmdb_api_key, mpaa_region
 from modules.kodi_utils import logger
 
-# GOOGLE_MODELS = ('gemini-2.5-flash-lite', 'gemini-2.0-flash', 'gemini-2.5-flash', 'gemma-3-27b-it', 'gemma-3-12b-it', 'gemma-3-1b-it', 'gemma-3-4b-it', 'gemini-3-flash-preview')
-# GROQ_MODELS = ('llama-3.1-8b-instant', 'llama-3.3-70b-versatile', 'openai/gpt-oss-120b')
-
 def ai_similar(media_info, dummy=None):
 	def _fetch_similar(dummy):
 		try:
@@ -44,7 +41,7 @@ def ai_similar(media_info, dummy=None):
 	meta_function = movie_meta if media_type == 'movie' else tvshow_meta
 	meta = meta_function('tmdb_id', tmdb_id, tmdb_api_key(), mpaa_region(), get_datetime(), get_current_timestamp())
 	limit = ai_model_limit()
-	media_type = "Movie" if media_type == 'movie' else "Show"
+	media_type = 'Movie' if media_type == 'movie' else 'Show'
 	string = 'ai_similar_%s_%s_%s' % (media_type, tmdb_id, limit)
 	return lists_cache_object(_fetch_similar, string, 'foo', expiration=168)
 
@@ -54,7 +51,6 @@ def tmdb_simplified(title, media_type):
 	except: return []
 	results = []
 	for item in data:
-		year = None
 		title = item['title' if media_type == 'Movie' else 'name']
 		release_date = item['release_date' if media_type == 'Movie' else 'first_air_date']
 		if not release_date: continue
@@ -67,10 +63,10 @@ def pick_best_tmdb_match(results, title, year):
 	compare_title, compare_year = normalize(title), int(year) if year else None
 	if compare_year is not None:
 		for item in results:
-			title = normalize(item['title'])
-			year = item['year']
-			if title == compare_title and year == compare_year: return item
-			if title == compare_title and year is not None and abs(year - compare_year) == 1: return item
+			t = normalize(item['title'])
+			y = item['year']
+			if t == compare_title and y == compare_year: return item
+			if t == compare_title and y is not None and abs(y - compare_year) == 1: return item
 	return results[0]
 
 def get_currently_active_model():
@@ -78,7 +74,7 @@ def get_currently_active_model():
 	try:
 		current_time = get_timestamp()
 		timeout_models = lists_cache.get('ai_model_failed') or []
-		model_order = [i for i in ai_model_order() for x in [google_api, groq_api] if x.model_present(i) and x.get_api() not in (None, 'None', '', 'empty_setting')]
+		model_order = [i for i in ai_model_order() for x in [google_api, groq_api] if x.model_present(i) and x.get_api() not in (None, 'None', '')]
 		if timeout_models:
 			timeout_ended_models = [i for i in timeout_models if i['timeout_ends'] <= current_time]
 			if timeout_ended_models:
@@ -110,12 +106,9 @@ def ai_similar_call(media_type, tmdb_id, meta, limit, timeout=30):
 	try: model_info = next(i.model_info(model_id, media_type, meta, limit) for i in [google_api, groq_api] if i.model_present(model_id))
 	except: return {}
 	response = requests.post(model_info['similar']['url'], headers=model_info['similar']['headers'], json=model_info['similar']['payload'], timeout=timeout)
-	headers = response.headers
 	status_code = response.status_code
 	logger(model_id, status_code)
 	if status_code != 200:
 		if set_currently_active_models(model_id, status_code): return ai_similar_call(media_type, tmdb_id, meta, limit, timeout)
 		return {}
-	data = response.json()
-	result = model_info['similar']['parse'](data)
-	return result
+	return model_info['similar']['parse'](response.json())

@@ -9,7 +9,6 @@ from modules import meta_lists
 from modules.settings import paginate, page_limit
 from modules import kodi_utils
 from modules.utils import manual_function_import, make_thread_list
-# logger = kodi_utils.logger
 
 def get_persistent_content(database, key, is_external):
 	results, refresh_cache, key = None, True, 'random_list.%s' % key
@@ -344,7 +343,7 @@ class RandomLists():
 		self.category_name = self.params_get('category_name', None) or self.base_list_name or ''
 		self.make_directory()
 
-	def make_directory(self, next_page_params={}):
+	def make_directory(self, next_page_params=None):
 		kodi_utils.add_items(self.handle, self.list_items)
 		if next_page_params:
 			kodi_utils.add_dir(self.handle, next_page_params, 'Browse Into %s >>' \

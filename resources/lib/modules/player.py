@@ -18,18 +18,21 @@ class BacterioPlayer(xbmc.Player):
             return self.run_error()
         try:
             return self.play_video(url, obj)
-        except:
+        except Exception:
             return self.run_error()
 
     def play_video(self, url, obj):
         self.set_constants(url, obj)
+        ku.logger("Player", f"Playing: {url[:100]}")
         ku.volume_checker()
         self.play(self.url, self.make_listing())
         if not self.is_generic:
             self.check_playback_start()
             if self.playback_successful:
+                ku.logger("Player", "Playback started successfully")
                 self.monitor()
             else:
+                ku.logger("Player", f"Playback failed to start | cancel={self.cancel_all_playback}")
                 self.sources_object.playback_successful = self.playback_successful
                 self.sources_object.cancel_all_playback = self.cancel_all_playback
                 if self.cancel_all_playback:
@@ -37,7 +40,7 @@ class BacterioPlayer(xbmc.Player):
                 self.stop()
             try:
                 del self.kodi_monitor
-            except:
+            except Exception:
                 pass
 
     def check_playback_start(self):
@@ -67,7 +70,7 @@ class BacterioPlayer(xbmc.Player):
                         None,
                     ) and ku.get_visibility("Window.IsActive(fullscreenvideo)"):
                         self.playback_successful = True
-                except:
+                except Exception:
                     pass
             resolve_percent = round(resolve_percent + 26.0 / 100, 1)
             self.sources_object.progress_dialog.update_resolver(percent=resolve_percent)
@@ -133,7 +136,7 @@ class BacterioPlayer(xbmc.Player):
                             self.getTotalTime(),
                             self.getTime(),
                         )
-                    except:
+                    except Exception:
                         ku.sleep(250)
                         continue
                     self.current_point = round(
@@ -163,13 +166,13 @@ class BacterioPlayer(xbmc.Player):
                         )
                         if self.current_point >= final_chapter:
                             self.run_movie_stingers()
-                except:
+                except Exception:
                     pass
             ku.hide_busy_dialog()
             if not self.media_marked:
                 self.media_watched_marker()
             self.clear_playback_properties()
-        except:
+        except Exception:
             ku.hide_busy_dialog()
             self.sources_object.playback_successful = False
             self.sources_object.cancel_all_playback = True
@@ -183,168 +186,68 @@ class BacterioPlayer(xbmc.Player):
             info_tag = listitem.getVideoInfoTag(True)
             info_tag.setMediaType("video")
             info_tag.setFilenameAndPath(self.url)
-        else:
-            self.tmdb_id, self.imdb_id, self.tvdb_id = (
-                self.meta_get("tmdb_id", ""),
-                self.meta_get("imdb_id", ""),
-                self.meta_get("tvdb_id", ""),
-            )
-            self.media_type, self.title, self.year = (
-                self.meta_get("media_type"),
-                self.meta_get("title"),
-                self.meta_get("year"),
-            )
-            self.season, self.episode = (
-                self.meta_get("season", ""),
-                self.meta_get("episode", ""),
-            )
-            poster = self.meta_get("poster") or ku.get_icon("box_office")
-            fanart = self.meta_get("fanart") or ku.get_addon_fanart()
-            clearlogo = self.meta_get("clearlogo") or ""
-            duration, genre, trailer, mpaa = (
-                self.meta_get("duration"),
-                self.meta_get("genre", ""),
-                self.meta_get("trailer"),
-                self.meta_get("mpaa"),
-            )
-            rating, votes = self.meta_get("rating"), self.meta_get("votes")
-            premiered, studio, tagline = (
-                self.meta_get("premiered"),
-                self.meta_get("studio", ""),
-                self.meta_get("tagline"),
-            )
-            director, writer, country = (
-                self.meta_get("director", ""),
-                self.meta_get("writer", ""),
-                self.meta_get("country", ""),
-            )
-            cast = self.meta_get("short_cast", []) or self.meta_get("cast", []) or []
-            listitem.setLabel(self.title)
-            if self.media_type == "movie":
-                plot = self.meta_get("plot")
-                listitem.setArt(
-                    {
-                        "poster": poster,
-                        "fanart": fanart,
-                        "icon": poster,
-                        "clearlogo": clearlogo,
-                    }
-                )
-                info_tag = listitem.getVideoInfoTag(True)
-                (
-                    info_tag.setMediaType("movie"),
-                    info_tag.setTitle(self.title),
-                    info_tag.setOriginalTitle(self.meta_get("original_title")),
-                    info_tag.setPlot(plot),
-                )
-                (
-                    info_tag.setYear(int(self.year)),
-                    info_tag.setRating(rating),
-                    info_tag.setVotes(votes),
-                    info_tag.setMpaa(mpaa),
-                )
-                (
-                    info_tag.setDuration(duration),
-                    info_tag.setCountries(country),
-                    info_tag.setTrailer(trailer),
-                    info_tag.setPremiered(premiered),
-                )
-                (
-                    info_tag.setTagLine(tagline),
-                    info_tag.setStudios(studio),
-                    info_tag.setIMDBNumber(self.imdb_id),
-                    info_tag.setGenres(genre),
-                )
-                (
-                    info_tag.setWriters(writer),
-                    info_tag.setDirectors(director),
-                    info_tag.setUniqueIDs(
-                        {"imdb": self.imdb_id, "tmdb": str(self.tmdb_id)}
-                    ),
-                )
-                info_tag.setCast(
-                    [
-                        ku.kodi_actor()(
-                            name=item["name"],
-                            role=item["role"],
-                            thumbnail=item["thumbnail"],
-                        )
-                        for item in cast
-                    ]
-                )
+            return listitem
+        self.tmdb_id = self.meta_get("tmdb_id", "")
+        self.imdb_id = self.meta_get("imdb_id", "")
+        self.tvdb_id = self.meta_get("tvdb_id", "")
+        self.media_type = self.meta_get("media_type")
+        self.title = self.meta_get("title")
+        self.year = self.meta_get("year")
+        self.season = self.meta_get("season", "")
+        self.episode = self.meta_get("episode", "")
+        is_episode = self.media_type == "episode"
+        poster = self.meta_get("poster") or ku.get_icon("box_office")
+        fanart = self.meta_get("fanart") or ku.get_addon_fanart()
+        clearlogo = self.meta_get("clearlogo") or ""
+        cast = self.meta_get("short_cast", []) or self.meta_get("cast", []) or []
+        art = {"poster": poster, "fanart": fanart, "icon": poster, "clearlogo": clearlogo}
+        if is_episode:
+            art.update({"tvshow.poster": poster, "tvshow.clearlogo": clearlogo})
+        listitem.setLabel(self.title)
+        listitem.setArt(art)
+        info_tag = listitem.getVideoInfoTag(True)
+        if is_episode:
+            if st.avoid_episode_spoilers() and int(self.meta_get("playcount", "0")) == 0:
+                plot = self.meta_get("tvshow_plot") or "* Hidden to Prevent Spoilers *"
             else:
-                if (
-                    st.avoid_episode_spoilers()
-                    and int(self.meta_get("playcount", "0")) == 0
-                ):
-                    plot = (
-                        self.meta_get("tvshow_plot") or "* Hidden to Prevent Spoilers *"
-                    )
-                else:
-                    plot = self.meta_get("plot") or self.meta_get("tvshow_plot")
-                listitem.setArt(
-                    {
-                        "poster": poster,
-                        "fanart": fanart,
-                        "icon": poster,
-                        "clearlogo": clearlogo,
-                        "tvshow.poster": poster,
-                        "tvshow.clearlogo": clearlogo,
-                    }
-                )
-                info_tag = listitem.getVideoInfoTag(True)
-                (
-                    info_tag.setMediaType("episode"),
-                    info_tag.setTitle(self.meta_get("ep_name")),
-                    info_tag.setOriginalTitle(self.meta_get("original_title")),
-                )
-                (
-                    info_tag.setTvShowTitle(self.title),
-                    info_tag.setTvShowStatus(self.meta_get("status")),
-                    info_tag.setSeason(self.season),
-                    info_tag.setEpisode(self.episode),
-                )
-                (
-                    info_tag.setPlot(plot),
-                    info_tag.setYear(int(self.year)),
-                    info_tag.setRating(rating),
-                    info_tag.setVotes(votes),
-                )
-                (
-                    info_tag.setMpaa(mpaa),
-                    info_tag.setDuration(duration),
-                    info_tag.setTrailer(trailer),
-                    info_tag.setFirstAired(premiered),
-                )
-                (
-                    info_tag.setStudios(studio),
-                    info_tag.setIMDBNumber(self.imdb_id),
-                    info_tag.setGenres(genre),
-                    info_tag.setWriters(writer),
-                )
-                (
-                    info_tag.setDirectors(director),
-                    info_tag.setUniqueIDs(
-                        {
-                            "imdb": self.imdb_id,
-                            "tmdb": str(self.tmdb_id),
-                            "tvdb": str(self.tvdb_id),
-                        }
-                    ),
-                )
-                info_tag.setCast(
-                    [
-                        ku.kodi_actor()(
-                            name=item["name"],
-                            role=item["role"],
-                            thumbnail=item["thumbnail"],
-                        )
-                        for item in cast
-                    ]
-                )
-                info_tag.setFilenameAndPath(self.url)
-            self.set_resume_point(listitem)
-            self.set_playback_properties()
+                plot = self.meta_get("plot") or self.meta_get("tvshow_plot")
+            info_tag.setMediaType("episode")
+            info_tag.setTitle(self.meta_get("ep_name"))
+            info_tag.setTvShowTitle(self.title)
+            info_tag.setTvShowStatus(self.meta_get("status"))
+            info_tag.setSeason(self.season)
+            info_tag.setEpisode(self.episode)
+            info_tag.setFirstAired(self.meta_get("premiered"))
+            info_tag.setFilenameAndPath(self.url)
+            unique_ids = {"imdb": self.imdb_id, "tmdb": str(self.tmdb_id), "tvdb": str(self.tvdb_id)}
+        else:
+            plot = self.meta_get("plot")
+            info_tag.setMediaType("movie")
+            info_tag.setTitle(self.title)
+            info_tag.setCountries(self.meta_get("country", ""))
+            info_tag.setTagLine(self.meta_get("tagline"))
+            info_tag.setPremiered(self.meta_get("premiered"))
+            unique_ids = {"imdb": self.imdb_id, "tmdb": str(self.tmdb_id)}
+        info_tag.setOriginalTitle(self.meta_get("original_title"))
+        info_tag.setPlot(plot)
+        info_tag.setYear(int(self.year))
+        info_tag.setRating(self.meta_get("rating"))
+        info_tag.setVotes(self.meta_get("votes"))
+        info_tag.setMpaa(self.meta_get("mpaa"))
+        info_tag.setDuration(self.meta_get("duration"))
+        info_tag.setTrailer(self.meta_get("trailer"))
+        info_tag.setStudios(self.meta_get("studio", ""))
+        info_tag.setIMDBNumber(self.imdb_id)
+        info_tag.setGenres(self.meta_get("genre", ""))
+        info_tag.setWriters(self.meta_get("writer", ""))
+        info_tag.setDirectors(self.meta_get("director", ""))
+        info_tag.setUniqueIDs(unique_ids)
+        info_tag.setCast([
+            ku.kodi_actor()(name=i["name"], role=i["role"], thumbnail=i["thumbnail"])
+            for i in cast
+        ])
+        self.set_resume_point(listitem)
+        self.set_playback_properties()
         return listitem
 
     def media_watched_marker(self, force_watched=False):
@@ -385,13 +288,13 @@ class BacterioPlayer(xbmc.Player):
                         target=self.run_media_progress,
                         args=(ws.set_bookmark, progress_params),
                     ).start()
-        except:
+        except Exception:
             pass
 
     def run_media_progress(self, function, params):
         try:
             function(params)
-        except:
+        except Exception:
             pass
 
     def run_next_ep(self):
@@ -420,7 +323,7 @@ class BacterioPlayer(xbmc.Player):
                     if i["name"] in ("duringcreditsstinger", "aftercreditsstinger")
                 ]
                 self.meta["stinger_keys"] = stinger_keys
-            except:
+            except Exception:
                 pass
         if stinger_keys:
             from windows.base_window import open_window
@@ -469,7 +372,7 @@ class BacterioPlayer(xbmc.Player):
                 "play_type": play_type,
                 "watching_check": watching_check,
             }
-        except:
+        except Exception:
             pass
 
     def final_chapter(self, threshhold):
@@ -477,14 +380,14 @@ class BacterioPlayer(xbmc.Player):
             final_chapter = float(ku.get_infolabel("Player.Chapters").split(",")[-1])
             if final_chapter >= threshhold:
                 return final_chapter
-        except:
+        except Exception:
             pass
         return None
 
     def kill_dialog(self):
         try:
             self.sources_object._kill_progress_dialog()
-        except:
+        except Exception:
             ku.close_all_dialog()
 
     def set_constants(self, url, obj):
@@ -519,7 +422,7 @@ class BacterioPlayer(xbmc.Player):
             ku.set_property("script.trakt.ids", json.dumps(trakt_ids))
             if self.playing_filename:
                 ku.set_property("subs.player_filename", self.playing_filename)
-        except:
+        except Exception:
             pass
 
     def clear_playback_properties(self):
@@ -528,9 +431,10 @@ class BacterioPlayer(xbmc.Player):
         ku.clear_property("subs.player_filename")
 
     def run_error(self):
+        ku.logger("Player", "Playback error: no URL or unhandled exception")
         try:
             self.sources_object.playback_successful = False
-        except:
+        except Exception:
             pass
         self.clear_playback_properties()
         ku.notification("Playback Failed", 3500)

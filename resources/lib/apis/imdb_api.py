@@ -8,7 +8,6 @@ from modules.settings_manager import get_setting
 from modules.dom_parser import parseDOM
 from modules.kodi_utils import sleep
 from modules.utils import remove_accents, replace_html_codes, normalize
-# from modules.kodi_utils import logger
 
 
 def imdb_more_like_this(imdb_id):
@@ -94,7 +93,7 @@ def get_imdb(params):
                     _id = item.split('href="/title/')[1].split("/?ref_")[0]
                     if _id.replace("tt", "").isnumeric():
                         yield (_id)
-                except:
+                except Exception:
                     pass
 
         try:
@@ -103,7 +102,7 @@ def get_imdb(params):
                 "<span>More like this</span>"
             )[1]
             items = str(result).split('poster-card__title--clickable" aria-label="')
-        except:
+        except Exception:
             items = []
         imdb_list = list(_process())
         imdb_list = [
@@ -123,7 +122,7 @@ def get_imdb(params):
                     content = content.replace("<br/><br/>", "\n")
                     content = "[B]%s %02d.[/B][CR][CR]%s" % (_str, count, content)
                     yield content
-                except:
+                except Exception:
                     pass
 
         if action == "imdb_trivia":
@@ -157,7 +156,7 @@ def get_imdb(params):
                     content = replace_html_codes(content)
                     content = "[B]%s %02d.[/B][CR][CR]%s" % (trivia_str, count, content)
                     yield content
-                except:
+                except Exception:
                     pass
 
         trivia_str = "TRIVIA"
@@ -178,7 +177,7 @@ def get_imdb(params):
                         )[0]
                         try:
                             content = content.encode("ascii").decode("unicode-escape")
-                        except:
+                        except Exception:
                             pass
                         content = replace_html_codes(
                             content.replace("</a>", "")
@@ -186,17 +185,17 @@ def get_imdb(params):
                             .replace("<br />", "")
                             .replace("  ", "")
                         )
-                    except:
+                    except Exception:
                         continue
                     try:
                         spoiler = re.findall(r'"spoiler":(.*),"reportingLink', item)[0]
-                    except:
+                    except Exception:
                         spoiler = "false"
                     try:
                         rating = re.findall(
                             r'"authorRating":(.*),"submissionDate', item
                         )[0]
-                    except:
+                    except Exception:
                         rating = "-"
                     try:
                         title = re.findall(
@@ -209,13 +208,13 @@ def get_imdb(params):
                             .replace("<br />", "")
                             .replace("  ", "")
                         )
-                    except:
+                    except Exception:
                         title = "-----"
                     try:
                         date = re.findall(
                             r'"submissionDate":"(.*)","helpfulness', item
                         )[0]
-                    except:
+                    except Exception:
                         date = "-----"
                     try:
                         review = "[B]%02d. [I]%s/10 - %s - %s[/I][/B][CR][CR]%s" % (
@@ -225,7 +224,7 @@ def get_imdb(params):
                             title,
                             content,
                         )
-                    except:
+                    except Exception:
                         continue
                     if spoiler == "true":
                         review = (
@@ -233,7 +232,7 @@ def get_imdb(params):
                         )
                     count += 1
                     yield review
-                except:
+                except Exception:
                     pass
 
         spoiler_str = "CONTAINS SPOILERS"
@@ -253,7 +252,7 @@ def get_imdb(params):
                 for i in results
                 if i["id"].startswith("nm") and i["l"].lower() == name
             ][0]
-        except:
+        except Exception:
             imdb_list = []
         if not imdb_list:
             try:
@@ -264,7 +263,7 @@ def get_imdb(params):
                     0
                 ]
                 imdb_list = re.search(r'href="/name/(.+?)"', result, re.DOTALL).group(1)
-            except:
+            except Exception:
                 pass
     elif action == "imdb_year_check":
         try:
@@ -273,7 +272,7 @@ def get_imdb(params):
             result = result.json()
             result = result["d"]
             imdb_list = [str(i["y"]) for i in result if i["id"] == imdb_id][0]
-        except:
+        except Exception:
             pass
     elif action == "imdb_parentsguide":
         imdb_list = []
@@ -300,7 +299,7 @@ def get_imdb(params):
                     re.search(r'">(.+?)</span>', title_data, re.DOTALL).group(1)
                 )
                 item_dict["title"] = title
-            except:
+            except Exception:
                 continue
             try:
                 ranking = replace_html_codes(
@@ -311,7 +310,7 @@ def get_imdb(params):
                     ).group(1)
                 )
                 item_dict["ranking"] = ranking
-            except:
+            except Exception:
                 item_dict["ranking"] = "none"
             try:
                 listings = re.findall(
@@ -319,7 +318,7 @@ def get_imdb(params):
                     item,
                 )
                 listings = [replace_html_codes(i) for i in listings]
-            except:
+            except Exception:
                 listings = []
             if listings:
                 item_dict["content"] = "\n\n".join(
@@ -341,7 +340,7 @@ def clear_imdb_cache(silent=False):
         ).fetchall()
         dbcon.execute("DELETE FROM maincache WHERE id LIKE ?", ("imdb_%",))
         return True
-    except:
+    except Exception:
         return False
 
 
@@ -357,5 +356,5 @@ def refresh_imdb_meta_data(imdb_id):
         dbcon.execute("DELETE FROM maincache WHERE id LIKE ?", (insert1,))
         dbcon.execute("DELETE FROM maincache WHERE id LIKE ?", (insert2,))
         return True
-    except:
+    except Exception:
         return False

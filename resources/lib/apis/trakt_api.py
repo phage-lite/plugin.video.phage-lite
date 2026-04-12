@@ -2,7 +2,7 @@
 import json
 import time
 import requests
-from urllib.parse import unquote, quote_plus
+from urllib.parse import unquote
 from caches import trakt_cache
 from modules.settings_manager import get_setting, set_setting
 from caches.main_cache import cache_object
@@ -21,17 +21,15 @@ from modules.utils import (
     make_thread_list,
     jsondate_to_datetime as js2date,
 )
-# logger = kodi_utils.logger
+import apis.services as services
 
 
 def no_client_key():
-    kodi_utils.notification("Please set a valid Trakt Client ID Key")
-    return None
+    return kodi_utils.notification("Trakt: No Client ID configured", 5000)
 
 
 def no_secret_key():
-    kodi_utils.notification("Please set a valid Trakt Client Secret Key")
-    return None
+    return kodi_utils.notification("Trakt: No Client Secret configured", 5000)
 
 
 def get_trakt(params):
@@ -58,100 +56,53 @@ def call_trakt(
     pagination=False,
     page_no=1,
 ):
-    def send_query():
-        resp = None
-        if with_auth:
-            while kodi_utils.get_property("bacterio.trakt_refreshing_token") == "true":
-                kodi_utils.logger("refreshing trakt token", "")
-                kodi_utils.sleep(250)
-            try:
-                expires_at = float(get_setting("bacterio.trakt.expires"))
-            except:
-                expires_at = 0.0
-            if time.time() > expires_at:
-                trakt_refresh_token()
-            token = get_setting("bacterio.trakt.token")
-            if token:
-                headers["Authorization"] = "Bearer " + token
+    if with_auth:
+        while kodi_utils.get_property("bacterio.trakt_refreshing_token") == "true":
+            kodi_utils.sleep(250)
         try:
-            if method:
-                if method == "post":
-                    resp = requests.post(
-                        API_ENDPOINT % path, headers=headers, timeout=10
-                    )
-                elif method == "delete":
-                    resp = requests.delete(
-                        API_ENDPOINT % path, headers=headers, timeout=10
-                    )
-                else:
-                    resp = requests.get(
-                        API_ENDPOINT % path, params=params, headers=headers, timeout=10
-                    )
-            elif data is not None:
-                assert not params
-                resp = requests.post(
-                    API_ENDPOINT % path, json=data, headers=headers, timeout=10
-                )
-            elif is_delete:
-                resp = requests.delete(API_ENDPOINT % path, headers=headers, timeout=10)
-            else:
-                resp = requests.get(
-                    API_ENDPOINT % path, params=params, headers=headers, timeout=10
-                )
-            resp.raise_for_status()
-        except Exception as e:
-            kodi_utils.logger("Trakt Error", str(e))
-        return resp
+            expires_at = float(get_setting("bacterio.trakt.expires"))
+        except Exception:
+            expires_at = 0.0
+        if time.time() > expires_at:
+            trakt_refresh_token()
 
-    API_ENDPOINT = "https://api.trakt.tv/%s"
-    CLIENT_ID = settings.trakt_client()
-    if CLIENT_ID in (None, "empty_setting", ""):
-        return no_client_key()
-    headers = {
-        "Content-Type": "application/json",
-        "trakt-api-version": "2",
-        "trakt-api-key": CLIENT_ID,
-    }
     if pagination:
         params["page"] = page_no
-    response = send_query()
-    try:
-        status_code = response.status_code
-    except:
-        return None
-    headers = response.headers
-    if status_code == 401:
-        if with_auth:
-            if settings.trakt_user_active():
-                trakt_refresh_token()
-            else:
-                return None
-        else:
-            return None
-    elif status_code == 429:
-        if "Retry-After" in headers:
-            kodi_utils.sleep(1000 * headers["Retry-After"])
-            response = send_query()
-    response.encoding = "utf-8"
-    result = (
-        response.json() if "json" in headers.get("Content-Type", "") else response.text
-    )
-    if method == "sort_by_headers":
-        sort_by, sort_how = (
-            headers.get("X-Sort-By", "title"),
-            headers.get("X-Sort-How", "asc"),
-        )
-        result = {"sort_by": sort_by, "sort_how": sort_how, "data": result}
-    if pagination:
-        return (result, headers.get("X-Pagination-Page-Count", page_no))
+
+    if data is not None or method == "post":
+        resp = services.post("trakt", path, data=data, with_auth=with_auth, timeout=10, raw=True)
+    elif is_delete or method == "delete":
+        resp = services.delete("trakt", path, with_auth=with_auth, timeout=10, raw=True)
     else:
-        return result
+        resp = services.get("trakt", path, params=params, with_auth=with_auth, timeout=10, raw=True)
+
+    if resp is None:
+        return None
+
+    status_code = resp.status_code
+    if status_code == 401:
+        if with_auth and settings.trakt_user_active():
+            trakt_refresh_token()
+        return None
+
+    resp.encoding = "utf-8"
+    resp_headers = resp.headers
+    result = resp.json() if "json" in resp_headers.get("Content-Type", "") else resp.text
+
+    if method == "sort_by_headers":
+        result = {
+            "sort_by": resp_headers.get("X-Sort-By", "title"),
+            "sort_how": resp_headers.get("X-Sort-How", "asc"),
+            "data": result,
+        }
+
+    if pagination:
+        return (result, resp_headers.get("X-Pagination-Page-Count", page_no))
+    return result
 
 
 def trakt_get_device_code():
     CLIENT_ID = settings.trakt_client()
-    if CLIENT_ID in (None, "empty_setting", ""):
-        return no_client_key()
     data = {"client_id": CLIENT_ID}
     return call_trakt("oauth/device/code", data=data, with_auth=False)
 
@@ -181,17 +132,6 @@ def trakt_get_device_token(device_codes):
         sleep_interval = device_codes["interval"]
         user_code = str(device_codes["user_code"])
         auth_url = "https://trakt.tv/activate?code=%s" % str(user_code)
-        qr_code = make_qrcode(auth_url) or ""
-        short_url = make_tinyurl(auth_url)
-        copy2clip(auth_url)
-        if short_url:
-            p_dialog_insert = "[CR]OR....[CR]visit [B]%s[/B]" % short_url
-        else:
-            p_dialog_insert = ""
-        content = (
-            "Enter [B]%s[/B] at [B]%s[/B][CR]OR....[CR]Scan the [B]QR Code[/B]%s"
-            % (user_code, device_codes["verification_url"], p_dialog_insert)
-        )
         progressDialog = kodi_utils.progress_dialog("Trakt Authorize", qr_code)
         progressDialog.update(content, 0)
         try:
@@ -214,13 +154,13 @@ def trakt_get_device_token(device_codes):
                     progressDialog.update(content, progress)
                 else:
                     break
-        except:
+        except Exception:
             pass
         try:
             progressDialog.close()
-        except:
+        except Exception:
             pass
-    except:
+    except Exception:
         pass
     return result
 
@@ -246,7 +186,7 @@ def trakt_refresh_token():
             set_setting("trakt.token", response["access_token"])
             set_setting("trakt.refresh", response["refresh_token"])
             set_setting("trakt.expires", str(time.time() + response["expires_in"]))
-    except:
+    except Exception:
         pass
     kodi_utils.clear_property("bacterio.trakt_refreshing_token")
 
@@ -263,7 +203,7 @@ def trakt_authenticate(dummy=""):
         try:
             user = call_trakt("/users/me")
             set_setting("trakt.user", str(user["username"]))
-        except:
+        except Exception:
             pass
         kodi_utils.notification("Trakt Account Authorized", 3000)
         trakt_sync_activities(force_update=True)
@@ -974,7 +914,7 @@ def get_trakt_list_contents(
                     "custom_order": c,
                 }
             results_append(data)
-        except:
+        except Exception:
             pass
     return results
 
@@ -1144,7 +1084,7 @@ def trakt_like_a_list(params):
         if refresh:
             kodi_utils.kodi_refresh()
         return True
-    except:
+    except Exception:
         kodi_utils.notification("Error", 3000)
         return False
 
@@ -1166,7 +1106,7 @@ def trakt_like_a_list(params):
         if refresh:
             kodi_utils.kodi_refresh()
         return True
-    except:
+    except Exception:
         kodi_utils.notification("Error", 3000)
         return False
 
@@ -1180,7 +1120,7 @@ def get_trakt_movie_id(item):
         try:
             meta = movie_meta_external_id("imdb_id", item["imdb"], api_key)
             tmdb_id = meta["id"]
-        except:
+        except Exception:
             pass
     return tmdb_id
 
@@ -1194,14 +1134,14 @@ def get_trakt_tvshow_id(item):
         try:
             meta = tvshow_meta_external_id("imdb_id", item["imdb"], api_key)
             tmdb_id = meta["id"]
-        except:
+        except Exception:
             tmdb_id = None
     if not tmdb_id:
         if item["tvdb"]:
             try:
                 meta = tvshow_meta_external_id("tvdb_id", item["tvdb"], api_key)
                 tmdb_id = meta["id"]
-            except:
+            except Exception:
                 tmdb_id = None
     return tmdb_id
 
@@ -1282,7 +1222,7 @@ def trakt_comments(media_type, imdb_id):
                 if item["spoiler"]:
                     comment = spoiler_template + comment
                 all_comments_append(comment)
-            except:
+            except Exception:
                 pass
         return all_comments
 
@@ -1361,7 +1301,7 @@ def trakt_progress_tv(progress_info):
                                 p_item["id"],
                                 p_item["show"]["title"],
                             )
-            except:
+            except Exception:
                 pass
 
     tmdb_list = []
@@ -1373,7 +1313,7 @@ def trakt_progress_tv(progress_info):
         return
     all_shows = [i["show"] for i in progress_items]
     all_shows = [
-        i for n, i in enumerate(all_shows) if not i in all_shows[n + 1 :]
+        i for n, i in enumerate(all_shows) if i not in all_shows[n + 1 :]
     ]  # remove duplicates
     threads = list(make_thread_list(_process_tmdb_ids, all_shows))
     [i.join() for i in threads]
@@ -1389,13 +1329,13 @@ def trakt_official_status(media_type):
     trakt_addon = kodi_utils.addon("script.trakt")
     try:
         authorization = trakt_addon.getSetting("authorization")
-    except:
+    except Exception:
         authorization = ""
     if authorization == "":
         return True
     try:
         exclude_http = trakt_addon.getSetting("ExcludeHTTP")
-    except:
+    except Exception:
         exclude_http = ""
     if exclude_http in ("true", ""):
         return True
@@ -1404,7 +1344,7 @@ def trakt_official_status(media_type):
     )
     try:
         scrobble = trakt_addon.getSetting(media_setting)
-    except:
+    except Exception:
         scrobble = ""
     if scrobble in ("false", ""):
         return True
@@ -1480,7 +1420,7 @@ def trakt_sync_activities(force_update=False):
         sync_interval = int(get_setting("bacterio.trakt.sync_interval", "60")) * 60
         try:
             expires_at = float(get_setting("bacterio.trakt.expires"))
-        except:
+        except Exception:
             expires_at = 0.0
         if current_time + sync_interval >= expires_at:
             return True
@@ -1499,7 +1439,7 @@ def trakt_sync_activities(force_update=False):
             result = _get_timestamp(
                 js2date(latest, "%Y-%m-%dT%H:%M:%S.%fZ")
             ) > _get_timestamp(js2date(cached, "%Y-%m-%dT%H:%M:%S.%fZ"))
-        except:
+        except Exception:
             result = True
         return result
 
@@ -1519,7 +1459,7 @@ def trakt_sync_activities(force_update=False):
         return "no account"
     try:
         latest = trakt_get_activity()
-    except:
+    except Exception:
         return "failed"
     cached = trakt_cache.reset_activity(latest)
     fallback_date = "2020-01-01T00:00:01.000Z"

@@ -135,7 +135,7 @@ class Navigator:
                     if not self.is_external:
                         listitem.addContextMenuItems(cm_items)
                     yield ((url, listitem, True), count)
-                except:
+                except Exception:
                     pass
 
         if self.params_get("full_list", "false") == "true":
@@ -1185,7 +1185,7 @@ class Navigator:
                     ),
                 ]
                 self.add(url_params, key_id, "calender", cm_items=cm_items)
-            except:
+            except Exception:
                 pass
         self.category_name = self.params_get("name") or "History"
         self.end_directory()
@@ -1199,7 +1199,7 @@ class Navigator:
         )
         try:
             page_no = int(self.params_get("new_page", "1"))
-        except:
+        except Exception:
             page_no = self.params_get("new_page")
         mode = "build_movie_list" if media_type == "movie" else "build_tvshow_list"
         action = (
@@ -1661,7 +1661,7 @@ class Navigator:
                 icon = iconImage
             else:
                 icon = self.get_icon(iconImage)
-        except:
+        except Exception:
             pass
         url_params["iconImage"] = icon
         url = self.build_url(url_params)

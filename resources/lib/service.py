@@ -10,7 +10,7 @@ from modules import kodi_utils
 pause_services_prop = "bacterio.pause_services"
 firstrun_update_prop = "bacterio.firstrun_update"
 current_skin_prop = "bacterio.current_skin"
-trakt_service_string = "TraktMonitor Service Update %s - %s"
+trakt_service_string = "TraktMonitor Service Update"
 trakt_success_line_dict = {
     "success": "Trakt Update Performed",
     "no account": "(Unauthorized) Trakt Update Performed",
@@ -20,7 +20,7 @@ update_string = "Next Update in %s minutes..."
 
 class SetAddonConstants:
     def run(self):
-        kodi_utils.logger("Bacterio", "SetAddonConstants Service Starting")
+        kodi_utils.logger("SetAddonConstants", "Service Starting")
         import random
 
         addon_items = [
@@ -55,28 +55,28 @@ class SetAddonConstants:
         ]
         for item in addon_items:
             kodi_utils.set_property(*item)
-        return kodi_utils.logger("Bacterio", "SetAddonConstants Service Finished")
+        return kodi_utils.logger("SetAddonConstants", "Service Finished")
 
 
 class DatabaseMaintenance:
     def run(self):
-        kodi_utils.logger("Bacterio", "DatabaseMaintenance Service Starting")
+        kodi_utils.logger("DatabaseMaintenance", "Service Starting")
         from caches.base_cache import check_databases_integrity
 
         check_databases_integrity(silent=True)
-        return kodi_utils.logger("Bacterio", "DatabaseMaintenance Service Finished")
+        return kodi_utils.logger("DatabaseMaintenance", "Service Finished")
 
 
 class SyncSettings:
     def run(self):
-        kodi_utils.logger("Bacterio", "SyncSettings Service Starting")
+        kodi_utils.logger("SyncSettings", "Service Starting")
         warm_up_memory_cache()
-        return kodi_utils.logger("Bacterio", "SyncSettings Service Finished")
+        return kodi_utils.logger("SyncSettings", "Service Finished")
 
 
 class OnUpdateChanges:
     def run(self):
-        kodi_utils.logger("Bacterio", "OnUpdateChanges Service Starting")
+        kodi_utils.logger("OnUpdateChanges", "Service Starting")
         try:
             for method in list(
                 filter(
@@ -90,9 +90,9 @@ class OnUpdateChanges:
                 ):
                     method[1](self)
                     set_setting("updatechecks.%s" % method[0], "true")
-        except:
+        except Exception:
             pass
-        return kodi_utils.logger("Bacterio", "OnUpdateChanges Service Finished")
+        return kodi_utils.logger("OnUpdateChanges", "Service Finished")
 
     def clear_context_menu_order_01(self):
         # Active for 2.1.85.
@@ -109,7 +109,7 @@ class OnUpdateChanges:
 
 class CustomFonts:
     def run(self):
-        kodi_utils.logger("Bacterio", "CustomFonts Service Starting")
+        kodi_utils.logger("CustomFonts", "Service Starting")
         from windows.base_window import FontUtils
 
         monitor, player = kodi_utils.kodi_monitor(), kodi_utils.kodi_player()
@@ -121,18 +121,18 @@ class CustomFonts:
             wait_for_abort(20)
         try:
             del monitor
-        except:
+        except Exception:
             pass
         try:
             del player
-        except:
+        except Exception:
             pass
-        return kodi_utils.logger("Bacterio", "CustomFonts Service Finished")
+        return kodi_utils.logger("CustomFonts", "Service Finished")
 
 
 class TraktMonitor:
     def run(self):
-        kodi_utils.logger("Bacterio", "TraktMonitor Service Starting")
+        kodi_utils.logger("TraktMonitor", "Service Starting")
         from apis.trakt_api import trakt_sync_activities
         from modules.settings import trakt_sync_interval
 
@@ -178,25 +178,24 @@ class TraktMonitor:
                         kodi_utils.run_plugin({"mode": "kodi_refresh"})
             except Exception as e:
                 kodi_utils.logger(
-                    "Bacterio",
-                    trakt_service_string
-                    % ("Failed", "The following Error Occured: %s" % str(e)),
+                    trakt_service_string,
+                    "Failed: The following Error Occured: %s" % str(e),
                 )
             wait_for_abort(wait_time)
         try:
             del monitor
-        except:
+        except Exception:
             pass
         try:
             del player
-        except:
+        except Exception:
             pass
-        return kodi_utils.logger("Bacterio", "TraktMonitor Service Finished")
+        return kodi_utils.logger("TraktMonitor", "Service Finished")
 
 
 class WidgetRefresher:
     def run(self):
-        kodi_utils.logger("Bacterio", "WidgetRefresher Service Starting")
+        kodi_utils.logger("WidgetRefresher", "Service Starting")
         from time import time
 
         monitor, player = kodi_utils.kodi_monitor(), kodi_utils.kodi_player()
@@ -214,21 +213,21 @@ class WidgetRefresher:
                     continue
                 if self.next_refresh < time():
                     kodi_utils.logger(
-                        "Bacterio", "WidgetRefresher Service - Widgets Refreshed"
+                        "WidgetRefresher", "Widgets Refreshed"
                     )
                     kodi_utils.refresh_widgets()
                     self.set_next_refresh(time())
-            except:
+            except Exception:
                 pass
         try:
             del monitor
-        except:
+        except Exception:
             pass
         try:
             del player
-        except:
+        except Exception:
             pass
-        return kodi_utils.logger("Bacterio", "WidgetRefresher Service Finished")
+        return kodi_utils.logger("WidgetRefresher", "Service Finished")
 
     def condition_check(self):
         if not self.external():
@@ -246,7 +245,7 @@ class WidgetRefresher:
             window_stack = json.loads(kodi_utils.get_property("bacterio.window_stack"))
             if window_stack or window_stack == []:
                 return True
-        except:
+        except Exception:
             pass
         return False
 
@@ -263,17 +262,17 @@ class WidgetRefresher:
 
 class AutoStart:
     def run(self):
-        kodi_utils.logger("Bacterio", "AutoStart Service Starting")
+        kodi_utils.logger("AutoStart", "Service Starting")
         from modules.settings import auto_start_bacterio
 
         if auto_start_bacterio():
             kodi_utils.run_addon()
-        return kodi_utils.logger("Bacterio", "AutoStart Service Finished")
+        return kodi_utils.logger("AutoStart", "Service Finished")
 
 
 class AddonXMLCheck:
     def run(self):
-        kodi_utils.logger("Bacterio", "AddonXMLCheck Service Starting")
+        kodi_utils.logger("AddonXMLCheck", "Service Starting")
         from xml.dom.minidom import parse as mdParse
 
         self.addon_xml = kodi_utils.translate_path(
@@ -283,7 +282,7 @@ class AddonXMLCheck:
         self.change_list = []
         self.check_property("reuse_language_invoker", "reuselanguageinvoker")
         self.change_xml_file()
-        return kodi_utils.logger("Bacterio", "AddonXMLCheck Service Finished")
+        return kodi_utils.logger("AddonXMLCheck", "Service Finished")
 
     def check_property(self, setting, tag_name):
         current_addon_setting = get_setting("bacterio.%s" % setting, None)
@@ -340,6 +339,6 @@ class BacterioMonitor(Monitor):
             )
 
 
-kodi_utils.logger("Bacterio", "Main Monitor Service Starting")
+kodi_utils.logger("Main Monitor", "Service Starting")
 BacterioMonitor().waitForAbort()
-kodi_utils.logger("Bacterio", "Main Monitor Service Finished")
+kodi_utils.logger("Main Monitor", "Service Finished")

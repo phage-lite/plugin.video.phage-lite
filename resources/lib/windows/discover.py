@@ -5,7 +5,6 @@ from apis import tmdb_api
 from caches.discover_cache import discover_cache
 from modules.kodi_utils import kodi_dialog, select_dialog, ok_dialog, get_icon, sleep, container_refresh, confirm_dialog
 from modules import meta_lists
-# from modules.kodi_utils import logger
 
 class Discover(BaseDialog):
 	def __init__(self, *args, **kwargs):
@@ -27,7 +26,7 @@ class Discover(BaseDialog):
 				self.list_item = self.get_listitem(2100)
 				self.chosen_item = self.discover_items[self.list_item.getProperty('key')]
 				if self.selection_action():
-					exec('self.%s()' % self.chosen_item['action'])
+					getattr(self, self.chosen_item['action'])()
 					active_attributes = self.get_active_attributes()
 					if active_attributes:
 						self.make_url(active_attributes)

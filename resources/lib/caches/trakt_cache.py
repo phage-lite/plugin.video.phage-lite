@@ -2,7 +2,6 @@
 from threading import Thread
 from caches.base_cache import connect_database
 from modules.kodi_utils import sleep, confirm_dialog, close_all_dialog
-# from modules.kodi_utils import logger
 
 class TraktCache:	
 	def get(self, string):

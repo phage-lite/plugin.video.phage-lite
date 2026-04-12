@@ -5,15 +5,20 @@ import json
 from random import shuffle
 from threading import Thread
 from urllib.parse import unquote
-from apis.tmdblist_api import tmdb_list_api
-from modules.settings_manager import get_setting
-from caches.tmdb_lists import tmdb_lists_cache
+import requests
+import apis.services as services
+from modules.settings_manager import get_setting, set_setting
+from caches.tmdb_lists import tmdb_lists_cache, tmdb_lists_cache_object
 from indexers.movies import Movies
 from indexers.tvshows import TVShows
 from modules.utils import (
     paginate_list,
     sort_for_article,
     gen_md5,
+    make_thread_list,
+    make_qrcode,
+    make_tinyurl,
+    copy2clip,
     jsondate_to_datetime as js2date,
 )
 from modules.settings import (
@@ -25,7 +30,6 @@ from modules.settings import (
     jump_to_enabled,
 )
 from modules import kodi_utils
-# logger = kodi_utils.logger
 
 
 def get_tmdb_lists(params):
@@ -38,7 +42,7 @@ def get_tmdb_lists(params):
             return os.path.join(
                 profile_path, "images", "tmdb_lists_%s" % image_type, custom_image
             )
-        except:
+        except Exception:
             return ""
 
     def _process():
@@ -150,7 +154,7 @@ def get_tmdb_lists(params):
                 info_tag.setPlot(" ")
                 listitem.addContextMenuItems(cm)
                 yield (url, listitem, True)
-            except:
+            except Exception:
                 pass
 
     def _new_process():
@@ -203,7 +207,7 @@ def get_tmdb_lists(params):
                         data = json.loads(
                             kodi_utils.get_property("bacterio.tmdb.lists.order")
                         )
-                    except:
+                    except Exception:
                         pass
                 else:
                     shuffle(data)
@@ -216,7 +220,7 @@ def get_tmdb_lists(params):
         else:
             result = list(_new_process())
         kodi_utils.add_items(handle, result)
-    except:
+    except Exception:
         pass
     kodi_utils.set_content(handle, "files")
     kodi_utils.set_category(handle, params.get("category_name", ""))
@@ -331,7 +335,7 @@ def build_tmdb_list(params):
                 "nextpage",
                 kodi_utils.get_icon("nextpage_landscape"),
             )
-    except:
+    except Exception:
         pass
     kodi_utils.set_content(handle, content)
     kodi_utils.set_category(handle, list_name)
@@ -495,7 +499,7 @@ def tmdb_image_maker(list_name, list_id, image_type, custom_image, shuffle_sort_
 
 
 def add_to_tmdb_list(list_id, items):
-    data = tmdb_list_api.add_remove_from_list(list_id, items, "post")
+    data = services.post("tmdb_v4", "list/%s/items" % list_id, data=items)
     if not data.get("success"):
         kodi_utils.notification("Error Adding to List")
         return False
@@ -503,7 +507,7 @@ def add_to_tmdb_list(list_id, items):
 
 
 def remove_from_tmdb_list(list_id, items):
-    data = tmdb_list_api.add_remove_from_list(list_id, items, "delete")
+    data = services.delete("tmdb_v4", "list/%s/items" % list_id, data=items)
     if not data.get("success"):
         kodi_utils.notification("Error Removing from List")
         return False
@@ -516,7 +520,9 @@ def rename_tmdb_list(current_name, list_id):
     )
     if list_name == None:
         return None
-    tmdb_list_api.rename_list(list_id, list_name)
+    services.put("tmdb_v4", "list/%s" % list_id, data={
+        "description": "", "name": list_name, "iso_3166_1": "US", "iso_639_1": "en", "public": True,
+    })
     return list_name
 
 
@@ -540,7 +546,7 @@ def sort_order_tmdb_list():
 
 
 def check_item_status(list_id, media_type, media_id):
-    item_status = tmdb_list_api.item_status(list_id, media_type, media_id)
+    item_status = services.get("tmdb_v4", "list/%s/item_status" % list_id, params={"media_type": media_type, "media_id": int(media_id)})
     return item_status["success"]
 
 
@@ -566,7 +572,9 @@ def make_new_tmdb_list(params):
         kodi_utils.notification("List Creation Cancelled", 3000)
         return None
     list_name = unquote(list_name)
-    data = tmdb_list_api.make_list(list_name)
+    data = services.post("tmdb_v4", "list", data={
+        "description": "", "name": list_name, "iso_3166_1": "US", "iso_639_1": "en", "public": True,
+    })
     if not data.get("success"):
         kodi_utils.notification("Error Creating List")
         return None
@@ -585,7 +593,7 @@ def delete_tmdb_list(params):
     ):
         return
     list_id = params["list_id"]
-    data = tmdb_list_api.delete_list(list_id)
+    data = services.delete("tmdb_v4", "list/%s" % list_id)
     if not data.get("success"):
         return kodi_utils.notification("Error Deleting List")
     tmdb_lists_cache.clear_list(list_id)
@@ -596,7 +604,7 @@ def delete_tmdb_list(params):
 def clear_tmdb_list(list_name, list_id):
     if not list_change_warning(list_name):
         return None
-    data = tmdb_list_api.clear_list(list_id)
+    data = services.get("tmdb_v4", "list/%s/clear" % list_id)
     if not data.get("success"):
         kodi_utils.notification("Error Clearing List Contents")
         return None
@@ -605,8 +613,128 @@ def clear_tmdb_list(list_name, list_id):
     return True
 
 
+def _tmdb_get_user_lists():
+    account_id = get_setting("bacterio.tmdb.account_id")
+
+    def _process_multi(page_no):
+        try:
+            results_extend(
+                services.get("tmdb_v4", "account/%s/lists?page=%s" % (account_id, page_no))["results"]
+            )
+        except Exception:
+            pass
+
+    def _process(dummy):
+        result = services.get("tmdb_v4", "account/%s/lists?page=%s" % (account_id, 1))
+        results_extend(result["results"])
+        total_pages = result["total_pages"]
+        if total_pages > 1:
+            threads = list(make_thread_list(_process_multi, range(2, total_pages + 1)))
+            [i.join() for i in threads]
+        return results
+
+    results = []
+    results_extend = results.extend
+    return tmdb_lists_cache_object(_process, "get_user_lists", "dummy")
+
+
+def _tmdb_get_list_details(list_id):
+    def _process_multi(page_no):
+        try:
+            results_extend(
+                services.get("tmdb_v4", "list/%s?page=%s" % (list_id, page_no))["results"]
+            )
+        except Exception:
+            pass
+
+    def _process(dummy):
+        result = services.get("tmdb_v4", "list/%s?page=%s" % (list_id, 1))
+        results_extend(result["results"])
+        total_pages = result["total_pages"]
+        if total_pages > 1:
+            threads = list(make_thread_list(_process_multi, range(2, total_pages + 1)))
+            [i.join() for i in threads]
+        return results
+
+    results = []
+    results_extend = results.extend
+    return tmdb_lists_cache_object(_process, "get_list_details_%s" % list_id, "dummy")
+
+
+_TMDB_V4_BASE = "https://api.themoviedb.org/4"
+
+
+def tmdb_auth():
+    headers = {
+        "accept": "application/json",
+        "content-type": "application/json",
+        "Authorization": "Bearer %s" % get_setting("bacterio.tmdb.secret"),
+    }
+    data = requests.post("%s/auth/request_token" % _TMDB_V4_BASE, headers=headers, timeout=20).json()
+    if "success" not in data:
+        return kodi_utils.notification("Failed to Auth Account")
+    request_token = data["request_token"]
+    token_url = "https://www.themoviedb.org/auth/access?request_token=%s" % request_token
+    qr_code = make_qrcode(token_url) or ""
+    short_url = make_tinyurl(token_url)
+    copy2clip(short_url)
+    p_dialog_insert = "[CR]OR visit this URL: [B]%s[/B]" % short_url if short_url else ""
+    progressDialog = kodi_utils.progress_dialog(heading="TMDb Account Authorization", icon=qr_code)
+    count, success, response = 72, None, None
+    while not progressDialog.iscanceled() and count >= 0 and success is None:
+        try:
+            count -= 1
+            response = requests.post(
+                "%s/auth/access_token" % _TMDB_V4_BASE,
+                json={"request_token": request_token},
+                headers=headers,
+                timeout=20,
+            ).json()
+            if response.get("success") and response.get("access_token"):
+                success = True
+            progressDialog.update(
+                "Please Scan the QR Code%s[CR]Confirm Access to your TMDb Account" % p_dialog_insert,
+                count,
+            )
+            kodi_utils.sleep(2500)
+        except Exception:
+            success = False
+    progressDialog.close()
+    if success:
+        set_setting("tmdb.token", response["access_token"])
+        set_setting("tmdb.account_id", response["account_id"])
+        notice = "Success"
+    else:
+        notice = "Failed"
+    tmdb_lists_cache.clear_all()
+    kodi_utils.notification(notice)
+
+
+def tmdb_revoke():
+    read_access_token = get_setting("bacterio.tmdb.secret")
+    headers = {
+        "accept": "application/json",
+        "content-type": "application/json",
+        "Authorization": "Bearer %s" % read_access_token,
+    }
+    data = requests.delete(
+        "%s/auth/access_token" % _TMDB_V4_BASE,
+        json={"access_token": read_access_token},
+        headers=headers,
+        timeout=20,
+    ).json()
+    if "success" not in data:
+        notice = "Failed to Revoke Account Auth"
+    else:
+        notice = "Success Auth Revoke"
+        set_setting("tmdb.token", "empty_setting")
+        set_setting("tmdb.account_id", "empty_setting")
+        tmdb_lists_cache.clear_all()
+    return kodi_utils.notification(notice)
+
+
 def get_all_tmdb_lists(sort_order=None):
-    contents = tmdb_list_api.get_user_lists()
+    contents = _tmdb_get_user_lists()
     try:
         if sort_order:
             if sort_order in ("", "0", "None"):
@@ -645,14 +773,14 @@ def get_all_tmdb_lists(sort_order=None):
                 contents.sort(
                     key=lambda k: (k["revenue"] is None, k["revenue"]), reverse=reverse
                 )
-    except:
+    except Exception:
         pass
     return contents
 
 
 def get_tmdb_list(params):
     list_id, sort_order = params["list_id"], params.get("sort_order", "0")
-    contents = tmdb_list_api.get_list_details(list_id)
+    contents = _tmdb_get_list_details(list_id)
     if sort_order:
         try:
             if sort_order in ("3", "shuffle"):
@@ -665,7 +793,7 @@ def get_tmdb_list(params):
                     key=lambda k: (k["release_date"] is None, k["release_date"]),
                     reverse=reverse,
                 )
-        except:
+        except Exception:
             pass
     return contents
 
@@ -705,7 +833,9 @@ def import_trakt_list_tmdb(params):
     new_contents = process_trakt_list(chosen_list)
     success = process_add_to_list(list_id, new_contents)
     if success and rename_list:
-        tmdb_list_api.rename_list(list_id, trakt_list_name)
+        services.put("tmdb_v4", "list/%s" % list_id, data={
+            "description": "", "name": trakt_list_name, "iso_3166_1": "US", "iso_639_1": "en", "public": True,
+        })
     kodi_utils.notification(
         "Success. Items added" if success else "Error adding items", 2000
     )
@@ -733,7 +863,7 @@ def process_trakt_list(chosen_list):
                 result.sort(key=lambda k: k["collected_at"], reverse=True)
             else:
                 result.sort(key=lambda k: k.get("released"), reverse=True)
-        except:
+        except Exception:
             pass
     else:
         result = get_trakt_list_contents(
@@ -744,7 +874,7 @@ def process_trakt_list(chosen_list):
         )
         try:
             result.sort(key=lambda k: k["order"])
-        except:
+        except Exception:
             pass
     for item in result:
         try:
@@ -760,7 +890,7 @@ def process_trakt_list(chosen_list):
             new_contents_append(
                 {"media_type": tmdb_media_converter[media_type], "media_id": media_id}
             )
-        except:
+        except Exception:
             continue
     return new_contents
 
@@ -775,7 +905,7 @@ def process_add_to_list(list_id, new_contents):
             tmdb_lists_cache.clear_all_lists()
         else:
             pass
-    except:
+    except Exception:
         pass
     kodi_utils.hide_busy_dialog()
     return success

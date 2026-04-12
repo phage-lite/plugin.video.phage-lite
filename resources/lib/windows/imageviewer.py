@@ -5,7 +5,6 @@ from indexers.people import person_data_dialog
 from indexers.dialogs import favorites_manager_choice
 from modules.settings import download_directory
 from modules.kodi_utils import addon_fanart, get_icon, select_dialog
-# from modules.kodi_utils import logger
 
 
 class ThumbImageViewer(BaseDialog):

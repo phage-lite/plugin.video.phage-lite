@@ -2,13 +2,13 @@
 from threading import Thread
 from apis.alldebrid_api import AllDebridAPI
 from modules import source_utils
+from modules.providers import AD_CLOUD
 from modules.utils import clean_file_name, normalize
 from modules.settings import enabled_debrids_check, filter_by_name
-# from modules.kodi_utils import logger
 
 class source:
 	def __init__(self):
-		self.scrape_provider = 'ad_cloud'
+		self.scrape_provider = AD_CLOUD
 		self.sources = []
 		self.AllDebrid = AllDebridAPI()
 		self.extensions = source_utils.supported_video_extensions()

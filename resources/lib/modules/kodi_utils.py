@@ -320,7 +320,7 @@ def get_default_addon_fanart():
 
 
 def build_url(url_params):
-    return "plugin://plugin.video.bacterio/?%s" % urlencode(url_params)
+    return f"plugin://plugin.video.bacterio/?{urlencode}"(url_params)
 
 
 def add_dir(
@@ -376,7 +376,7 @@ def set_view_mode(view_type, content="files", is_external=None):
         is_external = external()
     if is_external:
         return
-    view_id = get_property("bacterio.%s" % view_type) or None
+    view_id = get_property(f"bacterio.{view_type}") or None
     if not view_id:
         return
     try:
@@ -389,7 +389,7 @@ def set_view_mode(view_type, content="files", is_external=None):
             else:
                 return
         execute_builtin("Container.SetViewMode(%s)" % view_id)
-    except:
+    except Exception:
         return
 
 
@@ -412,7 +412,7 @@ def append_path(_path):
 
 
 def logger(heading, function):
-    xbmc.log("###%s###: %s" % (heading, function), 1)
+    xbmc.log("[Bacterio]\n\t\t[%s]: %s" % (heading, function), 1)
 
 
 def kodi_window():
@@ -653,7 +653,7 @@ def disable_enable_addon(addon_name="plugin.video.bacterio"):
                 }
             )
         )
-    except:
+    except Exception:
         pass
 
 
@@ -676,7 +676,7 @@ def update_kodi_addons_db(addon_name="plugin.video.bacterio"):
             (addon_name, 1, date),
         )
         dbcon.close()
-    except:
+    except Exception:
         pass
 
 
@@ -702,7 +702,7 @@ def jsonrpc_get_directory(directory, properties=["title", "file", "thumbnail"]):
             for i in files
             if i["file"].startswith("plugin://") and i["filetype"] == "directory"
         ]
-    except:
+    except Exception:
         results = None
     return results
 
@@ -727,7 +727,7 @@ def jsonrpc_get_system_setting(setting_id, setting_value=""):
     }
     try:
         result = get_jsonrpc(command)["value"]
-    except:
+    except Exception:
         result = setting_value
     return result
 
@@ -744,7 +744,7 @@ def external_scraper_settings():
         if external in ("empty_setting", ""):
             return
         execute_builtin("Addon.OpenSettings(%s)" % external)
-    except:
+    except Exception:
         pass
 
 
@@ -837,7 +837,7 @@ def notification(line1, time=5000, icon=None):
 def player_check(mode, params):
     from modules.settings import playback_key
 
-    if mode == "playback.%s" % playback_key():
+    if mode == f"playback.{playback_key}"():
         from modules.sources import Sources
 
         Sources().playback_prep(params)
@@ -907,7 +907,7 @@ def volume_checker():
             > max_volume
         ):
             execute_builtin("SetVolume(%d)" % max_volume)
-    except:
+    except Exception:
         pass
 
 
@@ -916,7 +916,7 @@ def focus_index(index):
     focus_id = current_window.getFocusId()
     try:
         current_window.getControl(focus_id).selectItem(index)
-    except:
+    except Exception:
         pass
 
 
@@ -932,7 +932,7 @@ def get_all_icons():
             )
             results = [i["name"].replace(".png", "") for i in results.json()]
             return results
-        except:
+        except Exception:
             return ["folder.png"]
 
     username, location = (
@@ -953,7 +953,7 @@ def get_all_addon_icons():
                 % (username, location)
             )
             return results
-        except:
+        except Exception:
             return []
 
     username, location = (
@@ -986,7 +986,7 @@ def upload_logfile(params):
         return
     show_busy_dialog()
     url = "https://paste.kodi.tv/"
-    log_file = translate_path("special://logpath/%s" % log_file)
+    log_file = translate_path(f"special://logpath/{log_file}")
     if not path_exists(log_file):
         return ok_dialog(text="Error. Log Upload Failed")
     try:
@@ -1014,11 +1014,11 @@ def upload_logfile(params):
                         count,
                     )
                     sleep(2500)
-                except:
+                except Exception:
                     success = False
         else:
             ok_dialog(text="Error. Log Upload Failed")
-    except:
+    except Exception:
         ok_dialog(text="Error. Log Upload Failed")
     hide_busy_dialog()
 
@@ -1034,6 +1034,6 @@ def fetch_kodi_imagecache(image):
         dbcur = dbcon.cursor()
         dbcur.execute("SELECT cachedurl FROM texture WHERE url = ?", (image,))
         result = dbcur.fetchone()[0]
-    except:
+    except Exception:
         pass
     return result

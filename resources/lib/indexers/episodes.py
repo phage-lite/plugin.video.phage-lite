@@ -3,7 +3,6 @@ import sys
 from modules import kodi_utils, settings, watched_status as ws
 from modules.metadata import tvshow_meta, episodes_meta, all_episodes_meta
 from modules.utils import jsondate_to_datetime, adjust_premiered_date, make_day, get_datetime, get_current_timestamp, title_key, date_difference, TaskPool
-# logger = kodi_utils.logger
 
 def build_episode_list(params):
 	def _process():
@@ -137,7 +136,7 @@ def build_episode_list(params):
 	kodi_utils.end_directory(handle, cacheToDisc=False if is_external else True)
 	kodi_utils.set_view_mode('view.episodes', 'episodes', is_external)
 
-def build_single_episode(list_type, params={}):
+def build_single_episode(list_type, params=None):
 	def _get_category_name():
 		try:
 			cat_name = {'episode.progress': 'In Progress Episodes',

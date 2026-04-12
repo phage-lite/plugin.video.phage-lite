@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 from apis.premiumize_api import Premiumize
 from modules import source_utils
+from modules.providers import PM_CLOUD
 from modules.utils import clean_file_name, normalize
 from modules.settings import enabled_debrids_check, filter_by_name
-# from modules.kodi_utils import logger
 
 class source:
 	def __init__(self):
-		self.scrape_provider = 'pm_cloud'
+		self.scrape_provider = PM_CLOUD
 		self.sources, self.scrape_results = [], []
 		self.extensions = source_utils.supported_video_extensions()
 

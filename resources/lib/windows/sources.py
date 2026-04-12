@@ -14,7 +14,6 @@ from modules.kodi_utils import (
     ok_dialog,
     notification,
 )
-# from modules.kodi_utils import logger
 
 
 class SourcesResults(BaseDialog):
@@ -82,13 +81,13 @@ class SourcesResults(BaseDialog):
     def get_provider_and_path(self, provider):
         try:
             return provider, self.info_icons_dict[provider]
-        except:
+        except Exception:
             return "folders", get_icon("folder")
 
     def get_quality_and_path(self, quality):
         try:
             return quality, self.info_quality_dict[quality]
-        except:
+        except Exception:
             return "sd", get_icon("flag_sd")
 
     def filter_action(self, action):
@@ -318,7 +317,7 @@ class SourcesResults(BaseDialog):
                     }
                 )
                 item_list.append((listitem, count))
-            except:
+            except Exception:
                 pass
 
         try:
@@ -344,7 +343,7 @@ class SourcesResults(BaseDialog):
             self.total_results = str(len(self.item_list))
             if self.prescrape:
                 self.item_list.append(prescrape_listitem)
-        except:
+        except Exception:
             pass
 
     def make_filter_items(self):
@@ -668,7 +667,7 @@ class SourcesPlayback(BaseDialog):
     def update_resolver(self, text="", percent=0):
         try:
             self.setProperty("percent", str(percent))
-        except:
+        except Exception:
             pass
         if text:
             self.set_text(2002, text)

@@ -7,11 +7,11 @@ from threading import Thread
 from urllib.request import Request, urlopen
 from urllib.parse import parse_qsl, urlparse, unquote
 from modules import kodi_utils
+from modules.providers import REAL_DEBRID, PREMIUMIZE, ALLDEBRID, EASYDEBRID, TORBOX, DEBRID_ICONS
 from modules.sources import Sources
 from modules.settings import download_directory
 from modules.source_utils import clean_title
 from modules.utils import clean_file_name, safe_string, remove_accents, normalize
-# logger = kodi_utils.logger
 
 def runner(params):
 	action = params.get('action')
@@ -27,7 +27,7 @@ def runner(params):
 		try:
 			debrid_files, debrid_function = Sources().debridPacks(provider, params['name'], params['magnet_url'], params['info_hash'], download=True)
 			pack_choices = [dict(params, **{'pack_files':item}) for item in debrid_files]
-			icon = {'Real-Debrid': 'realdebrid', 'Premiumize.me': 'premiumize', 'AllDebrid': 'alldebrid', 'EasyDebrid': 'easydebrid', 'Torbox': 'torbox'}[provider]
+			icon = DEBRID_ICONS[provider]
 		except: return kodi_utils.notification('No URL found for Download. Pick another Source.')
 		default_icon = kodi_utils.get_icon(icon)
 		chosen_list = select_pack_item(pack_choices, default_icon)
@@ -168,20 +168,20 @@ class Downloader:
 						url = TorBoxAPI().add_headers_to_url(url)
 				except: pass
 			elif self.action == 'meta.pack':
-				if self.provider == 'Real-Debrid':
+				if self.provider == REAL_DEBRID:
 					from apis.real_debrid_api import RealDebridAPI as debrid_function
-				elif self.provider == 'Premiumize.me':
+				elif self.provider == PREMIUMIZE:
 					from apis.premiumize_api import PremiumizeAPI as debrid_function
-				elif self.provider == 'AllDebrid':
+				elif self.provider == ALLDEBRID:
 					from apis.alldebrid_api import AllDebridAPI as debrid_function
-				elif self.provider == 'TorBox':
+				elif self.provider == TORBOX:
 					from apis.torbox_api import TorBoxAPI as debrid_function
 				url = self.params_get('pack_files')['link']
-				if self.provider in ('Real-Debrid', 'AllDebrid'):
+				if self.provider in (REAL_DEBRID, ALLDEBRID):
 					url = debrid_function().unrestrict_link(url)
-				elif self.provider == 'Premiumize.me':
+				elif self.provider == PREMIUMIZE:
 					url = debrid_function().add_headers_to_url(url)
-				elif self.provider == 'TorBox':
+				elif self.provider == TORBOX:
 					url = debrid_function().unrestrict_link(url)
 					url = debrid_function().add_headers_to_url(url)
 		else:

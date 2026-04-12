@@ -7,7 +7,6 @@ from modules.settings_manager import (
     default_setting_values,
 )
 from modules import kodi_utils, settings
-# logger = kodi_utils.logger
 
 
 def navigate_to_page_choice(params):
@@ -37,7 +36,7 @@ def navigate_to_page_choice(params):
         url_params = json.loads(params["url_params"])
         url_params.update({"new_page": new_page, "refreshed": "true"})
         kodi_utils.container_update(url_params)
-    except:
+    except Exception:
         return
 
 
@@ -240,7 +239,7 @@ def personallists_manager_choice(params):
             list_name, author = kodi_utils.select_dialog(
                 [i[1] for i in choices], **kwargs
             )
-        except:
+        except Exception:
             return
     if action == "add":
         new_contents = {
@@ -610,7 +609,7 @@ def external_scraper_choice(params):
     try:
         results = kodi_utils.jsonrpc_get_addons("xbmc.python.module")
         results = [i for i in results if kodi_utils.addon_enabled(i["addonid"])]
-    except:
+    except Exception:
         return
     list_items = [{"line1": i["name"], "icon": i["thumbnail"]} for i in results]
     kwargs = {"items": json.dumps(list_items)}
@@ -626,7 +625,7 @@ def external_scraper_choice(params):
             specified_folders=["torrents"]
         )
         success = True
-    except:
+    except Exception:
         pass
     if success:
         try:
@@ -636,7 +635,7 @@ def external_scraper_choice(params):
             kodi_utils.ok_dialog(
                 text="Success.[CR][B]%s[/B] set as External Scraper" % module_name
             )
-        except:
+        except Exception:
             kodi_utils.ok_dialog(text="Error")
     else:
         kodi_utils.ok_dialog(
@@ -646,7 +645,7 @@ def external_scraper_choice(params):
         return external_scraper_choice(params)
 
 
-def audio_filters_choice(params={}):
+def audio_filters_choice(params=None):
     from modules.source_utils import audio_filter_choices
 
     icon = kodi_utils.get_icon("audio")
@@ -660,7 +659,7 @@ def audio_filters_choice(params={}):
             for item in audio_filters
             if item[1] in settings.audio_filters()
         ]
-    except:
+    except Exception:
         preselect = []
     kwargs = {
         "items": json.dumps(list_items),
@@ -712,7 +711,7 @@ def keywords_choice(params):
             function, key = tmdb_tv_keywords, "results"
         try:
             keywords = function(tmdb_id)[key]
-        except:
+        except Exception:
             keywords = []
         kodi_utils.hide_busy_dialog()
     if not keywords:
@@ -742,7 +741,7 @@ def random_choice(params):
     if choice is None:
         return
 
-    exec("EpisodeTools(meta).%s()" % choice)
+    getattr(EpisodeTools(meta), choice)()
 
 
 def trakt_manager_choice(params):
@@ -887,7 +886,7 @@ def playback_choice(params):
     meta = params.get("meta")
     try:
         meta = json.loads(meta)
-    except:
+    except Exception:
         pass
     if not isinstance(meta, dict):
         function = (
@@ -1229,7 +1228,7 @@ def set_quality_choice(params):
     q_setting = get_setting("bacterio.%s" % quality_setting).split(", ")
     try:
         preselect = [fl.index(i) for i in q_setting]
-    except:
+    except Exception:
         preselect = []
     list_items = [{"line1": item, "icon": icon} for item in dl]
     kwargs = {
@@ -1261,7 +1260,7 @@ def extras_buttons_choice(params):
                 try:
                     button_action = get_setting("bacterio.%s" % setting_id)
                     button_label = extras_button_label_values[_type][button_action]
-                except:
+                except Exception:
                     set_setting(
                         setting_id.replace("bacterio.", ""),
                         default_setting_values(setting_id)["setting_default"],
@@ -1372,13 +1371,13 @@ def extras_buttons_choice(params):
     )
 
 
-def extras_lists_choice(params={}):
+def extras_lists_choice(params=None):
     choices = [(i, c) for c, i in enumerate(kodi_utils.extras_items(), 2050)]
     list_items = [{"line1": i[0]} for i in choices]
     current_settings = settings.extras_enabled_menus()
     try:
         preselect = [choices.index(i) for i in choices if i[1] in current_settings]
-    except:
+    except Exception:
         preselect = []
     kwargs = {
         "items": json.dumps(list_items),
@@ -1410,7 +1409,7 @@ def set_language_filter_choice(params):
     set_filter = get_setting("bacterio.%s" % filter_setting_id).split(", ")
     try:
         preselect = [fl.index(i) for i in set_filter]
-    except:
+    except Exception:
         preselect = []
     list_items = [{"line1": item} for item in dl]
     kwargs = {
@@ -1430,7 +1429,7 @@ def set_language_filter_choice(params):
         set_setting(filter_setting_id, choice)
 
 
-def enable_scrapers_choice(params={}):
+def enable_scrapers_choice(params=None):
     icon = params.get("icon", None) or kodi_utils.get_icon("bacterio")
     scrapers = [
         "external",
@@ -1482,7 +1481,7 @@ def sources_folders_choice(params):
     )
 
 
-def results_sorting_choice(params={}):
+def results_sorting_choice(params=None):
     choices = [
         ("Quality, Provider, Size", "0"),
         ("Quality, Size, Provider", "1"),
@@ -1499,7 +1498,7 @@ def results_sorting_choice(params={}):
         set_setting("results.sort_order", choice[1])
 
 
-def results_format_choice(params={}):
+def results_format_choice(params=None):
     from windows.base_window import open_window
 
     choice = open_window(("windows.sources", "SourcesChoice"), "sources_choice.xml")
@@ -1507,7 +1506,7 @@ def results_format_choice(params={}):
         set_setting("results.list_format", choice)
 
 
-def clear_favorites_choice(params={}):
+def clear_favorites_choice(params=None):
     fl = [
         ("Clear Movies Favorites", "movie"),
         ("Clear TV Show Favorites", "tvshow"),
@@ -1580,7 +1579,7 @@ def color_choice(params):
     )
 
 
-def mpaa_region_choice(params={}):
+def mpaa_region_choice(params=None):
     from modules.meta_lists import regions as rg
 
     regions = rg()
@@ -1601,7 +1600,7 @@ def mpaa_region_choice(params={}):
     delete_meta_cache(silent=True)
 
 
-def lists_cache_duration_choice(params={}):
+def lists_cache_duration_choice(params=None):
     durations = [
         {"name": "6 hours", "duration": "6"},
         {"name": "12 hours", "duration": "12"},
@@ -2019,7 +2018,7 @@ def media_extra_info_choice(params):
                         last_ep["name"],
                     )
                 )
-            except:
+            except Exception:
                 pass
             try:
                 next_ep = extra_info["next_episode_to_air"]
@@ -2034,12 +2033,12 @@ def media_extra_info_choice(params):
                         next_ep["name"],
                     )
                 )
-            except:
+            except Exception:
                 pass
             append("[B]Seasons:[/B] %s" % meta["total_seasons"])
             append("[B]Episodes:[/B] %s" % meta["total_aired_eps"])
             append("[B]Homepage:[/B] %s" % extra_info["homepage"])
-    except:
+    except Exception:
         return kodi_utils.notification("Error", 2000)
     return "[CR][CR]".join(listings)
 

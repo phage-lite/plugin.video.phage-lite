@@ -2,13 +2,13 @@
 from apis.real_debrid_api import RealDebrid
 from modules import source_utils
 from threading import Thread
+from modules.providers import RD_CLOUD
 from modules.utils import clean_file_name, normalize
 from modules.settings import enabled_debrids_check, filter_by_name
-# from modules.kodi_utils import logger
 
 class source:
 	def __init__(self):
-		self.scrape_provider = 'rd_cloud'
+		self.scrape_provider = RD_CLOUD
 		self.sources = []
 		self.extensions = source_utils.supported_video_extensions()
 

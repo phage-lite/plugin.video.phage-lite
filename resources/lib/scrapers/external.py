@@ -13,9 +13,9 @@ from modules.debrid import (
     TB_check,
     query_local_cache,
 )
+from modules.providers import REAL_DEBRID, PREMIUMIZE, ALLDEBRID, EASYDEBRID, TORBOX
 from modules.utils import clean_file_name
 from modules.settings_manager import get_setting
-# logger = kodi_utils.logger
 
 
 class source:
@@ -81,11 +81,11 @@ class source:
             ("final_total", "", self.quality_length_final),
         )
         self.debrid_runners = {
-            "Real-Debrid": ("Real-Debrid", RD_check),
-            "Premiumize.me": ("Premiumize.me", PM_check),
-            "AllDebrid": ("AllDebrid", AD_check),
-            "EasyDebrid": ("EasyDebrid", ED_check),
-            "TorBox": ("TorBox", TB_check),
+            REAL_DEBRID: (REAL_DEBRID, RD_check),
+            PREMIUMIZE:  (PREMIUMIZE,  PM_check),
+            ALLDEBRID:   (ALLDEBRID,   AD_check),
+            EASYDEBRID:  (EASYDEBRID,  ED_check),
+            TORBOX:      (TORBOX,      TB_check),
         }
 
     def results(self, info):
@@ -122,7 +122,7 @@ class source:
                         for x in self.meta["season_data"]
                         if int(x["season_number"]) == int(self.meta["season"])
                     ][0]
-                except:
+                except Exception:
                     self.season_divider = 1
                 self.show_divider = int(self.meta["total_aired_eps"])
                 self.data = {
@@ -135,7 +135,7 @@ class source:
                     "season": str(self.season),
                     "episode": str(self.episode),
                 }
-        except:
+        except Exception:
             return []
         return self.get_sources()
 
@@ -172,7 +172,7 @@ class source:
                     elif percent >= 100:
                         break
                     kodi_utils.sleep(100)
-                except:
+                except Exception:
                     pass
             return
 
@@ -235,7 +235,7 @@ class source:
             provider, module = i[0], i[1]
             try:
                 pack_arg = i[2]
-            except:
+            except Exception:
                 pack_arg = ""
             if pack_arg:
                 provider_display = "%s (%s)" % (i[0], i[2])
@@ -356,11 +356,11 @@ class source:
                                 yield provider
                         else:
                             yield provider
-                except:
+                except Exception:
                     yield provider
 
         def _process_cache_check(provider, function):
-            if provider in ("Real-Debrid", "AllDebrid"):
+            if provider in (REAL_DEBRID, ALLDEBRID):
                 if self.external_cache_check:
                     cached = function(
                         hash_list, cached_hashes, self.data, self.active_debrid
@@ -380,7 +380,7 @@ class source:
                         **{
                             "cache_provider": provider
                             if i["hash"] in cached
-                            else "Uncached %s" % provider,
+                            else f"Uncached {provider}",
                             "debrid": provider,
                         },
                     )
@@ -418,7 +418,7 @@ class source:
                         break
                     if percent >= 100:
                         break
-                except:
+                except Exception:
                     pass
 
         try:
@@ -442,7 +442,7 @@ class source:
             else:
                 _debrid_check_dialog()
             return final_results
-        except:
+        except Exception:
             return []
 
     def process_sources(self, provider, sources):
@@ -483,7 +483,7 @@ class source:
                                 divider = self.show_divider
                             size = float(size) / divider
                         size_label = "%.2f GB" % size
-                    except:
+                    except Exception:
                         pass
                     i.update(
                         {
@@ -497,9 +497,9 @@ class source:
                             "size": round(size, 2),
                         }
                     )
-                except:
+                except Exception:
                     pass
-        except:
+        except Exception:
             pass
         return sources
 
@@ -517,14 +517,14 @@ class source:
             self.process_quality_count(self.prescrape_sources)
             self.processed_prescrape = True
         for i in self.internal_scrapers:
-            win_property = kodi_utils.get_property("bacterio.internal_results.%s" % i)
+            win_property = kodi_utils.get_property(f"bacterio.internal_results.{i}")
             if win_property in ("checked", "", None):
                 continue
             try:
                 internal_sources = json.loads(win_property)
-            except:
+            except Exception:
                 continue
-            kodi_utils.set_property("bacterio.internal_results.%s" % i, "checked")
+            kodi_utils.set_property(f"bacterio.internal_results.{i}", "checked")
             self.all_internal_sources += internal_sources
             self.processed_internal_scrapers_append(i)
             self.process_quality_count(internal_sources)

@@ -6,6 +6,7 @@ import time
 import requests
 from threading import Thread
 from urllib.parse import unquote, unquote_plus
+from modules.providers import Q_4K, Q_1080, Q_720, Q_SD, Q_SCR, Q_CAM, Q_TELE
 from modules.settings_manager import get_setting
 from modules.metadata import episodes_meta
 from modules.settings import date_offset
@@ -17,7 +18,6 @@ from modules.utils import (
     subtract_dates,
     chunks,
 )
-# from modules.kodi_utils import logger
 
 
 def extras():
@@ -186,7 +186,7 @@ def include_exclude_filters():
 def get_aliases_titles(aliases):
     try:
         result = [i["title"] for i in aliases]
-    except:
+    except Exception:
         result = []
     return result
 
@@ -209,7 +209,7 @@ def make_alias_dict(meta, title):
 
 
 def internal_results(provider, sources):
-    set_property("bacterio.internal_results.%s" % provider, json.dumps(sources))
+    set_property(f"bacterio.internal_results.{provider}", json.dumps(sources))
 
 
 def normalize(title):
@@ -222,7 +222,7 @@ def normalize(title):
             if unicodedata.category(c) != "Mn"
         )
         return str(title)
-    except:
+    except Exception:
         return title
 
 
@@ -241,7 +241,7 @@ def pack_enable_check(meta, season, episode):
             return False, False
         else:
             return True, False
-    except:
+    except Exception:
         pass
     return False, False
 
@@ -364,7 +364,7 @@ def find_season_in_release_title(release_title):
             if match:
                 match = int(str(match.group(1)).lstrip("0"))
                 break
-        except:
+        except Exception:
             pass
     return match
 
@@ -402,9 +402,9 @@ def check_title(title, release_title, aliases, year, season, episode):
             if releasetitle_startswith(i):
                 i_startswith = i.startswith
                 pattern = (
-                    r"\%s" % i if i_startswith("[") or i_startswith("+") else r"%s" % i
+                    r"\%s" % i if i_startswith("[") or i_startswith("+") else rf"{i}"
                 )
-                release_title = re.sub(r"^%s" % pattern, "", release_title, 1, re.I)
+                release_title = re.sub(rf"^{pattern}", "", release_title, 1, re.I)
         release_title = release_title.lstrip(".-:/")
         release_title = re.sub(r"^\[.*?]", "", release_title, 1, re.I)
         release_title = release_title.lstrip(".-[](){}:/")
@@ -416,7 +416,7 @@ def check_title(title, release_title, aliases, year, season, episode):
                     hdlr = seas_ep_filter(
                         season, episode, release_title, return_match=True
                     )
-                except:
+                except Exception:
                     return False
         else:
             hdlr = year
@@ -448,7 +448,7 @@ def check_title(title, release_title, aliases, year, season, episode):
             if not any(i in release_title for i in cleaned_titles):
                 return False
         return True
-    except:
+    except Exception:
         return True
 
 
@@ -456,7 +456,7 @@ def strip_non_ascii_and_unprintable(text):
     try:
         result = "".join(char for char in text if char in printable)
         return result.encode("ascii", errors="ignore").decode("ascii", errors="ignore")
-    except:
+    except Exception:
         pass
     return text
 
@@ -469,7 +469,7 @@ def release_info_format(release_title):
             ".-.", "."
         ).replace("-.", ".").replace(".-", ".").replace("--", ".")
         return title
-    except:
+    except Exception:
         return release_title.lower()
 
 
@@ -482,7 +482,7 @@ def clean_title(title):
         title = re.sub(r"(&#[0-9]+)([^;^0-9]+)", "\\1;\\2", title)
         title = title.replace("&quot;", '"').replace("&amp;", "&")
         title = re.sub(r'\n|([\[({].+?[})\]])|([:;–\-"\',!_.?~$@])|\s', "", title)
-    except:
+    except Exception:
         pass
     return title
 
@@ -499,7 +499,7 @@ def url_strip(url):
         if title == "":
             return None
         return title
-    except:
+    except Exception:
         return None
 
 
@@ -517,86 +517,18 @@ def get_file_info(name_info=None, url=None, default_quality="SD"):
 
 
 def get_release_quality(release_info):
-    if any(
-        i in release_info
-        for i in (".scr.", "screener", "dvdscr", "dvd.scr", ".r5", ".r6")
-    ):
-        return "SCR"
-    if any(
-        i in release_info
-        for i in (
-            ".cam.",
-            "camrip",
-            "hdcam",
-            ".hd.cam",
-            "hqcam",
-            ".hq.cam",
-            "cam.rip",
-            "dvdcam",
-        )
-    ):
-        return "CAM"
-    if any(
-        i in release_info
-        for i in (
-            ".tc.",
-            ".ts.",
-            "tsrip",
-            "hdts",
-            "hdtc",
-            ".hd.tc",
-            "dvdts",
-            "telesync",
-            "tele.sync",
-            "telecine",
-            "tele.cine",
-        )
-    ):
-        return "TELE"
-    if any(
-        i in release_info
-        for i in ("720", "720p", "720i", "hd720", "720hd", "hd720p", "72o", "72op")
-    ):
-        return "720p"
-    if any(
-        i in release_info
-        for i in (
-            "1080",
-            "1080p",
-            "1080i",
-            "hd1080",
-            "1080hd",
-            "hd1080p",
-            "m1080p",
-            "fullhd",
-            "full.hd",
-            "1o8o",
-            "1o8op",
-            "108o",
-            "108op",
-            "1o80",
-            "1o80p",
-        )
-    ):
-        return "1080p"
-    if any(
-        i in release_info
-        for i in (
-            ".4k",
-            "hd4k",
-            "4khd",
-            ".uhd",
-            "ultrahd",
-            "ultra.hd",
-            "hd2160",
-            "2160hd",
-            "2160",
-            "2160p",
-            "216o",
-            "216op",
-        )
-    ):
-        return "4K"
+    if any(i in release_info for i in (".scr.", "screener", "dvdscr", "dvd.scr", ".r5", ".r6")):
+        return Q_SCR
+    if any(i in release_info for i in (".cam.", "camrip", "hdcam", ".hd.cam", "hqcam", ".hq.cam", "cam.rip", "dvdcam")):
+        return Q_CAM
+    if any(i in release_info for i in (".tc.", ".ts.", "tsrip", "hdts", "hdtc", ".hd.tc", "dvdts", "telesync", "tele.sync", "telecine", "tele.cine")):
+        return Q_TELE
+    if any(i in release_info for i in ("720", "720p", "720i", "hd720", "720hd", "hd720p", "72o", "72op")):
+        return Q_720
+    if any(i in release_info for i in ("1080", "1080p", "1080i", "hd1080", "1080hd", "hd1080p", "m1080p", "fullhd", "full.hd", "1o8o", "1o8op", "108o", "108op", "1o80", "1o80p")):
+        return Q_1080
+    if any(i in release_info for i in (".4k", "hd4k", "4khd", ".uhd", "ultrahd", "ultra.hd", "hd2160", "2160hd", "2160", "2160p", "216o", "216op")):
+        return Q_4K
     return None
 
 
@@ -908,7 +840,7 @@ def get_cache_expiry(media_type, meta, season):
                 show_expiry = 240
             else:
                 single_expiry, season_expiry, show_expiry = 240, 720, 720
-    except:
+    except Exception:
         single_expiry, season_expiry, show_expiry = 72, 72, 240
     return single_expiry, season_expiry, show_expiry
 
@@ -963,7 +895,7 @@ def get_external_cache_status(debrid, unchecked_hashes, data, active_debrid):
                         if name_test in i["name"]
                     ]
                     result = [i.group() for i in result if i]
-            except:
+            except Exception:
                 pass
         elif service == "dmm":
             import ctypes
@@ -1023,7 +955,7 @@ def get_external_cache_status(debrid, unchecked_hashes, data, active_debrid):
                     ).json()
                     r = [i["hash"] for i in r["available"] if "hash" in i]
                     result_extend(r)
-                except:
+                except Exception:
                     pass
 
             result = []
@@ -1058,11 +990,11 @@ def get_external_cache_status(debrid, unchecked_hashes, data, active_debrid):
         [i.start() for i in threads]
         [i.join() for i in threads]
         results = list(set(results))
-    except:
+    except Exception:
         pass
     if debrid == "Real-Debrid":
         try:
             _process("dmm", [i for i in unchecked_hashes if i not in results])
-        except:
+        except Exception:
             pass
     return results

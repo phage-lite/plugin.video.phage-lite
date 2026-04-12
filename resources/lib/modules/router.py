@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from urllib.parse import parse_qsl
-from modules.kodi_utils import external, get_property
-# from modules.kodi_utils import logger
+from modules.kodi_utils import external, get_property, logger
 
 
 def sys_exit_check():
@@ -14,26 +13,27 @@ def routing(sys):
     params = dict(parse_qsl(sys.argv[2][1:], keep_blank_values=True))
     _get = params.get
     mode = _get("mode", "navigator.main")
+    logger("Routing", f"mode: {mode}")
     if "navigator." in mode:
         from indexers.navigator import Navigator
 
-        exec("Navigator(params).%s()" % mode.split(".")[1])
+        getattr(Navigator(params), mode.split(".")[1])()
     elif "menu_editor." in mode:
         from modules.menu_editor import MenuEditor
 
-        exec("MenuEditor(params).%s()" % mode.split(".")[1])
+        getattr(MenuEditor(params), mode.split(".")[1])()
     elif "personal_lists." in mode:
         from indexers import personal_lists
 
-        exec("personal_lists.%s(params)" % mode.split(".")[1])
+        getattr(personal_lists, mode.split(".")[1])(params)
     elif "tmdblist." in mode:
         from indexers import tmdb_lists
 
-        exec("tmdb_lists.%s(params)" % mode.split(".")[1])
+        getattr(tmdb_lists, mode.split(".")[1])(params)
     elif "easynews." in mode:
         from indexers import easynews
 
-        exec("easynews.%s(params)" % mode.split(".")[1])
+        getattr(easynews, mode.split(".")[1])(params)
     elif "playback." in mode:
         from modules.kodi_utils import player_check
 
@@ -41,20 +41,20 @@ def routing(sys):
     elif "choice" in mode:
         from indexers import dialogs
 
-        exec("dialogs.%s(params)" % mode)
+        getattr(dialogs, mode)(params)
     elif "custom_key." in mode:
         from modules import custom_keys
 
-        exec("custom_keys.%s()" % mode.split("custom_key.")[1])
+        getattr(custom_keys, mode.split("custom_key.")[1])()
     elif "trakt." in mode:
         if ".list" in mode:
             from indexers import trakt_lists
 
-            exec("trakt_lists.%s(params)" % mode.split(".")[2])
+            getattr(trakt_lists, mode.split(".")[2])(params)
         else:
             from apis import trakt_api
 
-            exec("trakt_api.%s(params)" % mode.split(".")[1])
+            getattr(trakt_api, mode.split(".")[1])(params)
     elif "build" in mode:
         if mode == "build_movie_list":
             from indexers.movies import Movies
@@ -287,13 +287,13 @@ def routing(sys):
             tb_delete(_get("folder_id"), _get("media_type"))
     elif "tmdblist_api" in mode:
         if mode == "tmdblist_api.authenticate":
-            from apis.tmdblist_api import TMDbListAPI
+            from indexers.tmdb_lists import tmdb_auth
 
-            TMDbListAPI().auth()
+            tmdb_auth()
         elif mode == "tmdblist_api.revoke_authentication":
-            from apis.tmdblist_api import TMDbListAPI
+            from indexers.tmdb_lists import tmdb_revoke
 
-            TMDbListAPI().revoke()
+            tmdb_revoke()
     elif "_cache" in mode:
         from caches import base_cache
 
@@ -333,11 +333,11 @@ def routing(sys):
     elif "settings_manager." in mode:
         from modules import settings_manager
 
-        exec("settings_manager.%s(params)" % mode.split(".")[1])
+        getattr(settings_manager, mode.split(".")[1])(params)
     elif "downloader." in mode:
         from modules import downloader
 
-        exec("downloader.%s(params)" % mode.split(".")[1])
+        getattr(downloader, mode.split(".")[1])(params)
     ## EXTRA modes##
     elif mode == "set_view":
         from modules.kodi_utils import set_view
@@ -346,7 +346,7 @@ def routing(sys):
     elif mode == "warm_up_memory_cache":
         from modules.settings_manager import warm_up_memory_cache
 
-        warm_up_memory_cache(params)
+        warm_up_memory_cache()
     elif mode == "person_direct.search":
         from indexers.people import person_direct_search
 

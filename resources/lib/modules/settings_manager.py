@@ -113,8 +113,7 @@ _WARMUP_SETTINGS = [
     # Meta accounts
     'trakt.user', 'trakt.client', 'trakt.secret', 'trakt.token',
     'trakt.expires', 'trakt.refresh', 'trakt.next_daily_clear',
-    'tmdb_api', 'tmdb.token', 'tmdb.account_id',
-    'omdb_api', 'rpdb_api', 'google_api', 'groq_api',
+    'tmdb.client', 'tmdb.secret', 'tmdb.token', 'tmdb.user', 'tmdb.account_id',
     # Sources / accounts
     'provider.external', 'external_scraper.name', 'external_scraper.module',
     'external.cache_check', 'external.filter_sources',

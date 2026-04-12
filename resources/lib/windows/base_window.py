@@ -7,7 +7,6 @@ from xml.dom.minidom import parse as mdParse
 from modules import kodi_utils
 from modules.settings_manager import get_setting, set_setting
 from modules.utils import manual_function_import
-# logger = kodi_utils.logger
 
 
 def open_window(import_info, skin_xml, **kwargs):
@@ -68,13 +67,13 @@ def window_manager(obj):
                 person_data_dialog(params)
             else:
                 close()
-        except:
+        except Exception:
             close()
 
     def get_stack():
         try:
             window_stack = json.loads(kodi_utils.get_property("bacterio.window_stack"))
-        except:
+        except Exception:
             window_stack = []
         return window_stack
 
@@ -105,7 +104,7 @@ def window_manager(obj):
                 runner(previous_params)
         else:
             close()
-    except:
+    except Exception:
         close()
     kodi_utils.hide_busy_dialog()
 
@@ -139,7 +138,7 @@ def window_player(obj):
                 from indexers.people import person_data_dialog
 
                 person_data_dialog(params)
-        except:
+        except Exception:
             close()
 
     try:
@@ -163,7 +162,7 @@ def window_player(obj):
         kodi_utils.sleep(1000)
         Thread(target=monitor).start()
         runner(current_params)
-    except:
+    except Exception:
         obj.close()
     kodi_utils.hide_busy_dialog()
 
@@ -276,7 +275,7 @@ class BaseDialog(xbmcgui.WindowXMLDialog):
     def clear_modals(self):
         try:
             del self.player
-        except:
+        except Exception:
             pass
 
     def notification(self, text, duration=3000):
@@ -350,7 +349,7 @@ class FontUtils:
                     kodi_utils.translate_path("special://skin")
                 )[0]
                 skin_folder = [i for i in s_folder if i in folder_options][0]
-        except:
+        except Exception:
             pass
         return skin_folder
 
@@ -417,23 +416,23 @@ class FontUtils:
                     for i in all_fonts
                     if i.getAttribute("id").lower() == self.current_font.lower()
                 ][0]
-            except:
+            except Exception:
                 fontset = all_fonts[0]
             font_element = fontset.getElementsByTagName("font")
             for item in font_element:
                 try:
                     name = item.getElementsByTagName("name")[0].firstChild.data
-                except:
+                except Exception:
                     continue
                 try:
                     size = int(item.getElementsByTagName("size")[0].firstChild.data)
-                except:
+                except Exception:
                     continue
                 try:
                     style = item.getElementsByTagName("style")[
                         0
                     ].firstChild.data.lower()
-                except:
+                except Exception:
                     style = ""
                 name_compare = name.lower()
                 bold = any("bold" in item for item in (name_compare, style))
@@ -448,7 +447,7 @@ class FontUtils:
                         "extra_styles": extra_styles,
                     }
                 )
-        except:
+        except Exception:
             pass
         return results
 
@@ -466,7 +465,7 @@ class FontUtils:
                     "<font>%s</font> <!-- %s -->" % (item[1], item[0]),
                     content,
                 )
-            except:
+            except Exception:
                 pass
         with kodi_utils.open_file(file, "w") as f:
             f.write(content)

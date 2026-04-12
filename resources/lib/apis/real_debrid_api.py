@@ -8,22 +8,21 @@ from modules.settings_manager import get_setting, set_setting
 from modules.utils import copy2clip, make_tinyurl, make_qrcode
 from modules.source_utils import supported_video_extensions, seas_ep_filter, extras
 from modules.kodi_utils import sleep, ok_dialog, progress_dialog, notification
-# from modules.kodi_utils import logger
+from apis import services
 
 
 class RealDebridAPI:
     def __init__(self):
-        self.client_ID = get_setting("bacterio.rd.client_id", "empty_setting")
-        if self.client_ID in ("empty_setting", ""):
-            self.client_ID = "X245A4XAIBGVM"
-        url = {"true": "app.real-debrid.com", "false": "api.real-debrid.com"}[
-            get_setting("bacterio.rd.alternate_base_url", "false")
-        ]
-        self.base_url = "https://%s/rest/1.0/" % url
-        self.auth_url = "https://%s/oauth/v2/" % url
-        self.token = get_setting("bacterio.rd.token", "empty_setting")
-        self.secret = get_setting("bacterio.rd.secret", "empty_setting")
-        self.refresh = get_setting("bacterio.rd.refresh", "empty_setting")
+        self.client_ID = get_setting("rd.client_id") or "X245A4XAIBGVM"
+        _domain = (
+            "app.real-debrid.com"
+            if get_setting("rd.alternate_base_url") == "true"
+            else "api.real-debrid.com"
+        )
+        self.auth_url = "https://%s/oauth/v2/" % _domain
+        self.token = get_setting("rd.token")
+        self.secret = get_setting("rd.secret")
+        self.refresh = get_setting("rd.refresh")
         self.device_code = ""
         self.refresh_retries = 0
         self.break_auth_loop = False
@@ -67,7 +66,7 @@ class RealDebridAPI:
             sleep(1000 * sleep_interval)
             try:
                 response = requests.get(poll_url, timeout=20).json()
-            except:
+            except Exception:
                 continue
             if "error" in response:
                 time_passed = time.time() - start
@@ -80,12 +79,12 @@ class RealDebridAPI:
                 self.secret = response["client_secret"]
                 self.client_ID = response["client_id"]
                 progressDialog.close()
-            except:
+            except Exception:
                 ok_dialog(text="Error")
                 break
         try:
             progressDialog.close()
-        except:
+        except Exception:
             pass
         if self.secret:
             data = {
@@ -120,15 +119,15 @@ class RealDebridAPI:
             set_setting("rd.token", self.token)
             set_setting("rd.refresh", self.refresh)
             return True
-        except:
+        except Exception:
             return False
 
     def revoke(self):
-        set_setting("rd.client_id", "empty_setting")
-        set_setting("rd.secret", "empty_setting")
-        set_setting("rd.refresh", "empty_setting")
-        set_setting("rd.token", "empty_setting")
-        set_setting("rd.account_id", "empty_setting")
+        set_setting("rd.client_id", "")
+        set_setting("rd.secret", "")
+        set_setting("rd.refresh", "")
+        set_setting("rd.token", "")
+        set_setting("rd.account_id", "")
         set_setting("rd.enabled", "false")
         notification("Real Debrid Authorization Reset", 3000)
 
@@ -191,7 +190,7 @@ class RealDebridAPI:
         response = self._post(url, post_data)
         try:
             return response["download"]
-        except:
+        except Exception:
             return None
 
     def add_magnet(self, magnet):
@@ -209,7 +208,7 @@ class RealDebridAPI:
             files = info["files"]
             self.add_torrent_select(torrent_id, "all")
             return "success"
-        except:
+        except Exception:
             self.delete_torrent(torrent_id)
             return "failed"
 
@@ -220,18 +219,10 @@ class RealDebridAPI:
         return self._post(url, post_data)
 
     def delete_torrent(self, folder_id):
-        if self.token in ("empty_setting", ""):
-            return None
-        url = "torrents/delete/%s&auth_token=%s" % (folder_id, self.token)
-        response = requests.delete(self.base_url + url, timeout=20)
-        return response
+        return self._call("delete", "torrents/delete/%s" % folder_id)
 
     def delete_download(self, download_id):
-        if self.token in ("empty_setting", ""):
-            return None
-        url = "downloads/delete/%s&auth_token=%s" % (download_id, self.token)
-        response = requests.delete(self.base_url + url, timeout=20)
-        return response
+        return self._call("delete", "downloads/delete/%s" % download_id)
 
     def resolve_magnet(
         self, magnet_url, info_hash, store_to_cloud, title, season, episode
@@ -339,7 +330,7 @@ class RealDebridAPI:
                 return file_url
             else:
                 self.delete_torrent(torrent_id)
-        except:
+        except Exception:
             if torrent_id:
                 self.delete_torrent(torrent_id)
             return None
@@ -383,7 +374,7 @@ class RealDebridAPI:
             ]
             self.delete_torrent(torrent_id)
             return list_file_items
-        except:
+        except Exception:
             if torrent_id:
                 self.delete_torrent(torrent_id)
             return None
@@ -420,45 +411,26 @@ class RealDebridAPI:
                 return True
         return False
 
-    def _get(self, url):
-        original_url = url
-        url = self.base_url + url
-        if self.token in ("empty_setting", ""):
+    def _call(self, method, endpoint, **kwargs):
+        """Call services, retry once after token refresh on bad_token response."""
+        resp = getattr(services, method)("real_debrid", endpoint, raw=True, **kwargs)
+        if resp is None:
             return None
-        if "?" not in url:
-            url += "?auth_token=%s" % self.token
-        else:
-            url += "&auth_token=%s" % self.token
-        response = requests.get(url, timeout=20)
-        if any(value in response.text for value in ("bad_token", "Bad Request")):
+        if any(v in resp.text for v in ("bad_token", "Bad Request")):
             if self.refresh_token():
-                response = self._get(original_url)
+                resp = getattr(services, method)("real_debrid", endpoint, raw=True, **kwargs)
             else:
                 return None
         try:
-            return response.json()
-        except:
-            return response
+            return resp.json()
+        except Exception:
+            return resp
+
+    def _get(self, url):
+        return self._call("get", url)
 
     def _post(self, url, post_data):
-        original_url = url
-        url = self.base_url + url
-        if self.token in ("empty_setting", ""):
-            return None
-        if "?" not in url:
-            url += "?auth_token=%s" % self.token
-        else:
-            url += "&auth_token=%s" % self.token
-        response = requests.post(url, data=post_data, timeout=20)
-        if any(value in response.text for value in ("bad_token", "Bad Request")):
-            if self.refresh_token():
-                response = self._post(original_url, post_data)
-            else:
-                return None
-        try:
-            return response.json()
-        except:
-            return response
+        return self._call("post", url, form=True, data=post_data)
 
     def clear_cache(self, clear_hashes=True):
         try:
@@ -475,7 +447,7 @@ class RealDebridAPI:
                         ("rd_user_cloud_info_%",),
                     ).fetchall()
                     user_cloud_info_caches = [eval(i[0])["id"] for i in cache]
-                except:
+                except Exception:
                     user_cloud_success = True
                 if not user_cloud_success:
                     dbcon.execute(
@@ -487,24 +459,24 @@ class RealDebridAPI:
                             ("rd_user_cloud_info_%s" % i,),
                         )
                     user_cloud_success = True
-            except:
+            except Exception:
                 user_cloud_success = False
             # DOWNLOAD LINKS
             try:
                 dbcon.execute("""DELETE FROM maincache WHERE id=?""", ("rd_downloads",))
                 download_links_success = True
-            except:
+            except Exception:
                 download_links_success = False
             # HASH CACHED STATUS
             if clear_hashes:
                 try:
                     debrid_cache.clear_debrid_results("rd")
                     hash_cache_status_success = True
-                except:
+                except Exception:
                     hash_cache_status_success = False
             else:
                 hash_cache_status_success = True
-        except:
+        except Exception:
             return False
         if False in (
             user_cloud_success,

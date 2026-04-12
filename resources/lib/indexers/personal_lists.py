@@ -20,7 +20,6 @@ from modules.utils import (
     make_image,
     download_image,
 )
-# logger = kodi_utils.logger
 
 
 def get_personal_lists(params):
@@ -131,7 +130,7 @@ def get_personal_lists(params):
                 info_tag.setPlot(description)
                 listitem.addContextMenuItems(cm)
                 yield (url, listitem, True)
-            except:
+            except Exception:
                 pass
 
     def _new_process():
@@ -175,7 +174,7 @@ def get_personal_lists(params):
                         data = json.loads(
                             kodi_utils.get_property("bacterio.personal.lists.order")
                         )
-                    except:
+                    except Exception:
                         pass
                 else:
                     shuffle(data)
@@ -188,7 +187,7 @@ def get_personal_lists(params):
         else:
             result = list(_new_process())
         kodi_utils.add_items(handle, result)
-    except:
+    except Exception:
         pass
     kodi_utils.set_content(handle, "files")
     kodi_utils.set_category(handle, "Personal Lists")
@@ -303,7 +302,7 @@ def build_personal_list(params):
                 "nextpage",
                 kodi_utils.get_icon("nextpage_landscape"),
             )
-    except:
+    except Exception:
         pass
     kodi_utils.set_content(handle, content)
     kodi_utils.set_category(handle, list_name)
@@ -343,7 +342,7 @@ def get_all_personal_lists(sort_order=None):
                 contents.sort(
                     key=lambda k: (k["total"] is None, k["total"]), reverse=reverse
                 )
-    except:
+    except Exception:
         pass
     if settings.personal_lists_sort_unseen_to_top():
         unseen = [i for i in contents if new_list_check(i["seen"])]
@@ -405,7 +404,7 @@ def get_personal_list(params):
                 key=lambda k: (k["release_date"] is None, k["release_date"]),
                 reverse=sort_order != "3",
             )
-    except:
+    except Exception:
         pass
     return contents
 
@@ -627,14 +626,14 @@ def adjust_personal_list_properties(params):
 def delete_current_image(image_type, list_name, author, custom_image):
     try:
         os.remove(custom_image)
-    except:
+    except Exception:
         pass
     kodi_utils.sleep(100)
     if kodi_utils.path_exists(custom_image):
         return False
     try:
         personal_lists_cache.update_single_detail(image_type, "", list_name, author)
-    except:
+    except Exception:
         pass
     return True
 
@@ -825,7 +824,7 @@ def process_trakt_list(chosen_list):
                 result.sort(key=lambda k: k["collected_at"], reverse=True)
             else:
                 result.sort(key=lambda k: k.get("released"), reverse=True)
-        except:
+        except Exception:
             pass
     else:
         result = get_trakt_list_contents(
@@ -836,7 +835,7 @@ def process_trakt_list(chosen_list):
         )
         try:
             result.sort(key=lambda k: k["order"])
-        except:
+        except Exception:
             pass
     for count, item in enumerate(result):
         try:
@@ -852,7 +851,7 @@ def process_trakt_list(chosen_list):
             title = item["title"]
             try:
                 release_date = item["released"].split("T")[0]
-            except:
+            except Exception:
                 release_date = item["released"]
             date_added = current_timestamp + count
             new_contents_append(
@@ -864,7 +863,7 @@ def process_trakt_list(chosen_list):
                     "date_added": str(date_added),
                 }
             )
-        except:
+        except Exception:
             continue
     return new_contents
 
@@ -993,7 +992,7 @@ class ExternalImport:
                     int(float(len(self.results)) / float(self.total_items) * 100),
                     meta["poster"],
                 )
-        except:
+        except Exception:
             pass
 
     def run(self):
@@ -1114,10 +1113,10 @@ def external(params):
                 payload_bytes = base64.b64decode(base_64)
                 try:
                     json_bytes = gzip.decompress(payload_bytes)
-                except:
+                except Exception:
                     json_bytes = payload_bytes
                 item_list = json.loads(json_bytes.decode("utf-8", "ignore"))
-            except:
+            except Exception:
                 kodi_utils.notification("Invalid External Payload (base64_items)", 4000)
     else:
         item_list = json.loads(params.get("list_items", "[]"))
