@@ -320,7 +320,7 @@ def get_default_addon_fanart():
 
 
 def build_url(url_params):
-    return f"plugin://plugin.video.bacterio/?{urlencode}"(url_params)
+    return f"plugin://plugin.video.bacterio/?{urlencode(url_params)}"
 
 
 def add_dir(
@@ -372,7 +372,7 @@ def end_directory(handle, cacheToDisc=True):
 def set_view_mode(view_type, content="files", is_external=None):
     if not get_property("bacterio.use_viewtypes") == "true":
         return
-    if is_external == None:
+    if is_external is None:
         is_external = external()
     if is_external:
         return
@@ -412,7 +412,7 @@ def append_path(_path):
 
 
 def logger(heading, function):
-    xbmc.log("[Bacterio]\n\t\t[%s]: %s" % (heading, function), 1)
+    xbmc.log("[Bacterio]\n\t[%s]: %s" % (heading, function), 1)
 
 
 def kodi_window():
@@ -801,7 +801,7 @@ def ok_dialog(heading="", text="No Results", ok_label="OK"):
     return open_window(("windows.default_dialogs", "OK"), "ok.xml", **kwargs)
 
 
-def show_text(heading, text=None, file=None, font_size="small", kodi_log=False):
+def show_text(heading, text="", file=None, font_size="small", kodi_log=False):
     from windows.base_window import open_window
 
     heading = heading.replace("[B]", "").replace("[/B]", "")
@@ -812,7 +812,7 @@ def show_text(heading, text=None, file=None, font_size="small", kodi_log=False):
         confirm = confirm_dialog(
             text="Show Log Errors Only?", ok_label="Yes", cancel_label="No"
         )
-        if confirm == None:
+        if confirm is None:
             return
         if confirm:
             text = [
@@ -837,7 +837,7 @@ def notification(line1, time=5000, icon=None):
 def player_check(mode, params):
     from modules.settings import playback_key
 
-    if mode == f"playback.{playback_key}"():
+    if mode == f"playback.{playback_key()}":
         from modules.sources import Sources
 
         Sources().playback_prep(params)
@@ -979,7 +979,7 @@ def upload_logfile(params):
         "narrow_window": "true",
     }
     log_file = select_dialog(log_files, **kwargs)
-    if log_file == None:
+    if log_file is None:
         return
     log_name, log_file = log_file
     if not confirm_dialog(heading=log_name):

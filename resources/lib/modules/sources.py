@@ -948,9 +948,9 @@ class Sources:
 
     def _quality_filter(self):
         setting = (
-            f"results_quality_{self}".media_type
+            f"results_quality_{self.media_type}"
             if not self.autoplay
-            else f"autoplay_quality_{self}".media_type
+            else f"autoplay_quality_{self.media_type}"
         )
         filter_list = settings.quality_filter(setting)
         if self.include_prerelease_results and "SD" in filter_list:
@@ -1071,7 +1071,8 @@ class Sources:
             kodi_utils.clear_property(f"bacterio.internal_results.{item}")
         if self.active_folders:
             for item in self.folder_info:
-                kodi_utils.clear_property(f"bacterio.internal_results.{item}"[0])
+                # TODO: why is this always clearing at 0
+                kodi_utils.clear_property(f"bacterio.internal_results.{item[0]}")
 
     def _make_progress_dialog(self):
         self.progress_dialog = create_window(

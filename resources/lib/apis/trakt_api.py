@@ -43,6 +43,8 @@ def get_trakt(params):
         pagination=params.get("pagination", True),
         page_no=params.get("page_no"),
     )
+    if result is None:
+        kodi_utils.logger("Get Trakt", "Couldn't get trakt stuffs")
     return result[0] if params.get("pagination", True) else result
 
 
@@ -56,6 +58,7 @@ def call_trakt(
     pagination=False,
     page_no=1,
 ):
+    kodi_utils.logger("call_trakt", "path %s" % path)
     if with_auth:
         while kodi_utils.get_property("bacterio.trakt_refreshing_token") == "true":
             kodi_utils.sleep(250)
@@ -77,12 +80,14 @@ def call_trakt(
         resp = services.get("trakt", path, params=params, with_auth=with_auth, timeout=10, raw=True)
 
     if resp is None:
+        kodi_utils.logger("call_trakt", "resp is none method %s, data %s" % method % data)
         return None
 
     status_code = resp.status_code
     if status_code == 401:
         if with_auth and settings.trakt_user_active():
             trakt_refresh_token()
+        kodi_utils.logger("call_trakt", "401 unauth")
         return None
 
     resp.encoding = "utf-8"
@@ -191,7 +196,7 @@ def trakt_refresh_token():
     kodi_utils.clear_property("bacterio.trakt_refreshing_token")
 
 
-def trakt_authenticate(dummy=""):
+def trakt_authenticate():
     code = trakt_get_device_code()
     token = trakt_get_device_token(code)
     if token:
@@ -202,6 +207,9 @@ def trakt_authenticate(dummy=""):
         kodi_utils.sleep(1000)
         try:
             user = call_trakt("/users/me")
+            if user is None:
+                kodi_utils.logger("trakt_authenticate", "users/me returned None")
+                return False
             set_setting("trakt.user", str(user["username"]))
         except Exception:
             pass
@@ -212,7 +220,7 @@ def trakt_authenticate(dummy=""):
     return False
 
 
-def trakt_revoke_authentication(dummy=""):
+def trakt_revoke_authentication():
     set_setting("trakt.user", "empty_setting")
     set_setting("trakt.expires", "0")
     set_setting("trakt.token", "0")
@@ -232,7 +240,7 @@ def trakt_revoke_authentication(dummy=""):
         "client_id": CLIENT_ID,
         "client_secret": CLIENT_SECRET,
     }
-    response = call_trakt("oauth/revoke", data=data, with_auth=False)
+    return call_trakt("oauth/revoke", data=data, with_auth=False)
 
 
 def trakt_movies_related(imdb_id):
@@ -1463,6 +1471,9 @@ def trakt_sync_activities(force_update=False):
         return "failed"
     cached = trakt_cache.reset_activity(latest)
     fallback_date = "2020-01-01T00:00:01.000Z"
+    kodi_utils.logger("TraktSyncActivities", "compare latest[\"all\"]")
+    if latest is None:
+        return "failed"
     if not _compare(latest["all"], cached["all"]):
         return "not needed"
     (
@@ -1471,9 +1482,13 @@ def trakt_sync_activities(force_update=False):
         refresh_shows_progress,
         clear_tvshow_watched_cache,
     ) = [], False, False, False
+    kodi_utils.logger("TraktSyncActivities", "compare latest[\"movies\"]")
     cached_movies, latest_movies = cached["movies"], latest["movies"]
+    kodi_utils.logger("TraktSyncActivities", "compare latest[\"shows\"]")
     cached_shows, latest_shows = cached["shows"], latest["shows"]
+    kodi_utils.logger("TraktSyncActivities", "compare latest[\"episodes\"]")
     cached_episodes, latest_episodes = cached["episodes"], latest["episodes"]
+    kodi_utils.logger("TraktSyncActivities", "compare latest[\"lists\"]")
     cached_lists, latest_lists = cached["lists"], latest["lists"]
     if _compare(
         latest["recommendations"], cached.get("recommendations", fallback_date)

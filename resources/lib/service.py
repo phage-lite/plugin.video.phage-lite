@@ -145,36 +145,36 @@ class TraktMonitor:
                 wait_for_abort(10)
             wait_time = 1800
             try:
+                kodi_utils.logger(trakt_service_string, "setting up sync_interval")
                 sync_interval, wait_time = trakt_sync_interval()
                 next_update_string = update_string % sync_interval
+                kodi_utils.logger(trakt_service_string, "setting up trakt_sync_activities")
                 status = trakt_sync_activities()
                 if status == "failed":
                     kodi_utils.logger(
-                        "Bacterio",
-                        trakt_service_string
-                        % ("Failed. Error from Trakt", next_update_string),
+                        trakt_service_string,
+                        "Failed. Error from Trakt %s" % next_update_string,
                     )
                 else:
+                    kodi_utils.logger(trakt_service_string, "No immediate failure yet")
                     if status in ("success", "no account"):
                         kodi_utils.logger(
-                            "Bacterio",
-                            trakt_service_string
-                            % (
-                                "Success. %s" % trakt_success_line_dict[status],
-                                next_update_string,
-                            ),
+                            trakt_service_string,
+                            "Success. %s %s"
+                            % trakt_success_line_dict[status]
+                            % next_update_string,
                         )
                     else:
                         kodi_utils.logger(
-                            "Bacterio",
-                            trakt_service_string
-                            % ("Success. No Changes Needed", next_update_string),
+                            trakt_service_string,
+                            "Success. No Changes Needed %s" % next_update_string,
                         )  # 'not needed'
                     if (
                         status == "success"
                         and get_setting("bacterio.trakt.refresh_widgets", "false")
                         == "true"
                     ):
+                        kodi_utils.logger(trakt_service_string, "Success. Attempting to run kodi_refresh")
                         kodi_utils.run_plugin({"mode": "kodi_refresh"})
             except Exception as e:
                 kodi_utils.logger(
@@ -212,9 +212,7 @@ class WidgetRefresher:
                 if self.condition_check():
                     continue
                 if self.next_refresh < time():
-                    kodi_utils.logger(
-                        "WidgetRefresher", "Widgets Refreshed"
-                    )
+                    kodi_utils.logger("WidgetRefresher", "Widgets Refreshed")
                     kodi_utils.refresh_widgets()
                     self.set_next_refresh(time())
             except Exception:
