@@ -497,7 +497,7 @@
 
     </category>
 
-    <!-- ======================== META ACCOUNTS ======================== -->
+    <!-- ======================== METADATA ACCOUNTS ======================== -->
     <category id="meta_accounts" label="30179">
 
       <group id="1" label="30020">
@@ -535,12 +535,29 @@
       </group>
 
       <group id="2" label="30184">
-        <setting id="tmdb_api" type="string" label="30185" help="30186">
+        <setting id="tmdb.authenticate" label="30403" type="action" help="30404">
+          <level>0</level>
+          <control type="button" format="action">
+            <data>RunPlugin(plugin://plugin.video.bacterio/?mode=tmdblist_api.authenticate)</data>
+          </control>
+        </setting>
+        <setting id="tmdb.user" type="string" label="30402">
+          <default></default>
           <level>2</level>
-          <default>b370b60447737762ca38457bd77579b3</default>
+          <constraints>
+            <allowempty>true</allowempty>
+          </constraints>
           <control type="edit" format="string" />
         </setting>
-        <setting id="tmdb.token" type="string" label="30184">
+        <setting id="tmdb.token" type="string" label="30401">
+          <default></default>
+          <level>2</level>
+          <constraints>
+            <allowempty>true</allowempty>
+          </constraints>
+          <control type="edit" format="string" />
+        </setting>
+        <setting id="tmdb.account_id" type="string" label="30401">
           <default></default>
           <level>3</level>
           <constraints>
@@ -548,34 +565,14 @@
           </constraints>
           <control type="edit" format="string" />
         </setting>
-        <setting id="tmdb.account_id" type="string" label="30184">
-          <default></default>
-          <level>3</level>
-          <constraints>
-            <allowempty>true</allowempty>
-          </constraints>
+        <setting id="tmdb.client" type="string" label="30185" help="30186">
+          <level>4</level>
+          <default>b3d88b28234743b4d18c84c6dbd3ac81</default>
           <control type="edit" format="string" />
         </setting>
-      </group>
-
-      <group id="3" label="30187">
-        <setting id="omdb_api" type="string" label="30188" help="30189">
-          <level>2</level>
-          <default></default>
-          <constraints>
-            <allowempty>true</allowempty>
-          </constraints>
-          <control type="edit" format="string" />
-        </setting>
-      </group>
-
-      <group id="4" label="30190">
-        <setting id="rpdb_api" type="string" label="30191" help="30192">
-          <level>2</level>
-          <default></default>
-          <constraints>
-            <allowempty>true</allowempty>
-          </constraints>
+        <setting id="tmdb.secret" type="string" label="30185" help="30186">
+          <level>4</level>
+          <default>eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiM2Q4OGIyODIzNDc0M2I0ZDE4Yzg0YzZkYmQzYWM4MSIsIm5iZiI6MTcwMjM1MjEzNC4wNjIsInN1YiI6IjY1NzdkNTA2N2EzYzUyMDBhZDE5NmY1MSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.xP3IHOVqYbDkoiluKUdgdocIobrsDoPpHymgp7sTVCU</default>
           <control type="edit" format="string" />
         </setting>
       </group>
@@ -589,6 +586,22 @@
           <level>0</level>
           <default>false</default>
           <control type="toggle" />
+        </setting>
+        <setting id="external_scraper.module" type="addon" label="30203" help="30204"
+          parent="provider.external">
+          <level>0</level>
+          <default/>
+          <constraints>
+            <addontype>xbmc.python.module</addontype>
+            <allowempty>true</allowempty>
+          </constraints>
+          <dependencies>
+            <dependency type="enable" setting="provider.external">true</dependency>
+          </dependencies>
+          <control type="button" format="addon">
+            <heading>30203</heading>
+            <show more="true" details="true">installed</show>
+          </control>
         </setting>
         <setting id="external_scraper.name" type="string" label="30203" help="30204"
           parent="provider.external">
@@ -629,6 +642,12 @@
       </group>
 
       <group id="2" label="30209">
+        <setting id="rd.authenticate" label="30403" type="action" help="30404">
+          <level>0</level>
+          <control type="button" format="action">
+            <data>RunPlugin(plugin://plugin.video.bacterio/?mode=real_debrid.authenticate)</data>
+          </control>
+        </setting>
         <setting id="rd.token" type="string" label="30401">
           <default></default>
           <level>3</level>
@@ -736,229 +755,6 @@
         </setting>
       </group>
 
-      <group id="3" label="30228">
-        <setting id="pm.token" type="string" label="30401">
-          <default></default>
-          <level>3</level>
-          <constraints>
-            <allowempty>true</allowempty>
-          </constraints>
-          <control type="edit" format="string" />
-        </setting>
-        <setting id="pm.account_id" type="string" label="30402">
-          <default></default>
-          <level>3</level>
-          <constraints>
-            <allowempty>true</allowempty>
-          </constraints>
-          <control type="edit" format="string" />
-        </setting>
-        <setting id="pm.enabled" type="boolean" label="30229" help="30230">
-          <level>0</level>
-          <default>false</default>
-          <control type="toggle" />
-        </setting>
-        <setting id="store_resolved_to_cloud.premiumize.me" type="integer" label="30212"
-          help="30213" parent="pm.enabled">
-          <default>0</default>
-          <dependencies>
-            <dependency type="enable">
-              <condition operator="is" setting="pm.enabled">true</condition>
-            </dependency>
-          </dependencies>
-          <control type="spinner" format="integer" />
-        </setting>
-        <setting id="provider.pm_cloud" type="boolean" label="30214" help="30215"
-          parent="pm.enabled">
-          <default>false</default>
-          <dependencies>
-            <dependency type="enable">
-              <condition operator="is" setting="pm.enabled">true</condition>
-            </dependency>
-          </dependencies>
-          <control type="toggle" />
-        </setting>
-        <setting id="pm_cloud.title_filter" type="boolean" label="30216" help="30217"
-          parent="provider.pm_cloud">
-          <default>false</default>
-          <dependencies>
-            <dependency type="enable">
-              <condition operator="is" setting="provider.pm_cloud">true</condition>
-            </dependency>
-          </dependencies>
-          <control type="toggle" />
-        </setting>
-        <setting id="check.pm_cloud" type="boolean" label="30218" help="30219"
-          parent="provider.pm_cloud">
-          <default>false</default>
-          <dependencies>
-            <dependency type="enable">
-              <condition operator="is" setting="provider.pm_cloud">true</condition>
-            </dependency>
-          </dependencies>
-          <control type="toggle" />
-        </setting>
-        <setting id="autoplay.pm_cloud" type="boolean" label="30220" help="30221"
-          parent="check.pm_cloud">
-          <default>false</default>
-          <dependencies>
-            <dependency type="enable">
-              <condition operator="is" setting="check.pm_cloud">true</condition>
-            </dependency>
-          </dependencies>
-          <control type="toggle" />
-        </setting>
-        <setting id="results.sort_pmcloud_first" type="boolean" label="30222" help="30223"
-          parent="provider.pm_cloud">
-          <default>false</default>
-          <dependencies>
-            <dependency type="enable">
-              <condition operator="is" setting="provider.pm_cloud">true</condition>
-            </dependency>
-          </dependencies>
-          <control type="toggle" />
-        </setting>
-        <setting id="pm.priority" type="integer" label="30224" help="30225" parent="pm.enabled">
-          <default>2</default>
-          <constraints>
-            <minimum>1</minimum>
-            <maximum>20</maximum>
-          </constraints>
-          <dependencies>
-            <dependency type="enable">
-              <condition operator="is" setting="pm.enabled">true</condition>
-            </dependency>
-          </dependencies>
-          <control type="spinner" format="integer" />
-        </setting>
-      </group>
-
-      <group id="4" label="30231">
-        <setting id="ad.token" type="string" label="30402">
-          <default></default>
-          <level>3</level>
-          <constraints>
-            <allowempty>true</allowempty>
-          </constraints>
-          <control type="edit" format="string" />
-        </setting>
-        <setting id="ad.account_id" type="string" label="30401">
-          <default></default>
-          <level>3</level>
-          <constraints>
-            <allowempty>true</allowempty>
-          </constraints>
-          <control type="edit" format="string" />
-        </setting>
-        <setting id="ad.enabled" type="boolean" label="30232" help="30233">
-          <level>0</level>
-          <default>false</default>
-          <control type="toggle" />
-        </setting>
-        <setting id="store_resolved_to_cloud.alldebrid" type="integer" label="30212" help="30213"
-          parent="ad.enabled">
-          <default>0</default>
-          <dependencies>
-            <dependency type="enable">
-              <condition operator="is" setting="ad.enabled">true</condition>
-            </dependency>
-          </dependencies>
-          <control type="spinner" format="integer" />
-        </setting>
-        <setting id="provider.ad_cloud" type="boolean" label="30214" help="30215"
-          parent="ad.enabled">
-          <default>false</default>
-          <dependencies>
-            <dependency type="enable">
-              <condition operator="is" setting="ad.enabled">true</condition>
-            </dependency>
-          </dependencies>
-          <control type="toggle" />
-        </setting>
-        <setting id="ad_cloud.title_filter" type="boolean" label="30216" help="30217"
-          parent="provider.ad_cloud">
-          <default>false</default>
-          <dependencies>
-            <dependency type="enable">
-              <condition operator="is" setting="provider.ad_cloud">true</condition>
-            </dependency>
-          </dependencies>
-          <control type="toggle" />
-        </setting>
-        <setting id="check.ad_cloud" type="boolean" label="30218" help="30219"
-          parent="provider.ad_cloud">
-          <default>false</default>
-          <dependencies>
-            <dependency type="enable">
-              <condition operator="is" setting="provider.ad_cloud">true</condition>
-            </dependency>
-          </dependencies>
-          <control type="toggle" />
-        </setting>
-        <setting id="autoplay.ad_cloud" type="boolean" label="30220" help="30221"
-          parent="check.ad_cloud">
-          <default>false</default>
-          <dependencies>
-            <dependency type="enable">
-              <condition operator="is" setting="check.ad_cloud">true</condition>
-            </dependency>
-          </dependencies>
-          <control type="toggle" />
-        </setting>
-        <setting id="results.sort_adcloud_first" type="boolean" label="30222" help="30223"
-          parent="provider.ad_cloud">
-          <default>false</default>
-          <dependencies>
-            <dependency type="enable">
-              <condition operator="is" setting="provider.ad_cloud">true</condition>
-            </dependency>
-          </dependencies>
-          <control type="toggle" />
-        </setting>
-        <setting id="ad.priority" type="integer" label="30224" help="30225" parent="ad.enabled">
-          <default>3</default>
-          <constraints>
-            <minimum>1</minimum>
-            <maximum>20</maximum>
-          </constraints>
-          <dependencies>
-            <dependency type="enable">
-              <condition operator="is" setting="ad.enabled">true</condition>
-            </dependency>
-          </dependencies>
-          <control type="spinner" format="integer" />
-        </setting>
-      </group>
-
-      <group id="5" label="30234">
-        <setting id="ed.token" type="string" label="30401">
-          <default></default>
-          <level>3</level>
-          <constraints>
-            <allowempty>true</allowempty>
-          </constraints>
-          <control type="edit" format="string" />
-        </setting>
-        <setting id="ed.enabled" type="boolean" label="30235" help="30236">
-          <level>0</level>
-          <default>false</default>
-          <control type="toggle" />
-        </setting>
-        <setting id="ed.priority" type="integer" label="30224" help="30225" parent="ed.enabled">
-          <default>4</default>
-          <constraints>
-            <minimum>1</minimum>
-            <maximum>20</maximum>
-          </constraints>
-          <dependencies>
-            <dependency type="enable">
-              <condition operator="is" setting="ed.enabled">true</condition>
-            </dependency>
-          </dependencies>
-          <control type="spinner" format="integer" />
-        </setting>
-      </group>
-
       <group id="6" label="30237">
         <setting id="tb.token" type="string" label="30401">
           <default></default>
@@ -1042,111 +838,6 @@
           <dependencies>
             <dependency type="enable">
               <condition operator="is" setting="tb.enabled">true</condition>
-            </dependency>
-          </dependencies>
-          <control type="spinner" format="integer" />
-        </setting>
-      </group>
-
-      <group id="7" label="30240">
-        <setting id="provider.easynews" type="boolean" label="30241" help="30242">
-          <level>0</level>
-          <default>false</default>
-          <control type="toggle" />
-        </setting>
-        <setting id="easynews_user" type="string" label="30243" help="30244"
-          parent="provider.easynews">
-          <level>0</level>
-          <default></default>
-          <constraints>
-            <allowempty>true</allowempty>
-          </constraints>
-          <dependencies>
-            <dependency type="enable">
-              <condition operator="is" setting="provider.easynews">true</condition>
-            </dependency>
-          </dependencies>
-          <control type="edit" format="string" />
-        </setting>
-        <setting id="easynews_password" type="string" label="30245" help="30246"
-          parent="provider.easynews">
-          <level>0</level>
-          <default></default>
-          <constraints>
-            <allowempty>true</allowempty>
-          </constraints>
-          <dependencies>
-            <dependency type="enable">
-              <condition operator="is" setting="provider.easynews">true</condition>
-            </dependency>
-          </dependencies>
-          <control type="edit" format="string" option="hidden" />
-        </setting>
-        <setting id="easynews.title_filter" type="boolean" label="30247" help="30248"
-          parent="provider.easynews">
-          <default>false</default>
-          <dependencies>
-            <dependency type="enable">
-              <condition operator="is" setting="provider.easynews">true</condition>
-            </dependency>
-          </dependencies>
-          <control type="toggle" />
-        </setting>
-        <setting id="easynews.filter_lang" type="boolean" label="30249" help="30250"
-          parent="provider.easynews">
-          <level>2</level>
-          <default>false</default>
-          <dependencies>
-            <dependency type="enable">
-              <condition operator="is" setting="provider.easynews">true</condition>
-            </dependency>
-          </dependencies>
-          <control type="toggle" />
-        </setting>
-        <setting id="easynews.lang_filters" type="string" label="30251" help="30252"
-          parent="easynews.filter_lang">
-          <level>2</level>
-          <default></default>
-          <constraints>
-            <allowempty>true</allowempty>
-          </constraints>
-          <dependencies>
-            <dependency type="enable">
-              <condition operator="is" setting="easynews.filter_lang">true</condition>
-            </dependency>
-          </dependencies>
-          <control type="edit" format="string" />
-        </setting>
-        <setting id="check.easynews" type="boolean" label="30218" help="30219"
-          parent="provider.easynews">
-          <default>false</default>
-          <dependencies>
-            <dependency type="enable">
-              <condition operator="is" setting="provider.easynews">true</condition>
-            </dependency>
-          </dependencies>
-          <control type="toggle" />
-        </setting>
-        <setting id="autoplay.easynews" type="boolean" label="30253" help="30254"
-          parent="check.easynews">
-          <default>false</default>
-          <dependencies>
-            <dependency type="enable">
-              <condition operator="is" setting="check.easynews">true</condition>
-            </dependency>
-          </dependencies>
-          <control type="toggle" />
-        </setting>
-        <setting id="en.priority" type="integer" label="30224" help="30225"
-          parent="provider.easynews">
-          <default>6</default>
-          <constraints>
-            <minimum>1</minimum>
-            <maximum>20</maximum>
-          </constraints>
-          <dependencies>
-            <dependency type="enable">
-              <condition operator="is" setting="provider.easynews">true</condition>
             </dependency>
           </dependencies>
           <control type="spinner" format="integer" />
@@ -1462,41 +1153,14 @@
           <default>FF00FF00</default>
           <control type="colorbutton" />
         </setting>
-        <setting id="provider.pm_highlight" type="string" label="30329" parent="highlight.type">
-          <level>2</level>
-          <default>FF00BFFF</default>
-          <control type="colorbutton" />
-        </setting>
-        <setting id="provider.ad_highlight" type="string" label="30330" parent="highlight.type">
-          <level>2</level>
-          <default>FFFF8C00</default>
-          <control type="colorbutton" />
-        </setting>
         <setting id="provider.oc_highlight" type="string" label="30331" parent="highlight.type">
           <level>2</level>
           <default>FFFF0000</default>
           <control type="colorbutton" />
         </setting>
-        <setting id="provider.ed_highlight" type="string" label="30332" parent="highlight.type">
-          <level>2</level>
-          <default>FFFFFF00</default>
-          <control type="colorbutton" />
-        </setting>
         <setting id="provider.tb_highlight" type="string" label="30333" parent="highlight.type">
           <level>2</level>
           <default>FFDA70D6</default>
-          <control type="colorbutton" />
-        </setting>
-        <setting id="provider.easynews_highlight" type="string" label="30334"
-          parent="highlight.type">
-          <level>2</level>
-          <default>FFADD8E6</default>
-          <control type="colorbutton" />
-        </setting>
-        <setting id="provider.debrid_cloud_highlight" type="string" label="30335"
-          parent="highlight.type">
-          <level>2</level>
-          <default>FF90EE90</default>
           <control type="colorbutton" />
         </setting>
         <setting id="provider.folders_highlight" type="string" label="30336"
@@ -1729,17 +1393,6 @@
 
       <group id="3" label="30377">
         <setting id="playback.limit_resolve" type="boolean" label="30378" help="30379">
-          <level>2</level>
-          <default>false</default>
-          <control type="toggle" />
-        </setting>
-        <setting id="easynews.playback_method" type="integer" label="30380" help="30381">
-          <level>2</level>
-          <default>0</default>
-          <control type="spinner" format="integer" />
-        </setting>
-        <setting id="easynews.playback_method_limited" type="boolean" label="30382" help="30383"
-          parent="easynews.playback_method">
           <level>2</level>
           <default>false</default>
           <control type="toggle" />
