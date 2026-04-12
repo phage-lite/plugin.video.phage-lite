@@ -2,6 +2,7 @@
 import json
 import time
 from threading import Thread
+import traceback
 
 from caches.episode_groups_cache import episode_groups_cache
 from modules.settings_manager import get_setting
@@ -563,7 +564,7 @@ class Sources:
         kodi_utils.logger("Scraper", f"Starting: {module_type}")
         sources = self._get_module(module_type, function).results(self.search_info)
         count = len(sources) if sources else 0
-        kodi_utils.logger("Scraper", f"Finished: {module_type} | {count} results")
+        kodi_utils.logger("Scraper", f"Finished: {module_type} | {count} sources")
         if not sources:
             return
         if prescrape:
@@ -1476,6 +1477,7 @@ class Sources:
         if meta:
             self.meta = meta
         url = None
+        kodi_utils.logger("Resolve", f"item {item}")
         kodi_utils.logger("Resolve", f"Attempting: {item.get('scrape_provider')} | {item.get('quality')} | {item.get('display_name', '')[:60]}")
         try:
             if "cache_provider" in item:
@@ -1509,6 +1511,7 @@ class Sources:
                     "EasyDebrid",
                     "TorBox",
                 ):
+                    kodi_utils.logger("Resolve", "cache_provider in list")
                     url = self.resolve_cached(
                         cache_provider,
                         item["url"],
@@ -1535,6 +1538,7 @@ class Sources:
     def resolve_cached(
         self, debrid_provider, item_url, _hash, title, season, episode, pack
     ):
+        kodi_utils.logger("Resolve Cached", f"item_url {item_url} debrid_provider {debrid_provider}")
         debrid_function = self.debrid_importer(debrid_provider)
         store_to_cloud = settings.store_resolved_to_cloud(debrid_provider, pack)
         try:
@@ -1542,7 +1546,9 @@ class Sources:
                 item_url, _hash, store_to_cloud, title, season, episode
             )
         except Exception:
+            kodi_utils.logger("Resolve Cached", "Couldn't resolve magnet")
             url = None
+        kodi_utils.logger("Resolve Cached", f"Url is {url}")
         return url
 
     def resolve_internal(

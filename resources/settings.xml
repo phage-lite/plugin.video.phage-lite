@@ -671,13 +671,11 @@
         </setting>
         <setting id="store_resolved_to_cloud.real-debrid" type="integer" label="30212"
           help="30213" parent="rd.enabled">
-          <default>0</default>
+          <default>false</default>
+          <control type="toggle" />
           <dependencies>
-            <dependency type="enable">
-              <condition operator="is" setting="rd.enabled">true</condition>
-            </dependency>
+            <dependency type="enable" setting="rd.enabled">true</dependency>
           </dependencies>
-          <control type="spinner" format="integer" />
         </setting>
         <setting id="provider.rd_cloud" type="boolean" label="30214" help="30215"
           parent="rd.enabled">
@@ -1209,7 +1207,7 @@
         </setting>
         <setting id="results_quality_movie" type="string" label="30344" help="30345"
           parent="auto_play_movie">
-          <default></default>
+          <default>4K</default>
           <constraints>
             <allowempty>true</allowempty>
           </constraints>
@@ -1217,7 +1215,7 @@
         </setting>
         <setting id="autoplay_quality_movie" type="string" label="30346" help="30347"
           parent="auto_play_movie">
-          <default></default>
+          <default>4K</default>
           <constraints>
             <allowempty>true</allowempty>
           </constraints>

@@ -1,3 +1,4 @@
+import traceback
 import xbmc
 import xbmcgui
 import xbmcplugin
@@ -413,6 +414,11 @@ def append_path(_path):
 
 def logger(heading, function):
     xbmc.log("[Bacterio]\n\t[%s]: %s" % (heading, function), 1)
+
+
+def trace(heading):
+    trace = traceback.format_stack()
+    xbmc.log("[Bacterio]\n\t[%s]: %s" % (heading, "".join(trace)), 1)
 
 
 def kodi_window():

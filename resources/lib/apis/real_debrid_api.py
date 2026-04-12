@@ -7,7 +7,7 @@ from caches.main_cache import cache_object
 from modules.settings_manager import get_setting, set_setting
 from modules.utils import copy2clip, make_tinyurl, make_qrcode
 from modules.source_utils import supported_video_extensions, seas_ep_filter, extras
-from modules.kodi_utils import sleep, ok_dialog, progress_dialog, notification
+from modules.kodi_utils import logger, sleep, ok_dialog, progress_dialog, notification
 from apis import services
 
 
@@ -197,6 +197,7 @@ class RealDebridAPI:
         post_data = {"magnet": magnet}
         url = "torrents/addMagnet"
         result = self._post(url, post_data)
+        logger("RealDebridAPI", f"result {result}")
         return result
 
     def create_transfer(self, magnet_url):
@@ -237,13 +238,15 @@ class RealDebridAPI:
         torrent_id = None
         try:
             torrent = self.add_magnet(magnet_url)
-            if "error" in torrent:
+            if torrent is None or "error" in torrent:
+                logger("RealDebridAPI", f"Couldn't add magnet {magnet_url}")
                 return None
             torrent_id = torrent["id"]
             self.add_torrent_select(torrent_id, "all")
             sleep(1000)
             torrent_info = self.user_cloud_info_check(torrent_id)
-            if not torrent_info["links"] or "error" in torrent_info:
+            if torrent_info is None or not torrent_info["links"] or "error" in torrent_info:
+                logger("RealDebridAPI", f"Couldn't get torrent info {torrent_id}")
                 self.delete_torrent(torrent_id)
                 return None
             sleep(1000)
@@ -414,12 +417,15 @@ class RealDebridAPI:
     def _call(self, method, endpoint, **kwargs):
         """Call services, retry once after token refresh on bad_token response."""
         resp = getattr(services, method)("real_debrid", endpoint, raw=True, **kwargs)
+        logger("RealDebridAPI", f"raw resp {resp}")
         if resp is None:
+            logger("RealDebridAPI", "response is none")
             return None
         if any(v in resp.text for v in ("bad_token", "Bad Request")):
             if self.refresh_token():
                 resp = getattr(services, method)("real_debrid", endpoint, raw=True, **kwargs)
             else:
+                logger("RealDebridAPI", "bad token and no refresh")
                 return None
         try:
             return resp.json()

@@ -52,10 +52,10 @@ def results_format():
 
 
 def store_resolved_to_cloud(debrid_service, pack):
-    setting_value = int(
-        get_setting("bacterio.store_resolved_to_cloud.%s" % debrid_service.lower(), "0")
+    setting_value = bool(
+        get_setting("bacterio.store_resolved_to_cloud.%s" % debrid_service.lower(), "false")
     )
-    return setting_value in (1, 2) if pack else setting_value == 1
+    return setting_value if pack else setting_value
 
 
 def enabled_debrids_check(debrid_service):
