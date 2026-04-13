@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from logging import log
 from modules.settings_manager import get_setting, set_setting
 from modules.kodi_utils import logger, translate_path, get_property
 
@@ -53,7 +52,9 @@ def results_format():
 
 def store_resolved_to_cloud(debrid_service, pack):
     setting_value = bool(
-        get_setting("bacterio.store_resolved_to_cloud.%s" % debrid_service.lower(), "false")
+        get_setting(
+            "bacterio.store_resolved_to_cloud.%s" % debrid_service.lower(), "false"
+        )
     )
     return setting_value if pack else setting_value
 
@@ -355,42 +356,6 @@ def single_ep_display_format(is_external):
     return int(get_setting(setting, default))
 
 
-def easynews_active():
-    if get_setting("bacterio.provider.easynews", "false") == "true":
-        easynews_status = easynews_authorized()
-    else:
-        easynews_status = False
-    return easynews_status
-
-
-def easynews_playback_method(query):
-    method = int(get_setting("bacterio.easynews.playback_method", "0"))
-    queries = {
-        "retry": lambda: method in (1, 3),
-        "non_seek": lambda: method in (2, 3),
-        "direct_play": lambda: (
-            method in (2, 3)
-            and get_setting("bacterio.easynews.playback_method_limited", "false")
-            != "true"
-        ),
-    }
-    setting = queries[query]()
-    return setting
-
-
-def easynews_authorized():
-    easynews_user = get_setting("bacterio.easynews_user", "empty_setting")
-    easynews_password = get_setting("bacterio.easynews_password", "empty_setting")
-    if easynews_user in ("empty_setting", "") or easynews_password in (
-        "empty_setting",
-        "",
-    ):
-        easynews_status = False
-    else:
-        easynews_status = True
-    return easynews_status
-
-
 def extras_enable_extra_ratings():
     return get_setting("bacterio.extras.enable_extra_ratings", "true") == "true"
 
@@ -424,11 +389,7 @@ def tv_progress_location():
 
 def check_prescrape_sources(scraper, media_type):
     if scraper in (
-        "easynews",
         "rd_cloud",
-        "pm_cloud",
-        "ad_cloud",
-        "tb_cloud",
         "folders",
     ):
         return get_setting("bacterio.check.%s" % scraper) == "true"
@@ -454,15 +415,6 @@ def filter_by_name(scraper):
     if get_property("fs_filterless_search") == "true":
         return False
     return get_setting("bacterio.%s.title_filter" % scraper, "false") == "true"
-
-
-def easynews_language_filter():
-    enabled = get_setting("bacterio.easynews.filter_lang") == "true"
-    if enabled:
-        filters = get_setting("bacterio.easynews.lang_filters").split(", ")
-    else:
-        filters = []
-    return enabled, filters
 
 
 def size_sort_weighted():
@@ -510,13 +462,10 @@ def results_sort_order():
 
 
 def active_internal_scrapers():
-    settings = ["provider.external", "provider.easynews", "provider.folders"]
+    settings = ["provider.external", "provider.folders"]
     settings_append = settings.append
     for item in [
         ("rd", "provider.rd_cloud"),
-        ("pm", "provider.pm_cloud"),
-        ("ad", "provider.ad_cloud"),
-        ("tb", "provider.tb_cloud"),
     ]:
         if enabled_debrids_check(item[0]):
             settings_append(item[1])
@@ -528,23 +477,10 @@ def active_internal_scrapers():
 
 def provider_sort_ranks():
     fo_priority = int(get_setting("bacterio.folders.priority", "6"))
-    en_priority = int(get_setting("bacterio.en.priority", "7"))
     rd_priority = int(get_setting("bacterio.rd.priority", "8"))
-    ad_priority = int(get_setting("bacterio.ad.priority", "9"))
-    pm_priority = int(get_setting("bacterio.pm.priority", "10"))
-    ed_priority = int(get_setting("bacterio.ed.priority", "10"))
-    tb_priority = int(get_setting("bacterio.tb.priority", "10"))
     return {
-        "easynews": en_priority,
         "real-debrid": rd_priority,
-        "premiumize.me": pm_priority,
-        "alldebrid": ad_priority,
-        "easydebrid": ed_priority,
-        "torbox": tb_priority,
         "rd_cloud": rd_priority,
-        "pm_cloud": pm_priority,
-        "ad_cloud": ad_priority,
-        "tb_cloud": tb_priority,
         "folders": fo_priority,
     }
 
@@ -553,9 +489,6 @@ def sort_to_top(provider):
     sort_to_top_dict = {
         "folders": "bacterio.results.sort_folders_first",
         "rd_cloud": "bacterio.results.sort_rdcloud_first",
-        "pm_cloud": "bacterio.results.sort_pmcloud_first",
-        "ad_cloud": "bacterio.results.sort_adcloud_first",
-        "tb_cloud": "bacterio.results.sort_tbcloud_first",
     }
     return get_setting(sort_to_top_dict[provider]) == "true"
 
@@ -577,19 +510,10 @@ def scraping_settings():
             "720p": highlight,
             "sd": highlight,
         }
-    easynews_highlight, debrid_cloud_highlight, folders_highlight = "", "", ""
-    rd_highlight, pm_highlight, ad_highlight, ed_highlight, tb_highlight = (
-        "",
-        "",
-        "",
-        "",
-        "",
-    )
+    debrid_cloud_highlight, folders_highlight = "", ""
+    rd_highlight = ""
     highlight_4K, highlight_1080P, highlight_720P, highlight_SD = "", "", "", ""
     if highlight_type == 0:
-        easynews_highlight = get_setting(
-            "bacterio.provider.easynews_highlight", "FF00B3B2"
-        )
         debrid_cloud_highlight = get_setting(
             "bacterio.provider.debrid_cloud_highlight", "FF7A01CC"
         )
@@ -597,10 +521,6 @@ def scraping_settings():
             "bacterio.provider.folders_highlight", "FFB36B00"
         )
         rd_highlight = get_setting("bacterio.provider.rd_highlight", "FF3C9900")
-        pm_highlight = get_setting("bacterio.provider.pm_highlight", "FFFF3300")
-        ad_highlight = get_setting("bacterio.provider.ad_highlight", "FFE6B800")
-        ed_highlight = get_setting("bacterio.provider.ed_highlight", "FF3233FF")
-        tb_highlight = get_setting("bacterio.provider.tb_highlight", "FF01662A")
     else:
         highlight_4K = get_setting("bacterio.scraper_4k_highlight", "FFFF00FE")
         highlight_1080P = get_setting("bacterio.scraper_1080p_highlight", "FFE6B800")
@@ -609,15 +529,10 @@ def scraping_settings():
     return {
         "highlight_type": highlight_type,
         "real-debrid": rd_highlight,
-        "premiumize": pm_highlight,
-        "alldebrid": ad_highlight,
-        "easydebrid": ed_highlight,
-        "torbox": tb_highlight,
         "rd_cloud": debrid_cloud_highlight,
         "pm_cloud": debrid_cloud_highlight,
         "ad_cloud": debrid_cloud_highlight,
         "tb_cloud": debrid_cloud_highlight,
-        "easynews": easynews_highlight,
         "folders": folders_highlight,
         "4k": highlight_4K,
         "1080p": highlight_1080P,
