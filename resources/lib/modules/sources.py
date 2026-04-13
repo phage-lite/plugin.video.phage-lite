@@ -2,7 +2,6 @@
 import json
 import time
 from threading import Thread
-import traceback
 
 from caches.episode_groups_cache import episode_groups_cache
 from modules.settings_manager import get_setting
@@ -23,12 +22,20 @@ from modules.utils import (
     string_to_float,
 )
 from modules.providers import (
-    DEBRID_MODULES, DEFAULT_SCRAPERS, FOLDERS,
-    Q_4K, Q_1080, Q_720, Q_SD, Q_SCR, Q_CAM, Q_TELE, PRERELEASE_QUALITIES,
+    DEBRID_MODULES,
+    DEFAULT_SCRAPERS,
+    FOLDERS,
+    Q_4K,
+    Q_1080,
+    Q_720,
+    Q_SD,
+    Q_SCR,
+    Q_CAM,
+    Q_TELE,
+    PRERELEASE_QUALITIES,
 )
 from scrapers import external
 from windows.base_window import create_window, open_window
-
 
 
 class Sources:
@@ -49,7 +56,9 @@ class Sources:
         self.clear_properties, self.filters_ignored = True, False
         self.active_folders = self.resolve_dialog_made = self.episode_group_used = False
         # Quality counters
-        self.sources_total = self.sources_4k = self.sources_1080p = self.sources_720p = self.sources_sd = 0
+        self.sources_total = self.sources_4k = self.sources_1080p = (
+            self.sources_720p
+        ) = self.sources_sd = 0
         # Defaults overridden in playback_prep
         self.prescrape, self.disabled_ext_ignored = "true", "false"
         self.ext_name, self.ext_folder = "", ""
@@ -76,7 +85,10 @@ class Sources:
         self.get_meta()
         self.determine_scrapers_status()
         self.make_search_info()
-        kodi_utils.logger("Sources", f"Scraping: {self.media_type} | {self.meta.get('title')} ({self.meta.get('year')}) | tmdb={self.tmdb_id} | scrapers={self.active_internal_scrapers}")
+        kodi_utils.logger(
+            "Sources",
+            f"Scraping: {self.media_type} | {self.meta.get('title')} ({self.meta.get('year')}) | tmdb={self.tmdb_id} | scrapers={self.active_internal_scrapers}",
+        )
         if self.autoscrape:
             self.autoscrape_nextep_handler()
         else:
@@ -106,8 +118,12 @@ class Sources:
         self.autoscrape = self.autoscrape_nextep and self.background
         self.ignore_scrape_filters = g("ignore_scrape_filters", "false") == "true"
         self.nextep_settings = g("nextep_settings", {})
-        self.disable_autoplay_next_episode = g("disable_autoplay_next_episode", "false") == "true"
-        self.disabled_ext_ignored = g("disabled_ext_ignored", self.disabled_ext_ignored) == "true"
+        self.disable_autoplay_next_episode = (
+            g("disable_autoplay_next_episode", "false") == "true"
+        )
+        self.disabled_ext_ignored = (
+            g("disabled_ext_ignored", self.disabled_ext_ignored) == "true"
+        )
         self.media_type = g("media_type")
         self.tmdb_id = g("tmdb_id")
         self.custom_title = g("custom_title")
@@ -135,8 +151,12 @@ class Sources:
         self.auto_rescrape_imdb_year = settings.auto_rescrape_imdb_year()
         self.auto_rescrape_with_all = settings.auto_rescrape_with_all()
         self.auto_episode_group = settings.auto_episode_group()
-        self.folders_ignore_filters = get_setting("bacterio.results.folders_ignore_filters", "false") == "true"
-        self.filter_size_method = int(get_setting("bacterio.results.filter_size_method", "0"))
+        self.folders_ignore_filters = (
+            get_setting("bacterio.results.folders_ignore_filters", "false") == "true"
+        )
+        self.filter_size_method = int(
+            get_setting("bacterio.results.filter_size_method", "0")
+        )
         self.sleep_time = 100
         self.provider_sort_ranks = settings.provider_sort_ranks()
         self.scraper_settings = settings.scraping_settings()
@@ -146,7 +166,9 @@ class Sources:
         self.weight_size = settings.size_sort_weighted()
         self.sort_function = settings.results_sort_order()
         self.quality_filter = self._quality_filter()
-        self.include_unknown_size = get_setting("bacterio.results.size_unknown", "false") == "true"
+        self.include_unknown_size = (
+            get_setting("bacterio.results.size_unknown", "false") == "true"
+        )
 
     def check_episode_group(self):
         try:
@@ -474,8 +496,7 @@ class Sources:
                 [
                     i
                     for i in self.all_scrapers
-                    if i in ("rd_cloud", "pm_cloud", "ad_cloud", "tb_cloud")
-                    and settings.sort_to_top(i)
+                    if i in ("rd_cloud") and settings.sort_to_top(i)
                 ]
             )
             if not sort_first_scrapers:
@@ -587,11 +608,7 @@ class Sources:
         self.active_external, self.external_providers = False, []
 
     def internal_sources(self, prescrape=False):
-        active_sources = [
-            i
-            for i in self.active_internal_scrapers
-            if i in ["easynews", "rd_cloud", "pm_cloud", "ad_cloud", "tb_cloud"]
-        ]
+        active_sources = [i for i in self.active_internal_scrapers if i in ["rd_cloud"]]
         try:
             sourceDict = [
                 ("internal", manual_function_import(f"scrapers.{i}", "source"), i)
@@ -886,7 +903,10 @@ class Sources:
         return self.play_source(results)
 
     def _no_results(self):
-        kodi_utils.logger("Sources", f"No results: {self.media_type} | {self.meta.get('title')} ({self.meta.get('year')})")
+        kodi_utils.logger(
+            "Sources",
+            f"No results: {self.media_type} | {self.meta.get('title')} ({self.meta.get('year')})",
+        )
         self._kill_progress_dialog()
         kodi_utils.hide_busy_dialog()
         if self.background:
@@ -966,8 +986,13 @@ class Sources:
 
     def _get_quality_rank(self, quality):
         return {
-            Q_4K: 1, Q_1080: 2, Q_720: 3, Q_SD: 4,
-            Q_SCR: 5, Q_CAM: 5, Q_TELE: 5,
+            Q_4K: 1,
+            Q_1080: 2,
+            Q_720: 3,
+            Q_SD: 4,
+            Q_SCR: 5,
+            Q_CAM: 5,
+            Q_TELE: 5,
         }.get(quality, 6)
 
     def _get_provider_rank(self, account_type):
@@ -1141,10 +1166,6 @@ class Sources:
         kodi_utils.show_busy_dialog()
         debrid_info = {
             "Real-Debrid": "rd_browse",
-            "Premiumize.me": "pm_browse",
-            "AllDebrid": "ad_browse",
-            "EasyDebrid": "ed_browse",
-            "TorBox": "tb_browse",
         }[debrid_provider]
         debrid_function = self.debrid_importer(debrid_info)
         try:
@@ -1183,7 +1204,6 @@ class Sources:
 
     def play_file(self, results, source=None):
         self.playback_successful, self.cancel_all_playback = None, False
-        retry_easynews = settings.easynews_playback_method("retry")
         try:
             kodi_utils.hide_busy_dialog()
             url = None
@@ -1223,14 +1243,6 @@ class Sources:
                     display_name,
                 )
                 processed_items_append(resolve_item)
-                if provider == "easynews" and retry_easynews:
-                    for retry in range(1, 2):
-                        resolve_item = dict(item)
-                        resolve_item["resolve_display"] = (
-                            "%02d. [B]%s (RETRYx%s)[/B][CR]%s[CR]%s"
-                            % (count, provider_text, retry, extra_info, display_name)
-                        )
-                        processed_items_append(resolve_item)
             items = list(processed_items)
             if not self.continue_resolve_check():
                 return self._kill_progress_dialog()
@@ -1478,7 +1490,10 @@ class Sources:
             self.meta = meta
         url = None
         kodi_utils.logger("Resolve", f"item {item}")
-        kodi_utils.logger("Resolve", f"Attempting: {item.get('scrape_provider')} | {item.get('quality')} | {item.get('display_name', '')[:60]}")
+        kodi_utils.logger(
+            "Resolve",
+            f"Attempting: {item.get('scrape_provider')} | {item.get('quality')} | {item.get('display_name', '')[:60]}",
+        )
         try:
             if "cache_provider" in item:
                 cache_provider = item["cache_provider"]
@@ -1506,10 +1521,6 @@ class Sources:
                     )
                 if cache_provider in (
                     "Real-Debrid",
-                    "Premiumize.me",
-                    "AllDebrid",
-                    "EasyDebrid",
-                    "TorBox",
                 ):
                     kodi_utils.logger("Resolve", "cache_provider in list")
                     url = self.resolve_cached(
@@ -1532,13 +1543,18 @@ class Sources:
                 url = item["url"]
         except Exception:
             pass
-        kodi_utils.logger("Resolve", f"Result: {'OK' if url else 'FAILED'} | {item.get('scrape_provider')}")
+        kodi_utils.logger(
+            "Resolve",
+            f"Result: {'OK' if url else 'FAILED'} | {item.get('scrape_provider')}",
+        )
         return url
 
     def resolve_cached(
         self, debrid_provider, item_url, _hash, title, season, episode, pack
     ):
-        kodi_utils.logger("Resolve Cached", f"item_url {item_url} debrid_provider {debrid_provider}")
+        kodi_utils.logger(
+            "Resolve Cached", f"item_url {item_url} debrid_provider {debrid_provider}"
+        )
         debrid_function = self.debrid_importer(debrid_provider)
         store_to_cloud = settings.store_resolved_to_cloud(debrid_provider, pack)
         try:
@@ -1558,13 +1574,9 @@ class Sources:
         try:
             if direct_debrid_link or scrape_provider == "folders":
                 url = url_dl
-            elif scrape_provider == "easynews":
-                from indexers.easynews import resolve_easynews
-
-                url = resolve_easynews({"url_dl": url_dl, "play": "false"})
             else:
                 debrid_function = self.debrid_importer(scrape_provider)
-                if any(i in scrape_provider for i in ("rd_", "ad_", "tb_")):
+                if any(i in scrape_provider for i in ("rd_",)):
                     url = debrid_function().unrestrict_link(item_id)
                 else:
                     if "_cloud" in scrape_provider:
