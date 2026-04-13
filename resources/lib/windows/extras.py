@@ -2,13 +2,12 @@
 from threading import Thread
 from datetime import datetime, timedelta
 from windows.base_window import BaseDialog, window_manager, window_player
-from apis import tmdb_api, imdb_api, omdb_api, ai_api, trakt_api
+from apis import tmdb_api, imdb_api, trakt_api
 from indexers import dialogs, people
 from indexers.images import Images
 from modules import kodi_utils, settings, watched_status
 from modules.sources import Sources
 from modules.utils import (
-    change_image_resolution,
     adjust_premiered_date,
     get_datetime,
     make_thread_list_enumerate,
@@ -454,9 +453,7 @@ class Extras(BaseDialog):
                 pass
 
         try:
-            data = ai_api.ai_similar("%s|%s" % (self.media_type, self.tmdb_id))[
-                "results"
-            ]
+            data = []
             function = movie_meta if self.media_type == "movie" else tvshow_meta
             item_list = []
             item_list_append = item_list.append
@@ -815,9 +812,7 @@ class Extras(BaseDialog):
     def get_omdb_ratings(self):
         if not self.display_extra_ratings:
             return None
-        data = self.meta_get("extra_ratings", None) or omdb_api.fetch_ratings_info(
-            self.meta, self.omdb_api
-        )
+        data = self.meta_get("extra_ratings", None)
         return data
 
     def get_release_year(self, release_data):
