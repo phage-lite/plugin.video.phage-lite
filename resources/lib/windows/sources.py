@@ -40,16 +40,8 @@ class SourcesResults(BaseDialog):
             "CAM/SCR/TELE",
         )
         self.info_icons_dict = {
-            "easynews": get_icon("easynews"),
-            "alldebrid": get_icon("alldebrid"),
             "real-debrid": get_icon("realdebrid"),
-            "premiumize": get_icon("premiumize"),
-            "easydebrid": get_icon("easydebrid"),
-            "torbox": get_icon("torbox"),
-            "ad_cloud": get_icon("alldebrid"),
             "rd_cloud": get_icon("realdebrid"),
-            "pm_cloud": get_icon("premiumize"),
-            "tb_cloud": get_icon("torbox"),
         }
         self.info_quality_dict = {
             "4k": get_icon("flag_4k", "flags"),
@@ -397,7 +389,6 @@ class SourcesResults(BaseDialog):
         }
         sort_ranks = provider_sort_ranks()
         cache_functions_debrid = debrid_for_ext_cache_check()
-        sort_ranks["premiumize"] = sort_ranks.pop("premiumize.me")
         provider_choices = sorted(sort_ranks.keys(), key=sort_ranks.get)
         provider_choices = [i.upper() for i in provider_choices]
         providers.sort(key=provider_choices.index)
