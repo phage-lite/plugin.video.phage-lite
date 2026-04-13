@@ -122,45 +122,63 @@
                     <control type="toggle" />
                 </setting>
             </group>
-
             <group id="2" label="30010">
-                <setting id="media_open_action_movie" type="integer" label="30056" help="30057">
-                    <default>0</default>
-                    <control type="spinner" format="integer" />
+                <setting id="media_open_action_movie" type="string" label="30056" help="30057">
+                    <default>None</default>
+                    <constraints>
+                        <options>
+                            <option>None</option>
+                            <option>Open Extras</option>
+                            <option>Open Movie Set</option>
+                            <option>Both</option>
+                        </options>
+                    </constraints>
+                    <control type="spinner" format="string" />
                 </setting>
-                <setting id="media_open_action_tvshow" type="integer" label="30058" help="30059">
-                    <default>0</default>
-                    <control type="spinner" format="integer" />
+                <setting id="media_open_action_tvshow" type="string" label="30058" help="30059">
+                    <default>None</default>
+                    <constraints>
+                        <options>
+                            <option>None</option>
+                            <option>Open Extras</option>
+                        </options>
+                    </constraints>
+                    <control type="spinner" format="string" />
                 </setting>
             </group>
-
         </category>
 
         <!-- ======================== CONTENT ======================== -->
         <category id="content" label="30012">
 
             <group id="1" label="30001">
-                <setting id="paginate.lists" type="integer" label="30060" help="30061">
-                    <default>0</default>
-                    <control type="spinner" format="integer" />
+                <setting id="paginate.lists" type="boolean" label="30060" help="30061">
+                    <default>true</default>
+                    <control type="toggle" />
                 </setting>
                 <setting id="paginate.limit_addon" type="integer" label="30062" help="30063"
                     parent="paginate.lists">
                     <default>20</default>
                     <constraints>
-                        <minimum>1</minimum>
-                        <maximum>500</maximum>
+                        <minimum>5</minimum>
+                        <step>5</step>
+                        <maximum>100</maximum>
                     </constraints>
-                    <control type="spinner" format="integer" />
+                    <control type="slider" format="integer">
+                        <popup>false</popup>
+                    </control>
                 </setting>
                 <setting id="paginate.limit_widgets" type="integer" label="30064" help="30065"
                     parent="paginate.lists">
                     <default>20</default>
                     <constraints>
-                        <minimum>1</minimum>
-                        <maximum>500</maximum>
+                        <minimum>5</minimum>
+                        <step>5</step>
+                        <maximum>100</maximum>
                     </constraints>
-                    <control type="spinner" format="integer" />
+                    <control type="slider" format="integer">
+                        <popup>false</popup>
+                    </control>
                 </setting>
                 <setting id="paginate.jump_to" type="boolean" label="30066" help="30067">
                     <default>false</default>
@@ -479,14 +497,14 @@
         </category>
 
         <!-- ======================== METADATA ACCOUNTS ======================== -->
-        <category id="meta_accounts" label="30179">
-
+        <category id="trakt" label="30020">
             <group id="1" label="30020">
                 <setting id="trakt.authenticate" label="30403" type="action" help="30404">
                     <level>0</level>
                     <control type="button" format="action">
                         <data>
-                            RunPlugin(plugin://plugin.video.bacterio/?mode=trakt.trakt_authenticate)</data>
+                            RunPlugin(plugin://plugin.video.bacterio/?mode=trakt.trakt_authenticate)
+                        </data>
                     </control>
                 </setting>
                 <setting id="trakt.user" type="string" label="30402">
@@ -515,13 +533,15 @@
                     <control type="edit" format="string" />
                 </setting>
             </group>
-
+        </category>
+        <category id="tmdb" label="30405">
             <group id="2" label="30184">
                 <setting id="tmdb.authenticate" label="30403" type="action" help="30404">
                     <level>0</level>
                     <control type="button" format="action">
                         <data>
-                            RunPlugin(plugin://plugin.video.bacterio/?mode=tmdblist_api.authenticate)</data>
+                            RunPlugin(plugin://plugin.video.bacterio/?mode=tmdblist_api.authenticate)
+                        </data>
                     </control>
                 </setting>
                 <setting id="tmdb.user" type="string" label="30402">
@@ -535,14 +555,6 @@
                 <setting id="tmdb.token" type="string" label="30401">
                     <default></default>
                     <level>2</level>
-                    <constraints>
-                        <allowempty>true</allowempty>
-                    </constraints>
-                    <control type="edit" format="string" />
-                </setting>
-                <setting id="tmdb.account_id" type="string" label="30401">
-                    <default></default>
-                    <level>3</level>
                     <constraints>
                         <allowempty>true</allowempty>
                     </constraints>
@@ -563,69 +575,22 @@
         </category>
 
         <!-- ======================== SOURCES ACCOUNTS ======================== -->
-        <category id="sources_accounts" label="30199">
-
-            <group id="1" label="30200">
-                <setting id="provider.external" type="boolean" label="30201" help="30202">
-                    <level>0</level>
-                    <default>false</default>
-                    <control type="toggle" />
-                </setting>
-                <setting id="external_scraper.module" type="addon" label="30203" help="30204"
-                    parent="provider.external">
-                    <level>0</level>
-                    <default />
-                    <constraints>
-                        <addontype>xbmc.python.module</addontype>
-                        <allowempty>true</allowempty>
-                    </constraints>
-                    <dependencies>
-                        <dependency type="enable" setting="provider.external">true</dependency>
-                    </dependencies>
-                    <control type="button" format="addon">
-                        <heading>30203</heading>
-                        <show more="true" details="true">installed</show>
-                    </control>
-                </setting>
-                <setting id="external_scraper.name" type="string" label="30203" help="30204"
-                    parent="provider.external">
-                    <level>2</level>
-                    <default></default>
-                    <constraints>
-                        <allowempty>true</allowempty>
-                    </constraints>
-                    <dependencies>
-                        <dependency type="enable" setting="provider.external">true</dependency>
-                    </dependencies>
-                    <control type="edit" format="string" />
-                </setting>
-                <setting id="external.cache_check" type="boolean" label="30205" help="30206"
-                    parent="provider.external">
-                    <level>2</level>
-                    <default>false</default>
-                    <dependencies>
-                        <dependency type="enable" setting="provider.external">true</dependency>
-                    </dependencies>
-                    <control type="toggle" />
-                </setting>
-                <setting id="external.filter_sources" type="boolean" label="30207" help="30208"
-                    parent="provider.external">
-                    <level>2</level>
-                    <default>false</default>
-                    <dependencies>
-                        <dependency type="enable" setting="provider.external">true</dependency>
-                    </dependencies>
-                    <control type="toggle" />
-                </setting>
-            </group>
-
+        <category id="real_debrid" label="30209">
             <group id="2" label="30209">
+                <setting id="rd.enabled" type="boolean" label="30210" help="30211">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle" />
+                </setting>
                 <setting id="rd.authenticate" label="30403" type="action" help="30404">
                     <level>0</level>
                     <control type="button" format="action">
                         <data>
                             RunPlugin(plugin://plugin.video.bacterio/?mode=real_debrid.authenticate)</data>
                     </control>
+                    <dependencies>
+                        <dependency type="enable" setting="rd.enabled">true</dependency>
+                    </dependencies>
                 </setting>
                 <setting id="rd.token" type="string" label="30401">
                     <default></default>
@@ -634,6 +599,9 @@
                         <allowempty>true</allowempty>
                     </constraints>
                     <control type="edit" format="string" />
+                    <dependencies>
+                        <dependency type="enable" setting="rd.enabled">true</dependency>
+                    </dependencies>
                 </setting>
                 <setting id="rd.account_id" type="string" label="30402">
                     <default></default>
@@ -642,11 +610,9 @@
                         <allowempty>true</allowempty>
                     </constraints>
                     <control type="edit" format="string" />
-                </setting>
-                <setting id="rd.enabled" type="boolean" label="30210" help="30211">
-                    <level>0</level>
-                    <default>false</default>
-                    <control type="toggle" />
+                    <dependencies>
+                        <dependency type="enable" setting="rd.enabled">true</dependency>
+                    </dependencies>
                 </setting>
                 <setting id="store_resolved_to_cloud.real-debrid" type="integer" label="30212"
                     help="30213" parent="rd.enabled">
@@ -718,84 +684,61 @@
                     <control type="toggle" />
                 </setting>
             </group>
-
-            <group id="6" label="30237">
-                <setting id="tb.token" type="string" label="30401">
-                    <default></default>
-                    <level>3</level>
-                    <constraints>
-                        <allowempty>true</allowempty>
-                    </constraints>
-                    <control type="edit" format="string" />
-                </setting>
-                <setting id="tb.enabled" type="boolean" label="30238" help="30239">
+        </category>
+        <category id="sources_accounts" label="30199">
+            <group id="1" label="30200">
+                <setting id="provider.external" type="boolean" label="30201" help="30202">
                     <level>0</level>
                     <default>false</default>
                     <control type="toggle" />
                 </setting>
-                <setting id="store_resolved_to_cloud.torbox" type="integer" label="30212"
-                    help="30213"
-                    parent="tb.enabled">
-                    <default>0</default>
-                    <dependencies>
-                        <dependency type="enable" setting="tb.enabled">true</dependency>
-                    </dependencies>
-                    <control type="spinner" format="integer" />
-                </setting>
-                <setting id="provider.tb_cloud" type="boolean" label="30214" help="30215"
-                    parent="tb.enabled">
-                    <default>false</default>
-                    <dependencies>
-                        <dependency type="enable" setting="tb.enabled">true</dependency>
-                    </dependencies>
-                    <control type="toggle" />
-                </setting>
-                <setting id="tb_cloud.title_filter" type="boolean" label="30216" help="30217"
-                    parent="provider.tb_cloud">
-                    <default>false</default>
-                    <dependencies>
-                        <dependency type="enable" setting="provider.tb_cloud">true</dependency>
-                    </dependencies>
-                    <control type="toggle" />
-                </setting>
-                <setting id="check.tb_cloud" type="boolean" label="30218" help="30219"
-                    parent="provider.tb_cloud">
-                    <default>false</default>
-                    <dependencies>
-                        <dependency type="enable" setting="provider.tb_cloud">true</dependency>
-                    </dependencies>
-                    <control type="toggle" />
-                </setting>
-                <setting id="autoplay.tb_cloud" type="boolean" label="30220" help="30221"
-                    parent="check.tb_cloud">
-                    <default>false</default>
-                    <dependencies>
-                        <dependency type="enable" setting="check.tb_cloud">true</dependency>
-                    </dependencies>
-                    <control type="toggle" />
-                </setting>
-                <setting id="results.sort_tbcloud_first" type="boolean" label="30222" help="30223"
-                    parent="provider.tb_cloud">
-                    <default>false</default>
-                    <dependencies>
-                        <dependency type="enable" setting="provider.tb_cloud">true</dependency>
-                    </dependencies>
-                    <control type="toggle" />
-                </setting>
-                <setting id="tb.priority" type="integer" label="30224" help="30225"
-                    parent="tb.enabled">
-                    <default>5</default>
+                <setting id="external_scraper.module" type="addon" label="30203" help="30204"
+                    parent="provider.external">
+                    <level>0</level>
+                    <default />
                     <constraints>
-                        <minimum>1</minimum>
-                        <maximum>20</maximum>
+                        <addontype>xbmc.python.module</addontype>
+                        <allowempty>true</allowempty>
                     </constraints>
                     <dependencies>
-                        <dependency type="enable" setting="tb.enabled">true</dependency>
+                        <dependency type="enable" setting="provider.external">true</dependency>
                     </dependencies>
-                    <control type="spinner" format="integer" />
+                    <control type="button" format="addon">
+                        <heading>30203</heading>
+                        <show more="true" details="true">installed</show>
+                    </control>
+                </setting>
+                <setting id="external_scraper.name" type="string" label="30203" help="30204"
+                    parent="provider.external">
+                    <level>2</level>
+                    <default></default>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="enable" setting="provider.external">true</dependency>
+                    </dependencies>
+                    <control type="edit" format="string" />
+                </setting>
+                <setting id="external.cache_check" type="boolean" label="30205" help="30206"
+                    parent="provider.external">
+                    <level>2</level>
+                    <default>false</default>
+                    <dependencies>
+                        <dependency type="enable" setting="provider.external">true</dependency>
+                    </dependencies>
+                    <control type="toggle" />
+                </setting>
+                <setting id="external.filter_sources" type="boolean" label="30207" help="30208"
+                    parent="provider.external">
+                    <level>2</level>
+                    <default>false</default>
+                    <dependencies>
+                        <dependency type="enable" setting="provider.external">true</dependency>
+                    </dependencies>
+                    <control type="toggle" />
                 </setting>
             </group>
-
             <group id="8" label="30255">
                 <setting id="provider.folders" type="boolean" label="30256" help="30257">
                     <level>0</level>
@@ -856,7 +799,6 @@
                     <control type="spinner" format="integer" />
                 </setting>
             </group>
-
         </category>
 
         <!-- ======================== RESULTS ======================== -->
@@ -1011,13 +953,13 @@
                     <default>4K</default>
                     <constraints>
                         <options>
-                            <option label="4K">4K</option>
-                            <option label="1080p">1080p</option>
-                            <option label="720p">720p</option>
-                            <option label="SD">SD</option>
-                            <option label="SCR">SCR</option>
-                            <option label="CAM">CAM</option>
-                            <option label="TELE">TELE</option>
+                            <option>4K</option>
+                            <option>1080p</option>
+                            <option>720p</option>
+                            <option>SD</option>
+                            <option>SCR</option>
+                            <option>CAM</option>
+                            <option>TELE</option>
                         </options>
                     </constraints>
                     <dependencies>
@@ -1031,13 +973,13 @@
                     <default>4K</default>
                     <constraints>
                         <options>
-                            <option label="4K">4K</option>
-                            <option label="1080p">1080p</option>
-                            <option label="720p">720p</option>
-                            <option label="SD">SD</option>
-                            <option label="SCR">SCR</option>
-                            <option label="CAM">CAM</option>
-                            <option label="TELE">TELE</option>
+                            <option>4K</option>
+                            <option>1080p</option>
+                            <option>720p</option>
+                            <option>SD</option>
+                            <option>SCR</option>
+                            <option>CAM</option>
+                            <option>TELE</option>
                         </options>
                     </constraints>
                     <dependencies>
@@ -1051,10 +993,10 @@
                     <default>none</default>
                     <constraints>
                         <options>
-                            <option label="30390">none</option>
-                            <option label="30391">source</option>
-                            <option label="30392">autoplay</option>
-                            <option label="30393">both</option>
+                            <option>none</option>
+                            <option>source</option>
+                            <option>autoplay</option>
+                            <option>both</option>
                         </options>
                     </constraints>
                     <control type="spinner" format="string" />
@@ -1158,21 +1100,37 @@
                     parent="auto_play_movie">
                     <default>4K</default>
                     <constraints>
-                        <allowempty>true</allowempty>
+                        <options>
+                            <option>4K</option>
+                            <option>1080p</option>
+                            <option>720p</option>
+                            <option>SD</option>
+                            <option>SCR</option>
+                            <option>CAM</option>
+                            <option>TELE</option>
+                        </options>
                     </constraints>
-                    <control type="edit" format="string" />
+                    <control type="spinner" format="string" />
                 </setting>
                 <setting id="autoplay_quality_movie" type="string" label="30346" help="30347"
                     parent="auto_play_movie">
                     <default>4K</default>
                     <constraints>
-                        <allowempty>true</allowempty>
+                        <options>
+                            <option>4K</option>
+                            <option>1080p</option>
+                            <option>720p</option>
+                            <option>SD</option>
+                            <option>SCR</option>
+                            <option>CAM</option>
+                            <option>TELE</option>
+                        </options>
                     </constraints>
-                    <control type="edit" format="string" />
+                    <control type="spinner" format="string" />
                 </setting>
-                <setting id="auto_resume_movie" type="integer" label="30348" help="30349">
-                    <default>0</default>
-                    <control type="spinner" format="integer" />
+                <setting id="auto_resume_movie" type="boolean" label="30348" help="30349">
+                    <default>false</default>
+                    <control type="toggle" />
                 </setting>
                 <setting id="stinger_alert.show" type="boolean" label="30350" help="30351">
                     <default>false</default>
@@ -1211,19 +1169,35 @@
                 </setting>
                 <setting id="results_quality_episode" type="string" label="30344" help="30345"
                     parent="auto_play_episode">
-                    <default></default>
+                    <default>4K</default>
                     <constraints>
-                        <allowempty>true</allowempty>
+                        <options>
+                            <option>4K</option>
+                            <option>1080p</option>
+                            <option>720p</option>
+                            <option>SD</option>
+                            <option>SCR</option>
+                            <option>CAM</option>
+                            <option>TELE</option>
+                        </options>
                     </constraints>
-                    <control type="edit" format="string" />
+                    <control type="spinner" format="string" />
                 </setting>
                 <setting id="autoplay_quality_episode" type="string" label="30346" help="30347"
                     parent="auto_play_episode">
-                    <default></default>
+                    <default>4K</default>
                     <constraints>
-                        <allowempty>true</allowempty>
+                        <options>
+                            <option>4K</option>
+                            <option>1080p</option>
+                            <option>720p</option>
+                            <option>SD</option>
+                            <option>SCR</option>
+                            <option>CAM</option>
+                            <option>TELE</option>
+                        </options>
                     </constraints>
-                    <control type="edit" format="string" />
+                    <control type="spinner" format="string" />
                 </setting>
                 <setting id="autoplay_next_episode" type="boolean" label="30358" help="30359"
                     parent="auto_play_episode">

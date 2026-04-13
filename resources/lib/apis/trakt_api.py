@@ -15,9 +15,6 @@ from modules.utils import (
     get_datetime,
     timedelta,
     replace_html_codes,
-    copy2clip,
-    make_qrcode,
-    make_tinyurl,
     make_thread_list,
     jsondate_to_datetime as js2date,
 )

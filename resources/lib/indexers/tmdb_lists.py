@@ -702,7 +702,8 @@ def tmdb_auth():
     progressDialog.close()
     if success:
         set_setting("tmdb.token", response["access_token"])
-        set_setting("tmdb.account_id", response["account_id"])
+        set_setting("tmdb.user", response["account_id"])
+        kodi_utils.logger("TMDB Auth", response)
         notice = "Success"
     else:
         notice = "Failed"

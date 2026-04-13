@@ -1078,12 +1078,12 @@ msgstr ""
 
 #: /resources/settings.xml
 msgctxt "#30210"
-msgid "Enable Real Debrid"
+msgid "Enable"
 msgstr ""
 
 #: /resources/settings.xml
 msgctxt "#30211"
-msgid "Enable the use of your Real Debrid account"
+msgid "Enable the use of this debrid"
 msgstr ""
 
 #: /resources/settings.xml
@@ -1093,7 +1093,7 @@ msgstr ""
 
 #: /resources/settings.xml
 msgctxt "#30213"
-msgid "Choose which resolved media is automatically added to your Real Debrid Cloud. All media or only show packs"
+msgid "Choose which resolved media is automatically added to your Debrid Cloud. All media or only show packs"
 msgstr ""
 
 #: /resources/settings.xml
@@ -2053,4 +2053,9 @@ msgstr ""
 #: /resources/settings.xml
 msgctxt "#30404"
 msgid "Use a url/qr code to log in to your account with Bacterio"
+msgstr ""
+
+#: /resources/settings.xml
+msgctxt "#30405"
+msgid "TMDb"
 msgstr ""
