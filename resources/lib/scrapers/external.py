@@ -7,13 +7,9 @@ from caches.external_cache import external_cache
 from modules import kodi_utils, source_utils
 from modules.debrid import (
     RD_check,
-    PM_check,
-    AD_check,
-    ED_check,
-    TB_check,
     query_local_cache,
 )
-from modules.providers import REAL_DEBRID, PREMIUMIZE, ALLDEBRID, EASYDEBRID, TORBOX
+from modules.providers import REAL_DEBRID
 from modules.utils import clean_file_name
 from modules.settings_manager import get_setting
 
@@ -82,10 +78,6 @@ class source:
         )
         self.debrid_runners = {
             REAL_DEBRID: (REAL_DEBRID, RD_check),
-            PREMIUMIZE:  (PREMIUMIZE,  PM_check),
-            ALLDEBRID:   (ALLDEBRID,   AD_check),
-            EASYDEBRID:  (EASYDEBRID,  ED_check),
-            TORBOX:      (TORBOX,      TB_check),
         }
 
     def results(self, info):
@@ -360,7 +352,7 @@ class source:
                     yield provider
 
         def _process_cache_check(provider, function):
-            if provider in (REAL_DEBRID, ALLDEBRID):
+            if provider in (REAL_DEBRID):
                 if self.external_cache_check:
                     cached = function(
                         hash_list, cached_hashes, self.data, self.active_debrid
