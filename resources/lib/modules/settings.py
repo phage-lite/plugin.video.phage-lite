@@ -592,7 +592,7 @@ def date_offset():
 
 
 def media_open_action(media_type):
-    return int(get_setting("bacterio.media_open_action_%s" % media_type, "0"))
+    return get_setting("bacterio.media_open_action_%s" % media_type, "None")
 
 
 def watched_indicators():
