@@ -30,10 +30,6 @@ def routing(sys):
         from indexers import tmdb_lists
 
         getattr(tmdb_lists, mode.split(".")[1])(params)
-    elif "easynews." in mode:
-        from indexers import easynews
-
-        getattr(easynews, mode.split(".")[1])(params)
     elif "playback." in mode:
         from modules.kodi_utils import player_check
 
@@ -181,110 +177,6 @@ def routing(sys):
             from indexers.real_debrid import rd_delete
 
             rd_delete(_get("id"), _get("cache_type"))
-    elif "premiumize" in mode:
-        if mode == "premiumize.pm_cloud":
-            from indexers.premiumize import pm_cloud
-
-            pm_cloud(_get("id", None), _get("folder_name", None))
-        elif mode == "premiumize.pm_transfers":
-            from indexers.premiumize import pm_transfers
-
-            pm_transfers()
-        elif mode == "premiumize.pm_account_info":
-            from indexers.premiumize import pm_account_info
-
-            pm_account_info()
-        elif mode == "premiumize.authenticate":
-            from apis.premiumize_api import PremiumizeAPI
-
-            PremiumizeAPI().auth()
-        elif mode == "premiumize.revoke_authentication":
-            from apis.premiumize_api import PremiumizeAPI
-
-            PremiumizeAPI().revoke()
-        elif mode == "premiumize.rename":
-            from indexers.premiumize import pm_rename
-
-            pm_rename(_get("file_type"), _get("id"), _get("name"))
-        elif mode == "premiumize.delete":
-            from indexers.premiumize import pm_delete
-
-            pm_delete(_get("file_type"), _get("id"))
-    elif "alldebrid" in mode:
-        if mode == "alldebrid.ad_cloud":
-            from indexers.alldebrid import ad_cloud
-
-            ad_cloud(_get("id", None))
-        elif mode == "alldebrid.ad_downloads":
-            from indexers.alldebrid import ad_downloads
-
-            ad_downloads()
-        elif mode == "alldebrid.ad_saved_links":
-            from indexers.alldebrid import ad_saved_links
-
-            ad_saved_links()
-        elif mode == "alldebrid.browse_ad_cloud":
-            from indexers.alldebrid import browse_ad_cloud
-
-            browse_ad_cloud(_get("id"))
-        elif mode == "alldebrid.resolve_ad":
-            from indexers.alldebrid import resolve_ad
-
-            resolve_ad(params)
-        elif mode == "alldebrid.ad_account_info":
-            from indexers.alldebrid import ad_account_info
-
-            ad_account_info()
-        elif mode == "alldebrid.authenticate":
-            from apis.alldebrid_api import AllDebridAPI
-
-            AllDebridAPI().auth()
-        elif mode == "alldebrid.revoke_authentication":
-            from apis.alldebrid_api import AllDebridAPI
-
-            AllDebridAPI().revoke()
-        elif mode == "alldebrid.delete":
-            from indexers.alldebrid import ad_delete
-
-            ad_delete(_get("id"))
-    elif "easydebrid" in mode:
-        if mode == "easydebrid.authenticate":
-            from apis.easydebrid_api import EasyDebridAPI
-
-            EasyDebridAPI().auth()
-        elif mode == "easydebrid.revoke_authentication":
-            from apis.easydebrid_api import EasyDebridAPI
-
-            EasyDebridAPI().revoke()
-    elif "torbox" in mode:
-        if mode == "torbox.tb_cloud":
-            from indexers.torbox import tb_cloud
-
-            tb_cloud()
-        elif mode == "torbox.browse_tb_cloud":
-            from indexers.torbox import browse_tb_cloud
-
-            browse_tb_cloud(_get("folder_id"), _get("media_type"))
-        elif mode == "torbox.resolve_tb":
-            from indexers.torbox import resolve_tb
-
-            resolve_tb(params)
-        elif mode == "torbox.tb_account_info":
-            from indexers.torbox import tb_account_info
-
-            tb_account_info()
-        elif mode == "torbox.authenticate":
-            from apis.torbox_api import TorBoxAPI
-
-            TorBoxAPI().auth()
-        elif mode == "torbox.revoke_authentication":
-            from apis.torbox_api import TorBoxAPI
-
-            TorBoxAPI().revoke()
-        elif mode == "torbox.delete":
-            from indexers.torbox import tb_delete
-
-            tb_delete(_get("folder_id"), _get("media_type"))
     elif "tmdblist_api" in mode:
         if mode == "tmdblist_api.authenticate":
             from indexers.tmdb_lists import tmdb_auth
