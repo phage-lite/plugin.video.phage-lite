@@ -47,22 +47,6 @@
                 </setting>
             </group>
 
-            <group id="3" label="30035">
-                <setting id="trakt.sync_interval" type="integer" label="30036" help="30037">
-                    <level>2</level>
-                    <default>60</default>
-                    <constraints>
-                        <minimum>5</minimum>
-                        <maximum>1440</maximum>
-                    </constraints>
-                    <control type="spinner" format="integer" />
-                </setting>
-                <setting id="trakt.refresh_widgets" type="boolean" label="30038" help="30039">
-                    <level>2</level>
-                    <default>false</default>
-                    <control type="toggle" />
-                </setting>
-            </group>
 
             <group id="4" label="30040">
                 <setting id="datetime.offset" type="integer" label="30041" help="30042">
@@ -333,12 +317,6 @@
                 </setting>
             </group>
 
-            <group id="4" label="30118">
-                <setting id="tmdblist.list_sort" type="integer" label="30119" help="30120">
-                    <default>0</default>
-                    <control type="spinner" format="integer" />
-                </setting>
-            </group>
 
             <group id="5" label="30121">
                 <setting id="personal_list.list_sort" type="integer" label="30122" help="30123">
@@ -466,39 +444,12 @@
                 </setting>
             </group>
 
-            <group id="3" label="30170">
-                <setting id="trakt.flatten_episodes" type="boolean" label="30171" help="30172">
-                    <level>2</level>
-                    <default>false</default>
-                    <control type="toggle" />
-                </setting>
-                <setting id="trakt.calendar_sort_order" type="integer" label="30173" help="30174">
-                    <default>0</default>
-                    <control type="spinner" format="integer" />
-                </setting>
-                <setting id="trakt.calendar_previous_days" type="integer" label="30175" help="30176">
-                    <default>7</default>
-                    <constraints>
-                        <minimum>0</minimum>
-                        <maximum>30</maximum>
-                    </constraints>
-                    <control type="spinner" format="integer" />
-                </setting>
-                <setting id="trakt.calendar_future_days" type="integer" label="30177" help="30178">
-                    <default>7</default>
-                    <constraints>
-                        <minimum>0</minimum>
-                        <maximum>30</maximum>
-                    </constraints>
-                    <control type="spinner" format="integer" />
-                </setting>
-            </group>
 
         </category>
 
         <!-- ======================== METADATA ACCOUNTS ======================== -->
         <category id="trakt" label="30020">
-            <group id="1" label="30020">
+            <group id="1" label="30184">
                 <setting id="trakt.authenticate" label="30403" type="action" help="30404">
                     <level>0</level>
                     <control type="button" format="action">
@@ -533,9 +484,52 @@
                     <control type="edit" format="string" />
                 </setting>
             </group>
+            <group id="2" label="30035">
+                <setting id="trakt.sync_interval" type="integer" label="30036" help="30037">
+                    <level>2</level>
+                    <default>60</default>
+                    <constraints>
+                        <minimum>5</minimum>
+                        <maximum>1440</maximum>
+                    </constraints>
+                    <control type="spinner" format="integer" />
+                </setting>
+                <setting id="trakt.refresh_widgets" type="boolean" label="30038" help="30039">
+                    <level>2</level>
+                    <default>false</default>
+                    <control type="toggle" />
+                </setting>
+            </group>
+            <group id="3" label="30170">
+                <setting id="trakt.flatten_episodes" type="boolean" label="30171" help="30172">
+                    <level>2</level>
+                    <default>false</default>
+                    <control type="toggle" />
+                </setting>
+                <setting id="trakt.calendar_sort_order" type="integer" label="30173" help="30174">
+                    <default>0</default>
+                    <control type="spinner" format="integer" />
+                </setting>
+                <setting id="trakt.calendar_previous_days" type="integer" label="30175" help="30176">
+                    <default>7</default>
+                    <constraints>
+                        <minimum>0</minimum>
+                        <maximum>30</maximum>
+                    </constraints>
+                    <control type="spinner" format="integer" />
+                </setting>
+                <setting id="trakt.calendar_future_days" type="integer" label="30177" help="30178">
+                    <default>7</default>
+                    <constraints>
+                        <minimum>0</minimum>
+                        <maximum>30</maximum>
+                    </constraints>
+                    <control type="spinner" format="integer" />
+                </setting>
+            </group>
         </category>
         <category id="tmdb" label="30405">
-            <group id="2" label="30184">
+            <group id="1" label="30184">
                 <setting id="tmdb.authenticate" label="30403" type="action" help="30404">
                     <level>0</level>
                     <control type="button" format="action">
@@ -570,6 +564,12 @@
                     <default>
                         eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiM2Q4OGIyODIzNDc0M2I0ZDE4Yzg0YzZkYmQzYWM4MSIsIm5iZiI6MTcwMjM1MjEzNC4wNjIsInN1YiI6IjY1NzdkNTA2N2EzYzUyMDBhZDE5NmY1MSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.xP3IHOVqYbDkoiluKUdgdocIobrsDoPpHymgp7sTVCU</default>
                     <control type="edit" format="string" />
+                </setting>
+            </group>
+            <group id="2" label="30118">
+                <setting id="tmdblist.list_sort" type="integer" label="30119" help="30120">
+                    <default>0</default>
+                    <control type="spinner" format="integer" />
                 </setting>
             </group>
         </category>
