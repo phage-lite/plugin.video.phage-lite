@@ -93,7 +93,7 @@ msgstr ""
 
 #: /resources/settings.xml
 msgctxt "#30015"
-msgid "Allow Trakt Token Access"
+msgid "Allow Token Access"
 msgstr ""
 
 #: /resources/settings.xml
@@ -188,12 +188,12 @@ msgstr ""
 
 #: /resources/settings.xml
 msgctxt "#30034"
-msgid "Choose the provider that keeps track of the Movies and Episodes you have watched within Bacterio. Options are the built in method of Bacterio or your Trakt account"
+msgid "Choose the provider that keeps track of the Movies and Episodes you have watched within Bacterio. Options are the built in method of Bacterio or your account"
 msgstr ""
 
 #: /resources/settings.xml
 msgctxt "#30035"
-msgid "Trakt Cache"
+msgid "Cache"
 msgstr ""
 
 #: /resources/settings.xml
@@ -203,17 +203,17 @@ msgstr ""
 
 #: /resources/settings.xml
 msgctxt "#30037"
-msgid "Choose how often Bacterio polls your Trakt service for any changes"
+msgid "Choose how often Bacterio polls your service for any changes"
 msgstr ""
 
 #: /resources/settings.xml
 msgctxt "#30038"
-msgid "Refresh Widgets After Trakt Sync"
+msgid "Refresh Widgets After Sync"
 msgstr ""
 
 #: /resources/settings.xml
 msgctxt "#30039"
-msgid "Enable this and Bacterio will refresh widgets after performing a Trakt Sync if there were any changes"
+msgid "Enable this and Bacterio will refresh widgets after performing a Sync if there were any changes"
 msgstr ""
 
 #: /resources/settings.xml
@@ -452,12 +452,12 @@ msgstr ""
 
 #: /resources/settings.xml
 msgctxt "#30086"
-msgid "Include Unaired Media in Trakt Watchlists"
+msgid "Include Unaired Media in Watchlists"
 msgstr ""
 
 #: /resources/settings.xml
 msgctxt "#30087"
-msgid "Enable this and Bacterio will display any unaired media in your Trakt Movie/TV Show Watchlists. Disable this and any unaired Media will be hidden"
+msgid "Enable this and Bacterio will display any unaired media in your Movie/TV Show Watchlists. Disable this and any unaired Media will be hidden"
 msgstr ""
 
 #: /resources/settings.xml
@@ -587,42 +587,42 @@ msgstr ""
 
 #: /resources/settings.xml
 msgctxt "#30113"
-msgid "Contents Sort Order For Trakt Lists"
+msgid "Contents Sort Order For Lists"
 msgstr ""
 
 #: /resources/settings.xml
 msgctxt "#30114"
-msgid "Trakt Collection Sort Order"
+msgid "Collection Sort Order"
 msgstr ""
 
 #: /resources/settings.xml
 msgctxt "#30115"
-msgid "Choose the sort order for your Trakt Collection media"
+msgid "Choose the sort order for your Collection media"
 msgstr ""
 
 #: /resources/settings.xml
 msgctxt "#30116"
-msgid "Trakt Watchlist Sort Order"
+msgid "Watchlist Sort Order"
 msgstr ""
 
 #: /resources/settings.xml
 msgctxt "#30117"
-msgid "Choose the sort order for your Trakt Watchlist media"
+msgid "Choose the sort order for your Watchlist media"
 msgstr ""
 
 #: /resources/settings.xml
 msgctxt "#30118"
-msgid "TMDb Lists"
+msgid "Lists"
 msgstr ""
 
 #: /resources/settings.xml
 msgctxt "#30119"
-msgid "TMDb Lists Display Order"
+msgid "Lists Display Order"
 msgstr ""
 
 #: /resources/settings.xml
 msgctxt "#30120"
-msgid "Choose the order in which your TMDb lists are presented"
+msgid "Choose the order in which your lists are presented"
 msgstr ""
 
 #: /resources/settings.xml
@@ -834,7 +834,7 @@ msgstr ""
 
 #: /resources/settings.xml
 msgctxt "#30162"
-msgid "Include Trakt Watchlist/Bacterio Favorites"
+msgid "Include Watchlist/Bacterio Favorites"
 msgstr ""
 
 #: /resources/settings.xml
@@ -874,7 +874,7 @@ msgstr ""
 
 #: /resources/settings.xml
 msgctxt "#30170"
-msgid "Trakt Calendar"
+msgid "Calendar"
 msgstr ""
 
 #: /resources/settings.xml
@@ -889,12 +889,12 @@ msgstr ""
 
 #: /resources/settings.xml
 msgctxt "#30173"
-msgid "Trakt Calendar Sort Order"
+msgid "Calendar Sort Order"
 msgstr ""
 
 #: /resources/settings.xml
 msgctxt "#30174"
-msgid "Choose the sort direction of the Trakt Calendar list. Ascending or Descending"
+msgid "Choose the sort direction of the Calendar list. Ascending or Descending"
 msgstr ""
 
 #: /resources/settings.xml
@@ -904,7 +904,7 @@ msgstr ""
 
 #: /resources/settings.xml
 msgctxt "#30176"
-msgid "Choose how many previous days will be shown within the Trakt Calendar"
+msgid "Choose how many previous days will be shown within the Calendar"
 msgstr ""
 
 #: /resources/settings.xml
@@ -914,7 +914,7 @@ msgstr ""
 
 #: /resources/settings.xml
 msgctxt "#30178"
-msgid "Choose how many future days will be shown within the Trakt Calendar"
+msgid "Choose how many future days will be shown within the Calendar"
 msgstr ""
 
 # ---- METADATA ACCOUNTS ----
@@ -926,7 +926,7 @@ msgstr ""
 
 #: /resources/settings.xml
 msgctxt "#30180"
-msgid "Trakt Client ID Key"
+msgid "Client ID Key"
 msgstr ""
 
 #: /resources/settings.xml
@@ -936,7 +936,7 @@ msgstr ""
 
 #: /resources/settings.xml
 msgctxt "#30182"
-msgid "Trakt Client Secret Key"
+msgid "Client Secret Key"
 msgstr ""
 
 #: /resources/settings.xml
@@ -946,17 +946,17 @@ msgstr ""
 
 #: /resources/settings.xml
 msgctxt "#30184"
-msgid "TMDb API"
+msgid "API"
 msgstr ""
 
 #: /resources/settings.xml
 msgctxt "#30185"
-msgid "TMDb API Key"
+msgid "API Key"
 msgstr ""
 
 #: /resources/settings.xml
 msgctxt "#30186"
-msgid "Enter here your TMDb API key"
+msgid "Enter here your API key"
 msgstr ""
 
 #: /resources/settings.xml
