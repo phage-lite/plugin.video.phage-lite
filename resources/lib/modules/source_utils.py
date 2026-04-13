@@ -517,17 +517,85 @@ def get_file_info(name_info=None, url=None, default_quality="SD"):
 
 
 def get_release_quality(release_info):
-    if any(i in release_info for i in (".scr.", "screener", "dvdscr", "dvd.scr", ".r5", ".r6")):
+    if any(
+        i in release_info
+        for i in (".scr.", "screener", "dvdscr", "dvd.scr", ".r5", ".r6")
+    ):
         return Q_SCR
-    if any(i in release_info for i in (".cam.", "camrip", "hdcam", ".hd.cam", "hqcam", ".hq.cam", "cam.rip", "dvdcam")):
+    if any(
+        i in release_info
+        for i in (
+            ".cam.",
+            "camrip",
+            "hdcam",
+            ".hd.cam",
+            "hqcam",
+            ".hq.cam",
+            "cam.rip",
+            "dvdcam",
+        )
+    ):
         return Q_CAM
-    if any(i in release_info for i in (".tc.", ".ts.", "tsrip", "hdts", "hdtc", ".hd.tc", "dvdts", "telesync", "tele.sync", "telecine", "tele.cine")):
+    if any(
+        i in release_info
+        for i in (
+            ".tc.",
+            ".ts.",
+            "tsrip",
+            "hdts",
+            "hdtc",
+            ".hd.tc",
+            "dvdts",
+            "telesync",
+            "tele.sync",
+            "telecine",
+            "tele.cine",
+        )
+    ):
         return Q_TELE
-    if any(i in release_info for i in ("720", "720p", "720i", "hd720", "720hd", "hd720p", "72o", "72op")):
+    if any(
+        i in release_info
+        for i in ("720", "720p", "720i", "hd720", "720hd", "hd720p", "72o", "72op")
+    ):
         return Q_720
-    if any(i in release_info for i in ("1080", "1080p", "1080i", "hd1080", "1080hd", "hd1080p", "m1080p", "fullhd", "full.hd", "1o8o", "1o8op", "108o", "108op", "1o80", "1o80p")):
+    if any(
+        i in release_info
+        for i in (
+            "1080",
+            "1080p",
+            "1080i",
+            "hd1080",
+            "1080hd",
+            "hd1080p",
+            "m1080p",
+            "fullhd",
+            "full.hd",
+            "1o8o",
+            "1o8op",
+            "108o",
+            "108op",
+            "1o80",
+            "1o80p",
+        )
+    ):
         return Q_1080
-    if any(i in release_info for i in (".4k", "hd4k", "4khd", ".uhd", "ultrahd", "ultra.hd", "hd2160", "2160hd", "2160", "2160p", "216o", "216op")):
+    if any(
+        i in release_info
+        for i in (
+            ".4k",
+            "hd4k",
+            "4khd",
+            ".uhd",
+            "ultrahd",
+            "ultra.hd",
+            "hd2160",
+            "2160hd",
+            "2160",
+            "2160p",
+            "216o",
+            "216op",
+        )
+    ):
         return Q_4K
     return None
 
