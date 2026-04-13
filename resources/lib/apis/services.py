@@ -58,26 +58,6 @@ SERVICES = {
         "auth_style": "bearer",
         "token_key": "rd.token",
     },
-    "premiumize": {
-        "base_url": "https://www.premiumize.me/api/%s",
-        "auth_style": "bearer",
-        "token_key": "pm.token",
-    },
-    "alldebrid": {
-        "base_url": "https://api.alldebrid.com/v4/%s",
-        "auth_style": "bearer",
-        "token_key": "ad.token",
-    },
-    "easydebrid": {
-        "base_url": "https://api.easydebrid.com/%s",
-        "auth_style": "bearer",
-        "token_key": "ed.token",
-    },
-    "torbox": {
-        "base_url": "https://api.torbox.app/v1/api/%s",
-        "auth_style": "bearer",
-        "token_key": "tb.token",
-    },
 }
 
 
