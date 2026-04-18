@@ -93,7 +93,7 @@ def locations():
     }
 
 
-def database_locations(database_name):
+def database_locations(database_name: str):
     return kodi_utils.translate_path(
         path.join(
             path.join(kodi_utils.addon_profile(), "databases"),
@@ -102,11 +102,11 @@ def database_locations(database_name):
     )
 
 
-def make_database(database_name):
+def make_database(database_name: str):
     dbcon = database.connect(database_locations(database_name))
     all_commands = table_creators()[database_name]
     for command in all_commands:
-        dbcon.execute(command)
+        _ = dbcon.execute(command)
     dbcon.close()
 
 
@@ -119,19 +119,19 @@ def make_databases():
         make_database(database_name)
 
 
-def connect_database(database_name):
+def connect_database(database_name: str):
     dbcon = database.connect(
         database_locations(database_name),
         timeout=20,
         isolation_level=None,
         check_same_thread=False,
     )
-    dbcon.execute("PRAGMA synchronous = OFF")
-    dbcon.execute("PRAGMA journal_mode = OFF")
+    _ = dbcon.execute("PRAGMA synchronous = OFF")
+    _ = dbcon.execute("PRAGMA journal_mode = OFF")
     return dbcon
 
 
-def get_timestamp(offset=0):
+def get_timestamp(offset: float = 0):
     # Offset is in HOURS multiply by 3600 to get seconds
     return int(time.time()) + (offset * 3600)
 
@@ -160,16 +160,16 @@ def remove_old_databases():
     try:
         files = kodi_utils.list_dirs(databases_path)[1]
         for item in files:
-            if not item in current_dbs:
+            if item not in current_dbs:
                 try:
-                    kodi_utils.delete_file(databases_path + item)
+                    _ = kodi_utils.delete_file(databases_path + item)
                 except:
                     pass
     except:
         pass
 
 
-def check_databases_integrity(silent=False):
+def check_databases_integrity(silent: bool = False):
     integrity_check = {
         "settings_db": 1,
         "navigator_db": 1,
@@ -188,7 +188,7 @@ def check_databases_integrity(silent=False):
         "random_widgets_db": 1,
     }
 
-    def _process(database_name, tables):
+    def _process(database_name: str, tables):
         cursor, error = None, False
         try:
             database_location = database_locations(database_name)
@@ -198,14 +198,13 @@ def check_databases_integrity(silent=False):
             error = True
         if cursor:
             try:
-                cursor.execute("PRAGMA integrity_check")
-                result = cursor.fetchone()
-                if not "ok" in result:
+                result = cursor.execute("PRAGMA integrity_check").fetchone()
+                if "ok" not in result:
                     error = True
             except:
                 error = True
             try:
-                cursor.execute('SELECT name FROM sqlite_master WHERE type="table";')
+                _ = cursor.execute('SELECT name FROM sqlite_master WHERE type="table";')
                 current_tables = len([i[0] for i in cursor.fetchall()])
                 if current_tables != tables:
                     error = True
@@ -219,13 +218,13 @@ def check_databases_integrity(silent=False):
             except:
                 pass
 
-    database_errors = []
+    database_errors: list[str] = []
     for database_name, tables in integrity_check.items():
         _process(database_name, tables)
     if database_errors:
         make_databases()
         if not silent:
-            kodi_utils.ok_dialog(
+            _ = kodi_utils.ok_dialog(
                 text="[B]Following Databases Rebuilt:[/B][CR][CR]%s"
                 % ", ".join(database_errors)
             )
@@ -233,7 +232,7 @@ def check_databases_integrity(silent=False):
         kodi_utils.notification("No Corrupt or Missing Databases", time=3000)
 
 
-def get_size(file):
+def get_size(file: str):
     with kodi_utils.open_file(file) as f:
         s = f.size()
     return s
@@ -442,11 +441,11 @@ def check_and_insert_new_columns(database, table, new_column, new_column_propert
 
 
 class BaseCache(object):
-    def __init__(self, dbfile, table):
-        self.table = table
-        self.dbfile = dbfile
+    def __init__(self, dbfile: str, table: str):
+        self.table: str = table
+        self.dbfile: str = dbfile
 
-    def get(self, string):
+    def get(self, string: str):
         result = None
         try:
             current_time = get_timestamp()
@@ -463,11 +462,11 @@ class BaseCache(object):
             pass
         return result
 
-    def set(self, string, data, expiration=720):
+    def set(self, string: str, data: object, expiration: float = 720):
         try:
             dbcon = connect_database(self.dbfile)
             expires = get_timestamp(expiration)
-            dbcon.execute(
+            _ = dbcon.execute(
                 "INSERT OR REPLACE INTO %s(id, data, expires) VALUES (?, ?, ?)"
                 % self.table,
                 (string, repr(data), int(expires)),
@@ -475,19 +474,21 @@ class BaseCache(object):
         except:
             return None
 
-    def delete(self, string):
+    def delete(self, string: str):
         try:
             dbcon = connect_database(self.dbfile)
-            dbcon.execute("DELETE FROM %s WHERE id = ?" % self.table, (string,))
+            return dbcon.execute("DELETE FROM %s WHERE id = ?" % self.table, (string,))
         except:
             pass
 
-    def delete_like(self, string):
+    def delete_like(self, string: str):
         try:
             dbcon = connect_database(self.dbfile)
-            dbcon.execute("DELETE FROM %s WHERE id LIKE ?" % self.table, (string,))
+            return dbcon.execute(
+                "DELETE FROM %s WHERE id LIKE ?" % self.table, (string,)
+            )
         except:
             pass
 
-    def manual_connect(self, dbfile):
+    def manual_connect(self, dbfile: str):
         return connect_database(dbfile)

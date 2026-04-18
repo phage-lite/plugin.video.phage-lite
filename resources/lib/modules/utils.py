@@ -3,29 +3,30 @@ import re
 import sys
 import time
 import random
-import _strptime
+from typing import Any
 import unicodedata
 from html import unescape
 from queue import SimpleQueue
-from threading import Thread, activeCount
+from threading import Thread, active_count
 from importlib import import_module
 from datetime import datetime, timedelta, date
 from modules.settings import max_threads
 from modules.kodi_utils import sleep
+from resources.lib.modules.types import T
 
 
 class TaskPool:
     def __init__(self):
-        self._queue = SimpleQueue()
+        self._queue: SimpleQueue[Any] = SimpleQueue()
 
-    def _thread_target(self, queue, target):
+    def _thread_target(self, queue: SimpleQueue[Any], target):
         while not queue.empty():
             try:
                 target(*queue.get())
             except Exception:
                 pass
 
-    def tasks(self, _target, _list, _max_size=60):
+    def tasks(self, _target, _list: list[Any], _max_size: int = 60):
         [self._queue.put(tag) for tag in _list]
         threads = [
             Thread(target=self._thread_target, args=(self._queue, _target))
@@ -34,7 +35,7 @@ class TaskPool:
         [i.start() for i in threads]
         return threads
 
-    def tasks_enumerate(self, _target, _list, _max_size=60):
+    def tasks_enumerate(self, _target, _list: list[Any], _max_size: int = 60):
         [self._queue.put((p, tag)) for p, tag in enumerate(_list, 1)]
         threads = [
             Thread(target=self._thread_target, args=(self._queue, _target))
@@ -47,7 +48,7 @@ class TaskPool:
 def make_thread_list(_target, _list):
     _max_threads = max_threads()
     for item in _list:
-        while activeCount() > _max_threads:
+        while active_count() > _max_threads:
             sleep(1)
         threaded_object = Thread(target=_target, args=(item,))
         threaded_object.start()
@@ -57,7 +58,7 @@ def make_thread_list(_target, _list):
 def make_thread_list_enumerate(_target, _list):
     _max_threads = max_threads()
     for count, item in enumerate(_list):
-        while activeCount() > _max_threads:
+        while active_count() > _max_threads:
             sleep(1)
         threaded_object = Thread(target=_target, args=(count, item))
         threaded_object.start()
@@ -74,17 +75,17 @@ def append_module_to_syspath(location):
     sys.path.append(translate_path(location))
 
 
-def manual_function_import(location, function_name):
+def manual_function_import(location: str, function_name: str):
     return getattr(import_module(location), function_name)
 
 
-def reload_module(location):
+def reload_module(location: str):
     from importlib import reload as rel_module
 
     return rel_module(manual_module_import(location))
 
 
-def manual_module_import(location):
+def manual_module_import(location: str):
     return import_module(location)
 
 
@@ -118,7 +119,9 @@ def string_alphanum_to_num(string):
         return string
 
 
-def jsondate_to_datetime(jsondate_object, resformat, remove_time=False):
+def jsondate_to_datetime(
+    jsondate_object: str, resformat: str, remove_time: bool = False
+):
     if not jsondate_object:
         return None
     if remove_time:
@@ -141,11 +144,11 @@ def get_current_timestamp():
     return int(time.time())
 
 
-def adjust_premiered_date(orig_date, adjust_hours):
+def adjust_premiered_date(orig_date: str, adjust_hours: float):
     if not orig_date:
         return None, None
     orig_date += " 20:00:00"
-    datetime_object = jsondate_to_datetime(orig_date, "%Y-%m-%d %H:%M:%S")
+    datetime_object = unwrap(jsondate_to_datetime(orig_date, "%Y-%m-%d %H:%M:%S"))
     adjusted_datetime = datetime_object + timedelta(hours=adjust_hours)
     adjusted_string = adjusted_datetime.strftime("%Y-%m-%d")
     return adjusted_datetime.date(), adjusted_string
@@ -180,7 +183,7 @@ def subtract_dates(date1, date2):
     return day
 
 
-def datetime_workaround(data, str_format):
+def datetime_workaround(data: str, str_format: str):
     try:
         datetime_object = datetime.strptime(data, str_format)
     except Exception:
@@ -534,23 +537,21 @@ def unzip(zip_location, destination_location, destination_check, show_busy=True)
     return status
 
 
-def make_qrcode(url):
-    if url == None:
-        return
-    import segno
+def make_qrcode(url: str):
+    from segno import make
     from os import path
     from modules.kodi_utils import addon_profile
 
     try:
         art_path = path.join(addon_profile(), "qr.png")
-        qrcode = segno.make(url, micro=False)
+        qrcode = make(url, micro=False)
         qrcode.save(art_path, scale=20)
     except Exception:
         return
     return art_path
 
 
-def make_tinyurl(url):
+def make_tinyurl(url: str):
     import requests
 
     short_url = ""
@@ -567,34 +568,7 @@ def make_tinyurl(url):
     return short_url
 
 
-def copy2clip(txt):
-    if sys.platform == "win32":
-        try:
-            from subprocess import check_call
-
-            cmd = "echo " + txt.replace("&", "^&").strip() + "|clip"
-            return check_call(cmd, shell=True)
-        except Exception:
-            return
-    if sys.platform == "darwin":
-        try:
-            from subprocess import check_call
-
-            cmd = "echo " + txt.strip() + "|pbcopy"
-            return check_call(cmd, shell=True)
-        except Exception:
-            return
-    if sys.platform == "linux":
-        try:
-            from subprocess import Popen, PIPE
-
-            p = Popen(["xsel", "-pi"], stdin=PIPE)
-            p.communicate(input=txt)
-        except Exception:
-            return
-
-
-def image_from_db(image_url, delete=True):
+def image_from_db(image_url: str, delete: bool = True):
     import os
     import sqlite3 as database
     from modules.kodi_utils import translate_path
@@ -604,9 +578,11 @@ def image_from_db(image_url, delete=True):
         dbfile = translate_path(os.path.join("special://database", "Textures13.db"))
         if os.path.exists(dbfile):
             dbcon = database.connect(dbfile, isolation_level=None)
-            dbcur = dbcon.cursor()
-            dbcur.execute("""PRAGMA synchronous = OFF""")
-            dbcur.execute("""PRAGMA journal_mode = OFF""")
+            dbcur = (
+                dbcon.cursor()
+                .execute("""PRAGMA synchronous = OFF""")
+                .execute("""PRAGMA journal_mode = OFF""")
+            )
         else:
             return notification("Failed")
         try:
@@ -691,9 +667,10 @@ def make_image(list_type, image_type, list_name, images, current_image):
     return saved_final_image
 
 
-def download_image(list_type, image_type, list_name, url, current_image):
+def download_image(
+    list_type: str, image_type: str, list_name: str, url: str, current_image: str
+):
     import os
-    import shutil
     import urllib.request
     from modules.kodi_utils import addon_profile, make_directory, notification
 
@@ -708,9 +685,15 @@ def download_image(list_type, image_type, list_name, url, current_image):
             final_image_folder, "%s_%s.jpg" % (md5_image_name, get_current_timestamp())
         )
         make_directory(final_image_folder)
-        urllib.request.urlretrieve(url, saved_final_image)
+        _ = urllib.request.urlretrieve(url, saved_final_image)
         if current_image:
             os.remove(current_image)
     except Exception:
         notification("Error Creating Image")
     return saved_final_image
+
+
+def unwrap(value: T | None, label: str = "value") -> T:
+    if value is None:
+        raise Exception(label + " cannot be None")
+    return value

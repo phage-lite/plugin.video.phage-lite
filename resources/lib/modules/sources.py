@@ -1519,9 +1519,7 @@ class Sources:
                         None,
                         False,
                     )
-                if cache_provider in (
-                    "Real-Debrid",
-                ):
+                if cache_provider in ("Real-Debrid",):
                     kodi_utils.logger("Resolve", "cache_provider in list")
                     url = self.resolve_cached(
                         cache_provider,
@@ -1544,8 +1542,8 @@ class Sources:
         except Exception:
             pass
         kodi_utils.logger(
-            "Resolve",
             f"Result: {'OK' if url else 'FAILED'} | {item.get('scrape_provider')}",
+            "resolve_sources",
         )
         return url
 
@@ -1553,7 +1551,8 @@ class Sources:
         self, debrid_provider, item_url, _hash, title, season, episode, pack
     ):
         kodi_utils.logger(
-            "Resolve Cached", f"item_url {item_url} debrid_provider {debrid_provider}"
+            f"item_url {item_url} debrid_provider {debrid_provider}",
+            "resolve_cached",
         )
         debrid_function = self.debrid_importer(debrid_provider)
         store_to_cloud = settings.store_resolved_to_cloud(debrid_provider, pack)
@@ -1562,9 +1561,12 @@ class Sources:
                 item_url, _hash, store_to_cloud, title, season, episode
             )
         except Exception:
-            kodi_utils.logger("Resolve Cached", "Couldn't resolve magnet")
+            kodi_utils.logger("Couldn't resolve magnet", "resolve_cached")
             url = None
-        kodi_utils.logger("Resolve Cached", f"Url is {url}")
+        kodi_utils.logger(
+            f"Url is {url}",
+            "resolve_cached",
+        )
         return url
 
     def resolve_internal(

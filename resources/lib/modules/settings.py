@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from modules.settings_manager import get_setting, set_setting
-from modules.kodi_utils import logger, translate_path, get_property
+from modules.kodi_utils import translate_path, get_property
+from modules.logger import logger
 
 # Previously sourced from default_setting_values('context_menu.order')['setting_default'].
 # Inlined here now that settings_cache.py is removed.

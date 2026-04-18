@@ -1,11 +1,16 @@
-import traceback
+import os
+from typing import Any
+from urllib.parse import unquote, urlencode
+
 import xbmc
+import xbmcaddon
 import xbmcgui
+from xbmcgui import ListItem
 import xbmcplugin
 import xbmcvfs
-import xbmcaddon
-import os
-from urllib.parse import urlencode, unquote
+import requests
+
+from .types import UrlParams
 
 
 def random_valid_type_check():
@@ -241,11 +246,11 @@ def kodi_progress_background():
     return xbmcgui.DialogProgressBG()
 
 
-def get_visibility(obj):
+def get_visibility(obj: str):
     return xbmc.getCondVisibility(obj)
 
 
-def get_infolabel(label):
+def get_infolabel(label: str):
     return xbmc.getInfoLabel(label)
 
 
@@ -253,7 +258,7 @@ def kodi_actor():
     return xbmc.Actor
 
 
-def translate_path(_path):
+def translate_path(_path: str):
     return xbmcvfs.translatePath(_path)
 
 
@@ -269,7 +274,7 @@ def kodi_dialog():
     return xbmcgui.Dialog()
 
 
-def addon_info(info):
+def addon_info(info: str):
     return xbmcaddon.Addon("plugin.video.bacterio").getAddonInfo(info)
 
 
@@ -306,7 +311,7 @@ def addon_fanart():
     return get_property("bacterio.addon_fanart") or translate_path(addon_info("fanart"))
 
 
-def get_icon(image_name, image_folder="icons"):
+def get_icon(image_name: str, image_folder: str = "icons"):
     return os.path.join(
         addon_info("path"), "resources", "media", image_folder, image_name + ".png"
     )
@@ -320,12 +325,17 @@ def get_default_addon_fanart():
     return translate_path(addon_info("fanart"))
 
 
-def build_url(url_params):
+def build_url(url_params: UrlParams):
     return f"plugin://plugin.video.bacterio/?{urlencode(url_params)}"
 
 
 def add_dir(
-    handle, url_params, list_name, icon_image="folder", fanart_image=None, isFolder=True
+    handle: int,
+    url_params: UrlParams,
+    list_name: str,
+    icon_image: str = "folder",
+    fanart_image: str | None = None,
+    isFolder: bool = True,
 ):
     fanart = fanart_image or get_addon_fanart()
     icon = get_icon(icon_image)
@@ -341,36 +351,38 @@ def add_dir(
             "banner": fanart,
         }
     )
-    info_tag = listitem.getVideoInfoTag(True)
-    info_tag.setPlot(" ")
-    add_item(handle, url, listitem, isFolder)
+    info_tag = listitem.getVideoInfoTag()
+    info_tag.setPlot("")
+    return add_item(handle, url, listitem, isFolder)
 
 
 def make_listitem():
     return xbmcgui.ListItem(offscreen=True)
 
 
-def add_item(handle, url, listitem, isFolder):
-    xbmcplugin.addDirectoryItem(handle, url, listitem, isFolder)
+def add_item(handle: int, url: str, listitem: ListItem, isFolder: bool):
+    return xbmcplugin.addDirectoryItem(handle, url, listitem, isFolder)
 
 
-def add_items(handle, item_list):
-    xbmcplugin.addDirectoryItems(handle, item_list)
+def add_items(handle: int, item_list: list[tuple[str, ListItem, bool]]):
+    return xbmcplugin.addDirectoryItems(handle, item_list)
 
 
-def set_content(handle, content):
+def set_content(handle: int, content: str):
     xbmcplugin.setContent(handle, content)
 
 
-def set_category(handle, label):
+def set_category(handle: int, label: str):
     xbmcplugin.setPluginCategory(handle, label)
 
 
-def end_directory(handle, cacheToDisc=True):
+def end_directory(handle: int, cacheToDisc: bool = True):
     xbmcplugin.endOfDirectory(handle, cacheToDisc=cacheToDisc)
 
 
-def set_view_mode(view_type, content="files", is_external=None):
+def set_view_mode(
+    view_type: str, content: str = "files", is_external: bool | None = None
+):
     if not get_property("bacterio.use_viewtypes") == "true":
         return
     if is_external is None:
@@ -394,46 +406,37 @@ def set_view_mode(view_type, content="files", is_external=None):
         return
 
 
-def random_integer(start=1, end=1000000):
+def random_integer(start: int = 1, end: int = 1000000):
     from random import randint
 
     return randint(start, end)
 
 
-def remove_keys(dict_item, dict_removals):
+def remove_keys(dict_item: dict[Any, Any], dict_removals: list[Any]):
     for k in dict_removals:
         dict_item.pop(k, None)
     return dict_item
 
 
-def append_path(_path):
+def append_path(_path: str):
     import sys
 
     sys.path.append(translate_path(_path))
-
-
-def logger(heading, function):
-    xbmc.log("[Bacterio]\n\t[%s]: %s" % (heading, function), 1)
-
-
-def trace(heading):
-    trace = traceback.format_stack()
-    xbmc.log("[Bacterio]\n\t[%s]: %s" % (heading, "".join(trace)), 1)
 
 
 def kodi_window():
     return xbmcgui.Window(10000)
 
 
-def get_property(prop):
+def get_property(prop: str):
     return kodi_window().getProperty(prop)
 
 
-def set_property(prop, value):
+def set_property(prop: str, value: str):
     return kodi_window().setProperty(prop, value)
 
 
-def clear_property(prop):
+def clear_property(prop: str):
     return kodi_window().clearProperty(prop)
 
 
@@ -441,15 +444,15 @@ def clear_all_properties():
     return kodi_window().clearProperties()
 
 
-def addon(addon_id="plugin.video.bacterio"):
+def addon(addon_id: str = "plugin.video.bacterio"):
     return xbmcaddon.Addon(id=addon_id)
 
 
-def addon_installed(addon_id):
+def addon_installed(addon_id: str):
     return get_visibility("System.HasAddon(%s)" % addon_id)
 
 
-def addon_enabled(addon_id):
+def addon_enabled(addon_id: str):
     return get_visibility("System.AddonIsEnabled(%s)" % addon_id)
 
 
@@ -457,21 +460,20 @@ def container_content():
     return get_infolabel("Container.Content")
 
 
-def set_sort_method(handle, method):
+def set_sort_method(handle: int, method: str):
     xbmcplugin.addSortMethod(
         handle, {"episodes": 24, "files": 5, "label": 2, "none": 0}[method]
     )
 
 
-def make_session(url="https://"):
-    import requests
+def make_session(url: str = "https://"):
 
     session = requests.Session()
     session.mount(url, requests.adapters.HTTPAdapter(pool_maxsize=100))
     return session
 
 
-def make_playlist(playlist_type="video"):
+def make_playlist(playlist_type: str = "video"):
     return xbmc.PlayList({"music": 0, "video": 1}[playlist_type])
 
 
@@ -479,47 +481,47 @@ def supported_media():
     return xbmc.getSupportedMedia("video")
 
 
-def path_exists(path):
+def path_exists(path: str):
     return xbmcvfs.exists(path)
 
 
-def open_file(_file, mode="r"):
+def open_file(_file: str, mode: str = "r"):
     return xbmcvfs.File(_file, mode)
 
 
-def copy_file(source, destination):
+def copy_file(source: str, destination: str):
     return xbmcvfs.copy(source, destination)
 
 
-def delete_file(_file):
-    xbmcvfs.delete(_file)
+def delete_file(_file: str):
+    return xbmcvfs.delete(_file)
 
 
-def delete_folder(_folder, force=False):
-    xbmcvfs.rmdir(_folder, force)
+def delete_folder(_folder: str, force: bool = False):
+    _ = xbmcvfs.rmdir(_folder, force)
 
 
-def rename_file(old, new):
-    xbmcvfs.rename(old, new)
+def rename_file(old: str, new: str):
+    _ = xbmcvfs.rename(old, new)
 
 
-def list_dirs(location):
+def list_dirs(location: str):
     return xbmcvfs.listdir(location)
 
 
-def make_directory(path):
-    xbmcvfs.mkdir(path)
+def make_directory(path: str):
+    _ = xbmcvfs.mkdir(path)
 
 
-def make_directories(path):
-    xbmcvfs.mkdirs(path)
+def make_directories(path: str):
+    _ = xbmcvfs.mkdirs(path)
 
 
-def sleep(time):
+def sleep(time: int):
     return xbmc.sleep(time)
 
 
-def execute_builtin(command, block=False):
+def execute_builtin(command: str, block: bool = False):
     return xbmc.executebuiltin(command, block)
 
 
@@ -555,7 +557,7 @@ def hide_busy_dialog():
     execute_builtin("Dialog.Close(busydialog)")
 
 
-def close_dialog(dialog, block=False):
+def close_dialog(dialog: str, block: bool = False):
     execute_builtin("Dialog.Close(%s,true)" % dialog, block)
 
 
@@ -563,7 +565,7 @@ def close_all_dialog():
     execute_builtin("Dialog.Close(all,true)")
 
 
-def run_addon(addon="plugin.video.bacterio", block=False):
+def run_addon(addon: str = "plugin.video.bacterio", block: bool = False):
     return execute_builtin("RunAddon(%s)" % addon, block)
 
 
@@ -579,7 +581,7 @@ def folder_path():
     return get_infolabel("Container.FolderPath")
 
 
-def path_check(string):
+def path_check(string: str):
     return string in unquote(folder_path())
 
 
@@ -595,26 +597,26 @@ def refresh_widgets():
     from modules.settings_manager import get_setting
     from caches.random_widgets_cache import RandomWidgets
 
-    RandomWidgets().delete_like("random_list.%")
+    _ = RandomWidgets().delete_like("random_list.%")
     kodi_refresh()
     if get_setting("bacterio.widget_refresh_notification", "true") == "true":
         notification("Widgets Refreshed", 2500)
 
 
-def run_plugin(params, block=False):
-    if isinstance(params, dict):
+def run_plugin(params: UrlParams | str, block: bool = False):
+    if isinstance(params, dict | tuple):
         params = build_url(params)
     return execute_builtin("RunPlugin(%s)" % params, block)
 
 
-def container_update(params, block=False):
-    if isinstance(params, dict):
+def container_update(params: UrlParams | str, block: bool = False):
+    if isinstance(params, dict | tuple):
         params = build_url(params)
     return execute_builtin("Container.Update(%s)" % params, block)
 
 
-def activate_window(params, block=False):
-    if isinstance(params, dict):
+def activate_window(params: UrlParams | str, block: bool = False):
+    if isinstance(params, dict | tuple):
         params = build_url(params)
     return execute_builtin("ActivateWindow(Videos,%s,return)" % params, block)
 
@@ -623,23 +625,23 @@ def container_refresh():
     return execute_builtin("Container.Refresh")
 
 
-def container_refresh_input(params, block=False):
-    if isinstance(params, dict):
+def container_refresh_input(params: UrlParams | str, block: bool = False):
+    if isinstance(params, dict | tuple):
         params = build_url(params)
     return execute_builtin("Container.Refresh(%s)" % params, block)
 
 
-def replace_window(params, block=False):
-    if isinstance(params, dict):
+def replace_window(params: UrlParams | str, block=False):
+    if isinstance(params, dict | tuple):
         params = build_url(params)
     return execute_builtin("ReplaceWindow(Videos,%s)" % params, block)
 
 
-def disable_enable_addon(addon_name="plugin.video.bacterio"):
+def disable_enable_addon(addon_name: str = "plugin.video.bacterio"):
     import json
 
     try:
-        xbmc.executeJSONRPC(
+        _ = xbmc.executeJSONRPC(
             json.dumps(
                 {
                     "jsonrpc": "2.0",
@@ -649,7 +651,7 @@ def disable_enable_addon(addon_name="plugin.video.bacterio"):
                 }
             )
         )
-        xbmc.executeJSONRPC(
+        _ = xbmc.executeJSONRPC(
             json.dumps(
                 {
                     "jsonrpc": "2.0",
@@ -668,7 +670,7 @@ def update_local_addons():
     sleep(2500)
 
 
-def update_kodi_addons_db(addon_name="plugin.video.bacterio"):
+def update_kodi_addons_db(addon_name: str = "plugin.video.bacterio"):
     import time
     import sqlite3 as database
 
@@ -677,7 +679,7 @@ def update_kodi_addons_db(addon_name="plugin.video.bacterio"):
         dbcon = database.connect(
             translate_path("special://database/Addons33.db"), timeout=40.0
         )
-        dbcon.execute(
+        _ = dbcon.execute(
             "INSERT OR REPLACE INTO installed (addonID, enabled, lastUpdated) VALUES (?, ?, ?)",
             (addon_name, 1, date),
         )
@@ -686,7 +688,7 @@ def update_kodi_addons_db(addon_name="plugin.video.bacterio"):
         pass
 
 
-def get_jsonrpc(request):
+def get_jsonrpc(request: object):
     import json
 
     response = xbmc.executeJSONRPC(json.dumps(request))
@@ -694,7 +696,9 @@ def get_jsonrpc(request):
     return result.get("result", None)
 
 
-def jsonrpc_get_directory(directory, properties=["title", "file", "thumbnail"]):
+def jsonrpc_get_directory(
+    directory: str, properties: list[str] = ["title", "file", "thumbnail"]
+):
     command = {
         "jsonrpc": "2.0",
         "id": 1,
@@ -713,7 +717,7 @@ def jsonrpc_get_directory(directory, properties=["title", "file", "thumbnail"]):
     return results
 
 
-def jsonrpc_get_addons(_type, properties=["thumbnail", "name"]):
+def jsonrpc_get_addons(_type: str, properties: list[str] = ["thumbnail", "name"]):
     command = {
         "jsonrpc": "2.0",
         "method": "Addons.GetAddons",
@@ -724,7 +728,7 @@ def jsonrpc_get_addons(_type, properties=["thumbnail", "name"]):
     return results
 
 
-def jsonrpc_get_system_setting(setting_id, setting_value=""):
+def jsonrpc_get_system_setting(setting_id: str, setting_value: Any = ""):
     command = {
         "jsonrpc": "2.0",
         "id": 1,
@@ -741,7 +745,9 @@ def jsonrpc_get_system_setting(setting_id, setting_value=""):
 def open_settings():
     from windows.base_window import open_window
 
-    open_window(("windows.settings_manager", "SettingsManager"), "settings_manager.xml")
+    return open_window(
+        ("windows.settings_manager", "SettingsManager"), "settings_manager.xml"
+    )
 
 
 def external_scraper_settings():
@@ -754,7 +760,7 @@ def external_scraper_settings():
         pass
 
 
-def progress_dialog(heading="", icon=None):
+def progress_dialog(heading: str = "", icon: str | None = None):
     from threading import Thread
     from windows.base_window import create_window
 
@@ -807,7 +813,7 @@ def ok_dialog(heading="", text="No Results", ok_label="OK"):
     return open_window(("windows.default_dialogs", "OK"), "ok.xml", **kwargs)
 
 
-def show_text(heading, text="", file=None, font_size="small", kodi_log=False):
+def show_text(heading: str, text="", file=None, font_size="small", kodi_log=False):
     from windows.base_window import open_window
 
     heading = heading.replace("[B]", "").replace("[/B]", "")
@@ -836,11 +842,11 @@ def show_text(heading, text="", file=None, font_size="small", kodi_log=False):
     )
 
 
-def notification(line1, time=5000, icon=None):
-    kodi_dialog().notification("Bacterio", line1, icon or addon_icon(), time)
+def notification(message: str, time: int = 5000, icon: str | None = None):
+    kodi_dialog().notification("Bacterio", message, icon or addon_icon(), time)
 
 
-def player_check(mode, params):
+def player_check(mode: str, params):
     from modules.settings import playback_key
 
     if mode == f"playback.{playback_key()}":
@@ -1011,7 +1017,7 @@ def upload_logfile(params):
             qr_code = make_qrcode(url) or ""
             progressDialog = progress_dialog(heading="Kodi Log Uploader", icon=qr_code)
             count, success = 20, None
-            while not progressDialog.iscanceled() and count >= 0 and success == None:
+            while not progressDialog.iscanceled() and count >= 0 and success is None:
                 try:
                     count -= 1
                     progressDialog.update(

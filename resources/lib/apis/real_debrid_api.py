@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 import re
 import time
+from typing import Any
 import requests
 from threading import Thread
 from caches.main_cache import cache_object
 from modules.settings_manager import get_setting, set_setting
-from modules.utils import copy2clip, make_tinyurl, make_qrcode
+from modules.utils import make_tinyurl, make_qrcode, unwrap
 from modules.source_utils import supported_video_extensions, seas_ep_filter, extras
 from modules.kodi_utils import logger, sleep, ok_dialog, progress_dialog, notification
 from apis import services
@@ -13,19 +14,19 @@ from apis import services
 
 class RealDebridAPI:
     def __init__(self):
-        self.client_ID = get_setting("rd.client_id") or "X245A4XAIBGVM"
+        self.client_ID: str = get_setting("rd.client_id") or "X245A4XAIBGVM"
         _domain = (
             "app.real-debrid.com"
             if get_setting("rd.alternate_base_url") == "true"
             else "api.real-debrid.com"
         )
-        self.auth_url = "https://%s/oauth/v2/" % _domain
-        self.token = get_setting("rd.token")
-        self.secret = get_setting("rd.secret")
-        self.refresh = get_setting("rd.refresh")
-        self.device_code = ""
-        self.refresh_retries = 0
-        self.break_auth_loop = False
+        self.auth_url: str = "https://%s/oauth/v2/" % _domain
+        self.token: str = get_setting("rd.token")
+        self.secret: str = get_setting("rd.secret")
+        self.refresh: str = get_setting("rd.refresh")
+        self.device_code: str = ""
+        self.refresh_retries: int = 0
+        self.break_auth_loop: bool = False
 
     def auth(self):
         self.secret = ""
@@ -39,7 +40,6 @@ class RealDebridAPI:
         auth_url = response["direct_verification_url"]
         qr_code = make_qrcode(auth_url) or ""
         short_url = make_tinyurl(auth_url)
-        copy2clip(auth_url)
         if short_url:
             p_dialog_insert = (
                 "OR visit this URL: [B]%s[/B][CR]OR Enter this Code: [B]%s[/B]"
@@ -48,12 +48,14 @@ class RealDebridAPI:
         else:
             p_dialog_insert = "OR Enter this Code: [B]%s[/B]" % user_code
         content = "Please Scan the QR Code%s[CR]" % p_dialog_insert
-        progressDialog = progress_dialog("Real Debrid Authorize", qr_code)
+        progressDialog = unwrap(
+            progress_dialog("Real Debrid Authorize", qr_code), "progress_dialog"
+        )
         progressDialog.update(content, 0)
         expires_in = int(response["expires_in"])
         sleep_interval = int(response["interval"])
         device_code = response["device_code"]
-        poll_url = self.auth_url + "device/credentials?%s" % "client_id=%s&code=%s" % (
+        poll_url = self.auth_url + "device/credentials?client_id=%s&code=%s" % (
             self.client_ID,
             device_code,
         )
@@ -80,7 +82,7 @@ class RealDebridAPI:
                 self.client_ID = response["client_id"]
                 progressDialog.close()
             except Exception:
-                ok_dialog(text="Error")
+                _ = ok_dialog(text="Error")
                 break
         try:
             progressDialog.close()
@@ -97,12 +99,12 @@ class RealDebridAPI:
             response = requests.post(url, data=data, timeout=20).json()
             self.token = response["access_token"]
             self.refresh = response["refresh_token"]
-            username = self.account_info()["username"]
+            username = unwrap(self.account_info())["username"]
             set_setting("rd.token", self.token)
             set_setting("rd.refresh", self.refresh)
             set_setting("rd.account_id", username)
             set_setting("rd.enabled", "true")
-            ok_dialog(text="Success")
+            _ = ok_dialog(text="Success")
 
     def refresh_token(self):
         try:
@@ -113,6 +115,11 @@ class RealDebridAPI:
                 "code": self.refresh,
                 "grant_type": "http://oauth.net/grant_type/device/1.0",
             }
+            logger("Client ID: " + self.client_ID, "refresh_token")
+            logger("Secret: " + self.secret, "refresh_token")
+            logger("Refresh: " + self.refresh, "refresh_token")
+            logger("Url: " + url, "refresh_token")
+
             response = requests.post(url, data=data).json()
             self.token = response["access_token"]
             self.refresh = response["refresh_token"]
@@ -120,6 +127,7 @@ class RealDebridAPI:
             set_setting("rd.refresh", self.refresh)
             return True
         except Exception:
+            logger("Some issue happened with refresh", "refresh_token")
             return False
 
     def revoke(self):
@@ -135,22 +143,23 @@ class RealDebridAPI:
         url = "user"
         return self._get(url)
 
-    def check_cache(self, hashes):
+    def check_cache(self, hashes: list[str]):
         hash_string = "/".join(hashes)
         url = "torrents/instantAvailability/%s" % hash_string
         return self._get(url)
 
-    def check_hash(self, hash_string):
+    def check_hash(self, hash_string: str):
         url = "torrents/instantAvailability/%s" % hash_string
         return self._get(url)
 
-    def check_single_magnet(self, hash_string):
+    def check_single_magnet(self, hash_string: str):
         cache_info = self.check_hash(hash_string)
         cached = False
-        if hash_string in cache_info:
-            info = cache_info[hash_string]
-            if isinstance(info, dict) and len(info.get("rd")) > 0:
-                cached = True
+        if cache_info is not None:
+            if hash_string in cache_info:
+                info = cache_info[hash_string]
+                if isinstance(info, dict) and len(info.get(key="rd")) > 0:  # pyright: ignore[reportUnknownMemberType, reportCallIssue, reportUnknownArgumentType]
+                    cached = True
         return cached
 
     def torrents_activeCount(self):
@@ -171,20 +180,20 @@ class RealDebridAPI:
         url = "downloads?limit=500"
         return cache_object(self._get, string, url, False, 0.03)
 
-    def user_cloud_info(self, file_id):
+    def user_cloud_info(self, file_id: str):
         string = "rd_user_cloud_info_%s" % file_id
         url = "torrents/info/%s" % file_id
         return cache_object(self._get, string, url, False, 0.03)
 
-    def user_cloud_info_check(self, file_id):
+    def user_cloud_info_check(self, file_id: str):
         url = "torrents/info/%s" % file_id
         return self._get(url)
 
-    def torrent_info(self, file_id):
+    def torrent_info(self, file_id: str):
         url = "torrents/info/%s" % file_id
         return self._get(url)
 
-    def unrestrict_link(self, link):
+    def unrestrict_link(self, link: str):
         url = "unrestrict/link"
         post_data = {"link": link}
         response = self._post(url, post_data)
@@ -193,14 +202,14 @@ class RealDebridAPI:
         except Exception:
             return None
 
-    def add_magnet(self, magnet):
+    def add_magnet(self, magnet: str):
         post_data = {"magnet": magnet}
         url = "torrents/addMagnet"
         result = self._post(url, post_data)
         logger("RealDebridAPI", f"result {result}")
         return result
 
-    def create_transfer(self, magnet_url):
+    def create_transfer(self, magnet_url: str):
         try:
             extensions = supported_video_extensions()
             torrent = self.add_magnet(magnet_url)
@@ -213,20 +222,26 @@ class RealDebridAPI:
             self.delete_torrent(torrent_id)
             return "failed"
 
-    def add_torrent_select(self, torrent_id, file_ids):
-        self.clear_cache(clear_hashes=False)
+    def add_torrent_select(self, torrent_id: str, file_ids: str):
+        _ = self.clear_cache(clear_hashes=False)
         url = "torrents/selectFiles/%s" % torrent_id
         post_data = {"files": file_ids}
         return self._post(url, post_data)
 
-    def delete_torrent(self, folder_id):
+    def delete_torrent(self, folder_id: str):
         return self._call("delete", "torrents/delete/%s" % folder_id)
 
-    def delete_download(self, download_id):
+    def delete_download(self, download_id: str):
         return self._call("delete", "downloads/delete/%s" % download_id)
 
     def resolve_magnet(
-        self, magnet_url, info_hash, store_to_cloud, title, season, episode
+        self,
+        magnet_url: str,
+        info_hash: str,
+        store_to_cloud: bool,
+        title: str,
+        season: int,
+        episode: int,
     ):
         compare_title = re.sub(
             r"[^A-Za-z0-9]+",
@@ -242,16 +257,20 @@ class RealDebridAPI:
                 logger("RealDebridAPI", f"Couldn't add magnet {magnet_url}")
                 return None
             torrent_id = torrent["id"]
-            self.add_torrent_select(torrent_id, "all")
+            _ = self.add_torrent_select(torrent_id, "all")
             sleep(1000)
             torrent_info = self.user_cloud_info_check(torrent_id)
-            if torrent_info is None or not torrent_info["links"] or "error" in torrent_info:
+            if (
+                torrent_info is None
+                or not torrent_info["links"]
+                or "error" in torrent_info
+            ):
                 logger("RealDebridAPI", f"Couldn't get torrent info {torrent_id}")
-                self.delete_torrent(torrent_id)
+                _ = self.delete_torrent(torrent_id)
                 return None
             sleep(1000)
             while attempts <= 4 and not transfer_finished:
-                active_count = self.torrents_activeCount()
+                active_count = unwrap(self.torrents_activeCount())
                 active_list = active_count["list"]
                 attempts += 1
                 if info_hash in active_list:
@@ -259,7 +278,7 @@ class RealDebridAPI:
                 else:
                     transfer_finished = True
             if not transfer_finished:
-                self.delete_torrent(torrent_id)
+                _ = self.delete_torrent(torrent_id)
                 return None
             files = [
                 i
@@ -272,7 +291,7 @@ class RealDebridAPI:
             )
             match = False
             if season:
-                correct_files = []
+                correct_files: list[Any] = []
                 correct_file_check = False
                 for value in selected_files:
                     correct_file_check = seas_ep_filter(
@@ -323,10 +342,10 @@ class RealDebridAPI:
                     break
             if match:
                 rd_link = torrent_info["links"][index]
-                file_url = self.unrestrict_link(rd_link)
-                if file_url.endswith("rar"):
-                    file_url = None
-                if not any(file_url.lower().endswith(x) for x in extensions):
+                file_url = unwrap(self.unrestrict_link(rd_link), "file_url")
+                if file_url.endswith("rar") or not any(
+                    file_url.lower().endswith(x) for x in extensions
+                ):
                     file_url = None
                 if not store_to_cloud:
                     Thread(target=self.delete_torrent, args=(torrent_id,)).start()
@@ -341,11 +360,13 @@ class RealDebridAPI:
     def display_magnet_pack(self, magnet_url, info_hash):
         try:
             torrent_id = None
-            torrent = self.add_magnet(magnet_url)
+            torrent = unwrap(self.add_magnet(magnet_url), "torrent")
             torrent_id = torrent["id"]
             self.add_torrent_select(torrent_id, "all")
             sleep(1000)
-            torrent_info = self.user_cloud_info_check(torrent_id)
+            torrent_info = unwrap(
+                self.user_cloud_info_check(torrent_id), "torrent_info"
+            )
             if not torrent_info["links"] or "error" in torrent_info:
                 self.delete_torrent(torrent_id)
                 return None
@@ -409,30 +430,32 @@ class RealDebridAPI:
         return [i[0] for i in sorted_list]
 
     def _m2ts_check(self, folder_details):
-        for idx, item in folder_details:
+        for item in folder_details:
             if item["path"].endswith(".m2ts"):
                 return True
         return False
 
-    def _call(self, method, endpoint, **kwargs):
+    def _call(self, method: str, endpoint: str, **kwargs: Any):
         """Call services, retry once after token refresh on bad_token response."""
         resp = getattr(services, method)("real_debrid", endpoint, raw=True, **kwargs)
-        logger("RealDebridAPI", f"raw resp {resp}")
+        logger(f"raw resp {resp}", "RealDebridAPI")
         if resp is None:
-            logger("RealDebridAPI", "response is none")
+            logger("response is none", "RealDebridAPI")
             return None
         if any(v in resp.text for v in ("bad_token", "Bad Request")):
             if self.refresh_token():
-                resp = getattr(services, method)("real_debrid", endpoint, raw=True, **kwargs)
+                resp = getattr(services, method)(
+                    "real_debrid", endpoint, raw=True, **kwargs
+                )
             else:
-                logger("RealDebridAPI", "bad token and no refresh")
+                logger("bad token and no refresh", "RealDebridAPI")
                 return None
         try:
             return resp.json()
         except Exception:
             return resp
 
-    def _get(self, url):
+    def _get(self, url: str):
         return self._call("get", url)
 
     def _post(self, url, post_data):

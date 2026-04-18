@@ -2,7 +2,9 @@
 import re
 import json
 import base64
+from string import printable
 import time
+from typing import Any
 import requests
 from threading import Thread
 from urllib.parse import unquote, unquote_plus
@@ -17,6 +19,7 @@ from modules.utils import (
     jsondate_to_datetime,
     subtract_dates,
     chunks,
+    unwrap,
 )
 
 
@@ -262,7 +265,13 @@ def supported_video_extensions():
     ]
 
 
-def seas_ep_filter(season, episode, release_title, split=False, return_match=False):
+def seas_ep_filter(
+    season: int,
+    episode: int,
+    release_title: str,
+    split: bool = False,
+    return_match: bool = False,
+):
     str_season, str_episode = str(season), str(episode)
     season_fill, episode_fill = str_season.zfill(2), str_episode.zfill(2)
     str_ep_plus_1, str_ep_minus_1 = str(episode + 1), str(episode - 1)
@@ -278,7 +287,7 @@ def seas_ep_filter(season, episode, release_title, split=False, return_match=Fal
     string6 = r"([.-]e[p]?[.-]?<<E>>[.-])"
     string7 = r"(^(?=.*\.e?0*<<E>>\.)(?:(?!((?:s|season)[.-]?\d+[.-x]?(?:ep?|episode)[.-]?\d+)|\d+x\d+).)*$)"
     string8 = r"([s]?<<S>>x<<E>>[.-])"
-    string_list = []
+    string_list: list[str] = []
     string_list_append = string_list.append
     string_list_append(
         string1.replace("<<S>>", season_fill).replace("<<E>>", episode_fill)
@@ -338,14 +347,15 @@ def seas_ep_filter(season, episode, release_title, split=False, return_match=Fal
     )
     final_string = "|".join(string_list)
     reg_pattern = re.compile(final_string)
+    match_list = re.search(reg_pattern, release_title)
     if split:
-        return release_title.split(re.search(reg_pattern, release_title).group(), 1)[1]
+        return release_title.split(match_list and match_list.group() or None, 1)[1]
     if return_match:
-        return re.search(reg_pattern, release_title).group()
-    return bool(re.search(reg_pattern, release_title))
+        return match_list and match_list.group() or None
+    return bool(match_list)
 
 
-def find_season_in_release_title(release_title):
+def find_season_in_release_title(release_title: str):
     release_title = re.sub(
         r"[^A-Za-z0-9-]+", ".", unquote(release_title).replace("'", "")
     ).lower()
@@ -369,14 +379,16 @@ def find_season_in_release_title(release_title):
     return match
 
 
-def check_title(title, release_title, aliases, year, season, episode):
+def check_title(
+    title: str, release_title: str, aliases: str, year: int, season: int, episode: int
+):
     try:
         all_titles = [title]
         if aliases:
             all_titles += aliases
-        cleaned_titles = []
+        cleaned_titles: list[str] = []
         cleaned_titles_append = cleaned_titles.append
-        year = str(year)
+        str_year = str(year)
         for i in all_titles:
             cleaned_titles_append(
                 i.lower()
@@ -387,7 +399,7 @@ def check_title(title, release_title, aliases, year, season, episode):
                 .replace(")", "")
                 .replace("&", "and")
                 .replace(" ", ".")
-                .replace(year, "")
+                .replace(str_year, "")
             )
         release_title = (
             strip_non_ascii_and_unprintable(release_title)
@@ -419,11 +431,11 @@ def check_title(title, release_title, aliases, year, season, episode):
                 except Exception:
                     return False
         else:
-            hdlr = year
+            hdlr = str_year
         if hdlr:
             release_title = release_title.split(hdlr.lower())[0]
             release_title = (
-                release_title.replace(year, "")
+                release_title.replace(str_year, "")
                 .replace("(", "")
                 .replace(")", "")
                 .replace("&", "and")
@@ -436,7 +448,7 @@ def check_title(title, release_title, aliases, year, season, episode):
                 return False
         else:
             release_title = (
-                release_title.replace(year, "")
+                release_title.replace(str_year, "")
                 .replace("(", "")
                 .replace(")", "")
                 .replace("&", "and")
@@ -452,7 +464,7 @@ def check_title(title, release_title, aliases, year, season, episode):
         return True
 
 
-def strip_non_ascii_and_unprintable(text):
+def strip_non_ascii_and_unprintable(text: str):
     try:
         result = "".join(char for char in text if char in printable)
         return result.encode("ascii", errors="ignore").decode("ascii", errors="ignore")
@@ -461,9 +473,9 @@ def strip_non_ascii_and_unprintable(text):
     return text
 
 
-def release_info_format(release_title):
+def release_info_format(release_title: str):
     try:
-        release_title = url_strip(release_title)
+        release_title = unwrap(url_strip(release_title))
         release_title = release_title.lower().replace("'", "").lstrip(".").rstrip(".")
         title = ".%s." % re.sub(r"[^a-z0-9-~]+", ".", release_title).replace(
             ".-.", "."
@@ -473,7 +485,7 @@ def release_info_format(release_title):
         return release_title.lower()
 
 
-def clean_title(title):
+def clean_title(title: str):
     try:
         if not title:
             return
@@ -487,7 +499,7 @@ def clean_title(title):
     return title
 
 
-def url_strip(url):
+def url_strip(url: str):
     try:
         url = unquote_plus(url)
         if "magnet:" in url:
@@ -503,7 +515,9 @@ def url_strip(url):
         return None
 
 
-def get_file_info(name_info=None, url=None, default_quality="SD"):
+def get_file_info(
+    name_info: str | None = None, url: str | None = None, default_quality: str = "SD"
+):
     title = None
     if name_info:
         title = name_info
@@ -516,7 +530,7 @@ def get_file_info(name_info=None, url=None, default_quality="SD"):
     return quality, info
 
 
-def get_release_quality(release_info):
+def get_release_quality(release_info: list[Any]):
     if any(
         i in release_info
         for i in (".scr.", "screener", "dvdscr", "dvd.scr", ".r5", ".r6")
@@ -600,7 +614,7 @@ def get_release_quality(release_info):
     return None
 
 
-def get_info(title):
+def get_info(title: str):
     # thanks 123Venom and gaiaaaiaai, whom I knicked most of this code from. :)
     info = []
     info_append = info.append

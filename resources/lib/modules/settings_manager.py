@@ -13,26 +13,26 @@ and kept in sync on every write so that skin XML
 
 import xbmcaddon
 import xbmcgui
+from .logger import logger
 
 _addon = xbmcaddon.Addon()
 _window = xbmcgui.Window(10000)
 
 _PREFIX = "bacterio."
 
-
 # ─────────────────────────────────────────────────────────────────────────────
 # Internal helpers
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-def _sid(setting_id):
+def _sid(setting_id: str):
     """Strip the 'bacterio.' prefix so xbmcaddon always receives a bare id."""
     if setting_id and setting_id.startswith(_PREFIX):
         return setting_id[len(_PREFIX) :]
     return setting_id
 
 
-def _prop(setting_id):
+def _prop(setting_id: str):
     """Return the Window(10000) property key for a given setting id."""
     return "%s%s" % (_PREFIX, _sid(setting_id))
 
@@ -42,7 +42,7 @@ def _prop(setting_id):
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-def get_setting(setting_id, fallback=""):
+def get_setting(setting_id: str, fallback: str = ""):
     """
     Read a setting. Checks Window(10000) first (fast path after warm-up),
     then falls back to xbmcaddon (disk read). Always returns a string.
@@ -51,15 +51,18 @@ def get_setting(setting_id, fallback=""):
     sid = _sid(setting_id)
     cached = _window.getProperty(_prop(sid))
     if cached:
+        logger(f"Found {setting_id} in cache", "get_setting")
         return cached
+    logger(f"Couldn't find {setting_id} in cache. Searching addon", "get_setting")
     value = _addon.getSetting(sid)
     if value:
+        logger(f"Found {setting_id} in addon", "get_setting")
         _window.setProperty(_prop(sid), value)
         return value
+    logger(f"Couldn't find {setting_id}, falling back to {fallback}", "get_setting")
     return fallback
 
-
-def set_setting(setting_id, value):
+def set_setting(setting_id: str, value: object):
     """
     Persist a setting via xbmcaddon and mirror to Window(10000).
     Always pass value as a string — Kodi coerces to the declared type.

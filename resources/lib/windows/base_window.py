@@ -1,28 +1,31 @@
 # -*- coding: utf-8 -*-
+from typing import Any
 import xbmcgui
 import re
 import json
 from threading import Thread
 from xml.dom.minidom import parse as mdParse
 from modules import kodi_utils
+from modules.logger import logger
 from modules.settings_manager import get_setting, set_setting
-from modules.utils import manual_function_import
+from modules.utils import manual_function_import, unwrap
+from resources.lib.modules.types import T
 
 
-def open_window(import_info, skin_xml, **kwargs):
+def open_window(import_info: tuple[str, str], skin_xml: str, **kwargs: Any):
     """
     import_info: ('module', 'function')
     """
     try:
-        xml_window = create_window(import_info, skin_xml, **kwargs)
+        xml_window = unwrap(create_window(import_info, skin_xml, **kwargs))
         choice = xml_window.run()
         del xml_window
         return choice
     except Exception as e:
-        kodi_utils.logger("error in open_window", str(e))
+        logger(str(e), "open_window")
 
 
-def create_window(import_info, skin_xml, **kwargs):
+def create_window(import_info: tuple[str, str], skin_xml: str, **kwargs: Any):
     """
     import_info: ('module', 'function')
     """
@@ -32,8 +35,8 @@ def create_window(import_info, skin_xml, **kwargs):
         xml_window = function(*args, **kwargs)
         return xml_window
     except Exception as e:
-        kodi_utils.logger("error in create_window", str(e))
-        return kodi_utils.notification("Error")
+        logger(str(e), "create_window")
+        kodi_utils.notification("Error")
 
 
 def window_manager(obj):
@@ -236,26 +239,8 @@ class BaseDialog(xbmcgui.WindowXMLDialog):
         )
         return cm_item
 
-    def get_infolabel(self, label):
-        return kodi_utils.get_infolabel(label)
-
-    def get_visibility(self, command):
-        return kodi_utils.get_visibility(command)
-
     def open_window(self, import_info, skin_xml, **kwargs):
         return open_window(import_info, skin_xml, **kwargs)
-
-    def run_addon(self, command, block=False):
-        kodi_utils.run_plugin(command, block)
-
-    def sleep(self, time):
-        kodi_utils.sleep(time)
-
-    def path_exists(self, path):
-        return kodi_utils.path_exists(path)
-
-    def translate_path(self, path):
-        return kodi_utils.translate_path(path)
 
     def set_home_property(self, prop, value):
         kodi_utils.set_property("bacterio.%s" % prop, value)
@@ -266,10 +251,10 @@ class BaseDialog(xbmcgui.WindowXMLDialog):
     def clear_home_property(self, prop):
         return kodi_utils.clear_property("bacterio.%s" % prop)
 
-    def get_attribute(self, obj, attribute):
+    def get_attribute(self, obj: object, attribute: str):
         return getattr(obj, attribute)
 
-    def set_attribute(self, obj, attribute, value):
+    def set_attribute(self, obj: object, attribute: str, value: type[T]):
         return setattr(obj, attribute, value)
 
     def clear_modals(self):
@@ -277,16 +262,6 @@ class BaseDialog(xbmcgui.WindowXMLDialog):
             del self.player
         except Exception:
             pass
-
-    def notification(self, text, duration=3000):
-        return kodi_utils.notification(text, duration)
-
-    def addon_installed(self, addon_id):
-        return kodi_utils.addon_installed(addon_id)
-
-    def addon_enabled(self, addon_id):
-        return kodi_utils.addon_enabled(addon_id)
-
 
 class FontUtils:
     def execute_custom_fonts(self):
