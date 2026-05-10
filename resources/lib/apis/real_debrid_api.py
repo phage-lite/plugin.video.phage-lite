@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import re
 import time
 from typing import Any
@@ -6,48 +5,37 @@ import requests
 from threading import Thread
 from caches.main_cache import cache_object
 from modules.settings_manager import get_setting, set_setting
-from modules.utils import make_tinyurl, make_qrcode, unwrap
+from modules.utils import make_tinyurl, unwrap
+from modules.kodi_ops import make_qrcode
 from modules.source_utils import supported_video_extensions, seas_ep_filter, extras
-from modules.kodi_utils import logger, sleep, ok_dialog, progress_dialog, notification
+from modules.kodi_utils import sleep, ok_dialog, progress_dialog, notification
+from modules.logger import log
 from apis import services
+from data.setting_ids import SettingID as SID
 
 
 class RealDebridAPI:
     def __init__(self):
-        self.client_ID: str = get_setting("rd.client_id") or "X245A4XAIBGVM"
-        _domain = (
-            "app.real-debrid.com"
-            if get_setting("rd.alternate_base_url") == "true"
-            else "api.real-debrid.com"
-        )
-        self.auth_url: str = "https://%s/oauth/v2/" % _domain
-        self.token: str = get_setting("rd.token")
-        self.secret: str = get_setting("rd.secret")
-        self.refresh: str = get_setting("rd.refresh")
-        self.device_code: str = ""
+        self.client_id: str = "X245A4XAIBGVM"
+        self.auth_url: str = "https://api.real-debrid.com/oauth/v2"
+        self.access_token: str = get_setting(SID.RD_ACCESS_TOKEN)
+        self.client_secret: str = get_setting(SID.RD_CLIENT_SECRET)
+        self.refresh_token: str = get_setting(SID.RD_REFRESH_TOKEN)
         self.refresh_retries: int = 0
         self.break_auth_loop: bool = False
 
     def auth(self):
-        self.secret = ""
-        self.client_ID = "X245A4XAIBGVM"
-        url = (
-            self.auth_url
-            + "device/code?%s" % "client_id=%s&new_credentials=yes" % self.client_ID
-        )
+        url = f"{self.auth_url}/device/code?client_id={self.client_id}&new_credentials=yes"
         response = requests.get(url, timeout=20).json()
         user_code = response["user_code"]
         auth_url = response["direct_verification_url"]
         qr_code = make_qrcode(auth_url) or ""
         short_url = make_tinyurl(auth_url)
         if short_url:
-            p_dialog_insert = (
-                "OR visit this URL: [B]%s[/B][CR]OR Enter this Code: [B]%s[/B]"
-                % (short_url, user_code)
-            )
+            p_dialog_insert = f"OR visit this URL: [B]{short_url}[/B][CR]OR Enter this Code: [B]{user_code}[/B]"
         else:
-            p_dialog_insert = "OR Enter this Code: [B]%s[/B]" % user_code
-        content = "Please Scan the QR Code%s[CR]" % p_dialog_insert
+            p_dialog_insert = f"OR Enter this Code: [B]{user_code}[/B]"
+        content = f"Please Scan the QR Code{p_dialog_insert}[CR]"
         progressDialog = unwrap(
             progress_dialog("Real Debrid Authorize", qr_code), "progress_dialog"
         )
@@ -55,15 +43,12 @@ class RealDebridAPI:
         expires_in = int(response["expires_in"])
         sleep_interval = int(response["interval"])
         device_code = response["device_code"]
-        poll_url = self.auth_url + "device/credentials?client_id=%s&code=%s" % (
-            self.client_ID,
-            device_code,
-        )
+        poll_url = f"{self.auth_url}/device/credentials?client_id={self.client_id}&code={device_code}"
         start, time_passed = time.time(), 0
         while (
             not progressDialog.iscanceled()
             and time_passed < expires_in
-            and not self.secret
+            and not self.client_secret
         ):
             sleep(1000 * sleep_interval)
             try:
@@ -76,10 +61,8 @@ class RealDebridAPI:
                 progressDialog.update(content, progress)
                 continue
             try:
-                set_setting("rd.client_id", response["client_id"])
-                set_setting("rd.secret", response["client_secret"])
-                self.secret = response["client_secret"]
-                self.client_ID = response["client_id"]
+                self.client_secret = response["client_secret"]
+                self.client_id = response["client_id"]
                 progressDialog.close()
             except Exception:
                 _ = ok_dialog(text="Error")
@@ -88,55 +71,55 @@ class RealDebridAPI:
             progressDialog.close()
         except Exception:
             pass
-        if self.secret:
+        if self.client_secret:
             data = {
-                "client_id": self.client_ID,
-                "client_secret": self.secret,
+                "client_id": self.client_id,
+                "client_secret": self.client_secret,
                 "code": device_code,
                 "grant_type": "http://oauth.net/grant_type/device/1.0",
             }
-            url = "%stoken" % self.auth_url
-            response = requests.post(url, data=data, timeout=20).json()
-            self.token = response["access_token"]
-            self.refresh = response["refresh_token"]
-            username = unwrap(self.account_info())["username"]
-            set_setting("rd.token", self.token)
-            set_setting("rd.refresh", self.refresh)
-            set_setting("rd.account_id", username)
-            set_setting("rd.enabled", "true")
-            _ = ok_dialog(text="Success")
+            url = f"{self.auth_url}/token"
+            try:
+                response = requests.post(url, data=data, timeout=20).json()
+                log(str(response))
+                self.access_token = response["access_token"]
+                self.refresh_token = response["refresh_token"]
+                set_setting(SID.RD_ACCESS_TOKEN, self.access_token)
+                set_setting(SID.RD_REFRESH_TOKEN, self.refresh_token)
+                set_setting(SID.RD_CLIENT_SECRET, self.client_secret)
+                set_setting(SID.RD_CLIENT_ID, self.client_id)
+                _ = ok_dialog(text="Success")
+            except Exception as e:
+                _ = ok_dialog(text="Error")
+                log(str(e))
 
-    def refresh_token(self):
+
+    def get_refresh_token(self):
         try:
-            url = self.auth_url + "token"
+            url = f"{self.auth_url}/token"
             data = {
-                "client_id": self.client_ID,
-                "client_secret": self.secret,
-                "code": self.refresh,
+                "client_id": self.client_id,
+                "client_secret": self.client_secret,
+                "code": self.refresh_token,
                 "grant_type": "http://oauth.net/grant_type/device/1.0",
             }
-            logger("Client ID: " + self.client_ID, "refresh_token")
-            logger("Secret: " + self.secret, "refresh_token")
-            logger("Refresh: " + self.refresh, "refresh_token")
-            logger("Url: " + url, "refresh_token")
 
-            response = requests.post(url, data=data).json()
-            self.token = response["access_token"]
-            self.refresh = response["refresh_token"]
-            set_setting("rd.token", self.token)
-            set_setting("rd.refresh", self.refresh)
+            response = requests.post(url, data=data, timeout=20).json()
+            self.access_token = response["access_token"]
+            self.refresh_token = response["refresh_token"]
+            set_setting(SID.RD_ACCESS_TOKEN, self.access_token)
+            set_setting(SID.RD_REFRESH_TOKEN, self.refresh_token)
             return True
-        except Exception:
-            logger("Some issue happened with refresh", "refresh_token")
+        except Exception as e:
+            log(str(e), "refresh_token")
             return False
 
     def revoke(self):
-        set_setting("rd.client_id", "")
-        set_setting("rd.secret", "")
-        set_setting("rd.refresh", "")
-        set_setting("rd.token", "")
-        set_setting("rd.account_id", "")
-        set_setting("rd.enabled", "false")
+        set_setting(SID.RD_CLIENT_ID, "")
+        set_setting(SID.RD_CLIENT_SECRET, "")
+        set_setting(SID.RD_REFRESH_TOKEN, "")
+        set_setting(SID.RD_ACCESS_TOKEN, "")
+        set_setting(SID.RD_ACCOUNT_ID, "")
         notification("Real Debrid Authorization Reset", 3000)
 
     def account_info(self):
@@ -145,11 +128,11 @@ class RealDebridAPI:
 
     def check_cache(self, hashes: list[str]):
         hash_string = "/".join(hashes)
-        url = "torrents/instantAvailability/%s" % hash_string
+        url = f"torrents/instantAvailability/{hash_string}"
         return self._get(url)
 
     def check_hash(self, hash_string: str):
-        url = "torrents/instantAvailability/%s" % hash_string
+        url = f"torrents/instantAvailability/{hash_string}"
         return self._get(url)
 
     def check_single_magnet(self, hash_string: str):
@@ -206,7 +189,7 @@ class RealDebridAPI:
         post_data = {"magnet": magnet}
         url = "torrents/addMagnet"
         result = self._post(url, post_data)
-        logger("RealDebridAPI", f"result {result}")
+        log(f"result {result}", "RealDebridAPI")
         return result
 
     def create_transfer(self, magnet_url: str):
@@ -254,7 +237,7 @@ class RealDebridAPI:
         try:
             torrent = self.add_magnet(magnet_url)
             if torrent is None or "error" in torrent:
-                logger("RealDebridAPI", f"Couldn't add magnet {magnet_url}")
+                log(f"Couldn't add magnet {magnet_url}", "RealDebridAPI")
                 return None
             torrent_id = torrent["id"]
             _ = self.add_torrent_select(torrent_id, "all")
@@ -265,7 +248,7 @@ class RealDebridAPI:
                 or not torrent_info["links"]
                 or "error" in torrent_info
             ):
-                logger("RealDebridAPI", f"Couldn't get torrent info {torrent_id}")
+                log(f"Couldn't get torrent info {torrent_id}", "RealDebridAPI")
                 _ = self.delete_torrent(torrent_id)
                 return None
             sleep(1000)
@@ -438,17 +421,15 @@ class RealDebridAPI:
     def _call(self, method: str, endpoint: str, **kwargs: Any):
         """Call services, retry once after token refresh on bad_token response."""
         resp = getattr(services, method)("real_debrid", endpoint, raw=True, **kwargs)
-        logger(f"raw resp {resp}", "RealDebridAPI")
+        log(f"raw resp {str(resp)}", "RealDebridAPI")
         if resp is None:
-            logger("response is none", "RealDebridAPI")
             return None
         if any(v in resp.text for v in ("bad_token", "Bad Request")):
-            if self.refresh_token():
+            if self.get_refresh_token():
                 resp = getattr(services, method)(
                     "real_debrid", endpoint, raw=True, **kwargs
                 )
             else:
-                logger("bad token and no refresh", "RealDebridAPI")
                 return None
         try:
             return resp.json()

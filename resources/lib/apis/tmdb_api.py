@@ -71,6 +71,7 @@ def tvshow_external_id(external_source, external_id, api_key):
 
 def tmdb_movies_oscar_winners(page_no):
 	from modules.meta_lists import oscar_winners
+    # TODO: should be replaced with an actual fking api call. This is dumb as shit
 	return oscar_winners()[page_no-1]
 
 def tmdb_network_details(network_id):

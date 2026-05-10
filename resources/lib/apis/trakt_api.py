@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
+from datetime import timedelta
 import json
 import time
-import requests
+from typing import Any
 from urllib.parse import unquote
 from caches import trakt_cache
 from modules.settings_manager import get_setting, set_setting
@@ -10,15 +11,18 @@ from caches.lists_cache import lists_cache_object
 from modules import kodi_utils, settings
 from modules.metadata import movie_meta_external_id, tvshow_meta_external_id
 from modules.utils import (
+    make_tinyurl,
     sort_list,
     sort_for_article,
     get_datetime,
-    timedelta,
     replace_html_codes,
-    make_thread_list,
     jsondate_to_datetime as js2date,
+    unwrap,
 )
+from modules.thread_utils import make_thread_list
+from modules.logger import log, trace
 import apis.services as services
+from modules.kodi_ops import make_qrcode
 
 
 def no_client_key():
@@ -41,21 +45,22 @@ def get_trakt(params):
         page_no=params.get("page_no"),
     )
     if result is None:
-        kodi_utils.logger("Get Trakt", "Couldn't get trakt stuffs")
+        log("Couldn't get trakt stuffs", "Get Trakt")
     return result[0] if params.get("pagination", True) else result
 
 
 def call_trakt(
-    path,
-    params={},
-    data=None,
-    is_delete=False,
-    with_auth=True,
-    method=None,
-    pagination=False,
-    page_no=1,
-):
-    kodi_utils.logger("call_trakt", "path %s" % path)
+    path: str,
+    params = {},
+    data: Any = None,
+    is_delete: bool = False,
+    with_auth: bool = True,
+    method: str = "get",
+    pagination: bool = False,
+    page_no: int = 1,
+) -> Any:
+    log(f"path {path}", "call_trakt")
+    log(f"data {str(data)}", "call_trakt")
     if with_auth:
         while kodi_utils.get_property("bacterio.trakt_refreshing_token") == "true":
             kodi_utils.sleep(250)
@@ -70,115 +75,116 @@ def call_trakt(
         params["page"] = page_no
 
     if data is not None or method == "post":
-        resp = services.post("trakt", path, data=data, with_auth=with_auth, timeout=10, raw=True)
+        resp = services.post(
+            "trakt", path, data=data, with_auth=with_auth, timeout=10, raw=True
+        )
+        log(str(resp), "post")
     elif is_delete or method == "delete":
         resp = services.delete("trakt", path, with_auth=with_auth, timeout=10, raw=True)
     else:
-        resp = services.get("trakt", path, params=params, with_auth=with_auth, timeout=10, raw=True)
+        resp = services.get(
+            "trakt", path, params=params, with_auth=with_auth, timeout=10, raw=True
+        )
+        log(str(resp), "get")
 
     if resp is None:
-        kodi_utils.logger("call_trakt", "resp is none method %s, data %s" % method % data)
         return None
 
     status_code = resp.status_code
     if status_code == 401:
         if with_auth and settings.trakt_user_active():
             trakt_refresh_token()
-        kodi_utils.logger("call_trakt", "401 unauth")
+        log("401 unauth", "call_trakt")
         return None
 
     resp.encoding = "utf-8"
-    resp_headers = resp.headers
-    result = resp.json() if "json" in resp_headers.get("Content-Type", "") else resp.text
+    result = (
+        resp.json() if "json" in resp.headers.get("Content-Type", "") else resp.text
+    )
 
     if method == "sort_by_headers":
         result = {
-            "sort_by": resp_headers.get("X-Sort-By", "title"),
-            "sort_how": resp_headers.get("X-Sort-How", "asc"),
+            "sort_by": resp.headers.get("X-Sort-By", "title"),
+            "sort_how": resp.headers.get("X-Sort-How", "asc"),
             "data": result,
         }
 
+    log(str(result), "call_trakt")
     if pagination:
-        return (result, resp_headers.get("X-Pagination-Page-Count", page_no))
+        return (result, resp.headers.get("X-Pagination-Page-Count", page_no))
     return result
 
 
 def trakt_get_device_code():
-    CLIENT_ID = settings.trakt_client()
-    data = {"client_id": CLIENT_ID}
+    data = {"client_id": get_client_id()}
     return call_trakt("oauth/device/code", data=data, with_auth=False)
 
 
-def trakt_get_device_token(device_codes):
-    API_ENDPOINT = "https://api.trakt.tv/%s"
-    CLIENT_ID = settings.trakt_client()
-    if CLIENT_ID in (None, "empty_setting", ""):
+def get_client_id(ignore_error: bool = False):
+    client_id = settings.trakt_client()
+    if client_id in (None, "empty_setting", "") and not ignore_error:
         return no_client_key()
-    CLIENT_SECRET = settings.trakt_secret()
-    if CLIENT_SECRET in (None, "empty_setting", ""):
+    return client_id
+
+
+def get_client_secret():
+    client_secret = settings.trakt_secret()
+    if client_secret in (None, "empty_setting", ""):
         return no_secret_key()
-    result = None
+    return client_secret
+
+
+def trakt_get_device_token():
+    device_codes = trakt_get_device_code()
+    data = {
+        "code": device_codes["device_code"],
+        "client_id": get_client_id(),
+        "client_secret": get_client_secret(),
+    }
+    start = time.time()
+    expires_in = int(device_codes["expires_in"])
+    sleep_interval = int(device_codes["interval"])
+    user_code = str(device_codes["user_code"])
+    auth_url = f"{device_codes['verification_url']}?code={str(user_code)}"
+    qr_code = make_qrcode(auth_url) or ""
+    short_url = make_tinyurl(auth_url)
+    if short_url:
+        p_dialog_insert = f"OR visit this URL: [B]{short_url}[/B][CR]OR Enter this Code: [B]{user_code}[/B]"
+    else:
+        p_dialog_insert = f"OR Enter this Code: [B]{user_code}[/B]"
+    content = f"Please Scan the QR Code{p_dialog_insert}[CR]"
+    progressDialog = unwrap(kodi_utils.progress_dialog("Trakt Authorize", qr_code))
+    progressDialog.update(content, 0)
     try:
-        headers = {
-            "Content-Type": "application/json",
-            "trakt-api-version": "2",
-            "trakt-api-key": CLIENT_ID,
-        }
-        data = {
-            "code": device_codes["device_code"],
-            "client_id": CLIENT_ID,
-            "client_secret": CLIENT_SECRET,
-        }
-        start = time.time()
-        expires_in = device_codes["expires_in"]
-        sleep_interval = device_codes["interval"]
-        user_code = str(device_codes["user_code"])
-        auth_url = "https://trakt.tv/activate?code=%s" % str(user_code)
-        progressDialog = kodi_utils.progress_dialog("Trakt Authorize", qr_code)
-        progressDialog.update(content, 0)
-        try:
-            time_passed = 0
-            while not progressDialog.iscanceled() and time_passed < expires_in:
-                kodi_utils.sleep(max(sleep_interval, 1) * 1000)
-                response = requests.post(
-                    API_ENDPOINT % "oauth/device/token",
-                    data=json.dumps(data),
-                    headers=headers,
-                    timeout=20,
-                )
-                status_code = response.status_code
-                if status_code == 200:
-                    result = response.json()
-                    break
-                elif status_code == 400:
-                    time_passed = time.time() - start
-                    progress = int(100 * time_passed / expires_in)
-                    progressDialog.update(content, progress)
-                else:
-                    break
-        except Exception:
-            pass
-        try:
-            progressDialog.close()
-        except Exception:
-            pass
-    except Exception:
+        time_passed = 0
+        while not progressDialog.iscanceled() and time_passed < expires_in:
+            kodi_utils.sleep(max(sleep_interval, 1) * 1000)
+            response = call_trakt("oauth/device/token", data=data, with_auth=False)
+            status_code = response.status_code
+            if status_code == 200:
+                try:
+                    progressDialog.close()
+                except Exception as e:
+                    log(str(e), "trakt_get_device_token")
+                    pass
+                return response.json()
+            elif status_code == 400:
+                time_passed = time.time() - start
+                progress = int(100 * time_passed / expires_in)
+                progressDialog.update(content, progress)
+            else:
+                break
+    except Exception as e:
+        log(str(e), "trakt_get_device_token")
         pass
-    return result
 
 
 def trakt_refresh_token():
     try:
-        CLIENT_ID = settings.trakt_client()
-        if CLIENT_ID in (None, "empty_setting", ""):
-            return no_client_key()
-        CLIENT_SECRET = settings.trakt_secret()
-        if CLIENT_SECRET in (None, "empty_setting", ""):
-            return no_secret_key()
         kodi_utils.set_property("bacterio.trakt_refreshing_token", "true")
         data = {
-            "client_id": CLIENT_ID,
-            "client_secret": CLIENT_SECRET,
+            "client_id": get_client_id(),
+            "client_secret": get_client_secret(),
             "redirect_uri": "urn:ietf:wg:oauth:2.0:oob",
             "grant_type": "refresh_token",
             "refresh_token": get_setting("bacterio.trakt.refresh"),
@@ -194,8 +200,7 @@ def trakt_refresh_token():
 
 
 def trakt_authenticate():
-    code = trakt_get_device_code()
-    token = trakt_get_device_token(code)
+    token = trakt_get_device_token()
     if token:
         set_setting("trakt.token", token["access_token"])
         set_setting("trakt.refresh", token["refresh_token"])
@@ -205,7 +210,7 @@ def trakt_authenticate():
         try:
             user = call_trakt("/users/me")
             if user is None:
-                kodi_utils.logger("trakt_authenticate", "users/me returned None")
+                log("trakt_authenticate", "users/me returned None")
                 return False
             set_setting("trakt.user", str(user["username"]))
         except Exception:
@@ -226,16 +231,10 @@ def trakt_revoke_authentication():
     set_setting("watched_indicators", "0")
     trakt_cache.clear_all_trakt_cache_data(silent=True, refresh=False)
     kodi_utils.notification("Trakt Account Authorization Reset", 3000)
-    CLIENT_ID = settings.trakt_client()
-    if CLIENT_ID in (None, "empty_setting", ""):
-        return no_client_key()
-    CLIENT_SECRET = settings.trakt_secret()
-    if CLIENT_SECRET in (None, "empty_setting", ""):
-        return no_secret_key()
     data = {
         "token": get_setting("bacterio.trakt.token"),
-        "client_id": CLIENT_ID,
-        "client_secret": CLIENT_SECRET,
+        "client_id": get_client_id(),
+        "client_secret": get_client_secret(),
     }
     return call_trakt("oauth/revoke", data=data, with_auth=False)
 
@@ -1468,7 +1467,7 @@ def trakt_sync_activities(force_update=False):
         return "failed"
     cached = trakt_cache.reset_activity(latest)
     fallback_date = "2020-01-01T00:00:01.000Z"
-    kodi_utils.logger("TraktSyncActivities", "compare latest[\"all\"]")
+    log("TraktSyncActivities", 'compare latest["all"]')
     if latest is None:
         return "failed"
     if not _compare(latest["all"], cached["all"]):
@@ -1477,15 +1476,14 @@ def trakt_sync_activities(force_update=False):
         lists_actions,
         refresh_movies_progress,
         refresh_shows_progress,
-        clear_tvshow_watched_cache,
     ) = [], False, False, False
-    kodi_utils.logger("TraktSyncActivities", "compare latest[\"movies\"]")
+    log("TraktSyncActivities", 'compare latest["movies"]')
     cached_movies, latest_movies = cached["movies"], latest["movies"]
-    kodi_utils.logger("TraktSyncActivities", "compare latest[\"shows\"]")
+    log("TraktSyncActivities", 'compare latest["shows"]')
     cached_shows, latest_shows = cached["shows"], latest["shows"]
-    kodi_utils.logger("TraktSyncActivities", "compare latest[\"episodes\"]")
+    log("TraktSyncActivities", 'compare latest["episodes"]')
     cached_episodes, latest_episodes = cached["episodes"], latest["episodes"]
-    kodi_utils.logger("TraktSyncActivities", "compare latest[\"lists\"]")
+    log("TraktSyncActivities", 'compare latest["lists"]')
     cached_lists, latest_lists = cached["lists"], latest["lists"]
     if _compare(
         latest["recommendations"], cached.get("recommendations", fallback_date)

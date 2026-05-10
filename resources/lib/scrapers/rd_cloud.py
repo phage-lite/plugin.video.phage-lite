@@ -5,6 +5,7 @@ from threading import Thread
 from modules.providers import RD_CLOUD
 from modules.utils import clean_file_name, normalize
 from modules.settings import enabled_debrids_check, filter_by_name
+from modules.logger import log
 
 
 class source:
@@ -91,9 +92,7 @@ class source:
 
             self.sources = list(_process())
         except Exception as e:
-            from modules.kodi_utils import logger
-
-            logger("real-debrid scraper Exception", str(e))
+            log("real-debrid scraper Exception", str(e))
         source_utils.internal_results(self.scrape_provider, self.sources)
         return self.sources
 

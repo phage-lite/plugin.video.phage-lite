@@ -50,10 +50,13 @@ SERVICES = {
         },
     },
     "real_debrid": {
-        "base_url": lambda: "https://%s/rest/1.0/%%s" % (
-            "app.real-debrid.com"
-            if get_setting("rd.alternate_base_url") == "true"
-            else "api.real-debrid.com"
+        "base_url": lambda: (
+            "https://%s/rest/1.0/%%s"
+            % (
+                "app.real-debrid.com"
+                if get_setting("rd.alternate_base_url") == "true"
+                else "api.real-debrid.com"
+            )
         ),
         "auth_style": "bearer",
         "token_key": "rd.token",
@@ -119,7 +122,16 @@ def get(service, endpoint, params=None, with_auth=True, timeout=10, raw=False):
         return None
 
 
-def post(service, endpoint, data=None, params=None, with_auth=True, timeout=10, raw=False, form=False):
+def post(
+    service,
+    endpoint,
+    data=None,
+    params=None,
+    with_auth=True,
+    timeout=10,
+    raw=False,
+    form=False,
+):
     """
     POST to endpoint. Returns parsed body, or Response if raw=True.
     Pass form=True to send as application/x-www-form-urlencoded instead of JSON.
@@ -129,7 +141,14 @@ def post(service, endpoint, data=None, params=None, with_auth=True, timeout=10, 
     headers = _build_headers(cfg, with_auth)
     body_kwargs = {"data": data} if form else {"json": data}
     try:
-        resp = _send(requests.post, url, params=params, headers=headers, timeout=timeout, **body_kwargs)
+        resp = _send(
+            requests.post,
+            url,
+            params=params,
+            headers=headers,
+            timeout=timeout,
+            **body_kwargs,
+        )
         if raw:
             return resp
         resp.raise_for_status()
