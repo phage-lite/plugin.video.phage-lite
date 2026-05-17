@@ -102,5 +102,56 @@ class RealDebridAPI(Service):
             except Exception as e:
                 log(str(e))
 
+    def _api_get(self, endpoint: str, params: dict | None = None) -> dict:
+        url = f"https://api.real-debrid.com/rest/1.0/{endpoint}"
+        headers = {"Authorization": f"Bearer {self.access_token}"}
+        response = requests.get(url, headers=headers, params=params or {}, timeout=20)
+        response.raise_for_status()
+        return response.json()
+
+    def _api_post(self, endpoint: str, data: dict | None = None) -> dict:
+        url = f"https://api.real-debrid.com/rest/1.0/{endpoint}"
+        headers = {"Authorization": f"Bearer {self.access_token}"}
+        response = requests.post(url, headers=headers, data=data or {}, timeout=20)
+        response.raise_for_status()
+        return response.json()
+
+    def unrestrict_link(self, link: str) -> dict:
+        return self._api_post("unrestrict/link", {"link": link})
+
+    def add_magnet(self, magnet: str) -> dict:
+        return self._api_post("torrents/addMagnet", {"magnet": magnet})
+
+    def get_torrent_info(self, torrent_id: str) -> dict:
+        return self._api_get(f"torrents/info/{torrent_id}")
+
+    def select_files(self, torrent_id: str, file_ids: str = "all") -> None:
+        url = f"https://api.real-debrid.com/rest/1.0/torrents/selectFiles/{torrent_id}"
+        headers = {"Authorization": f"Bearer {self.access_token}"}
+        requests.post(url, headers=headers, data={"files": file_ids}, timeout=20)
+
+    def get_downloads(self) -> list:
+        return self._api_get("downloads")
+
+    def is_authenticated(self) -> bool:
+        return bool(self.access_token)
+
+    def check_instant_availability(self, hashes: list) -> set:
+        """Return the subset of hashes that are cached on RealDebrid."""
+        if not hashes or not self.access_token:
+            return set()
+        cached: set = set()
+        for i in range(0, len(hashes), 40):
+            chunk = hashes[i:i + 40]
+            endpoint = "torrents/instantAvailability/" + "/".join(chunk)
+            try:
+                result = self._api_get(endpoint)
+                for h, data in result.items():
+                    if isinstance(data, dict) and data.get("rd"):
+                        cached.add(h.lower())
+            except Exception as e:
+                log(str(e), "check_instant_availability")
+        return cached
+
 
 RealDebrid = RealDebridAPI()

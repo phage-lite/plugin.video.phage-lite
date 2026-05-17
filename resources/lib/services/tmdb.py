@@ -63,5 +63,20 @@ class TmdbAPI:
     def tv_by_genre(self, genre_id: int, page: int = 1) -> dict[str, Any]:
         return self._get("discover/tv", {"with_genres": genre_id, "page": page})
 
+    def movie_external_ids(self, tmdb_id: int) -> dict[str, Any]:
+        return self._get(f"movie/{tmdb_id}/external_ids")
+
+    def tv_external_ids(self, tmdb_id: int) -> dict[str, Any]:
+        return self._get(f"tv/{tmdb_id}/external_ids")
+
+    def movie_details(self, tmdb_id: int) -> dict[str, Any]:
+        return self._get(f"movie/{tmdb_id}")
+
+    def tv_details(self, tmdb_id: int) -> dict[str, Any]:
+        return self._get(f"tv/{tmdb_id}")
+
+    def tv_season(self, show_id: int, season_number: int) -> dict[str, Any]:
+        return self._get(f"tv/{show_id}/season/{season_number}")
+
 
 Tmdb = TmdbAPI()

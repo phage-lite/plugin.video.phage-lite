@@ -1,105 +1,98 @@
 import sys
-import xbmcgui
-import xbmcplugin
 import xbmcaddon
+import xbmcplugin
+from urllib.parse import parse_qsl, unquote_plus
 
-from urllib.parse import parse_qsl
 from utils.notifications import error
-from services.tmdb import Tmdb
 
 HANDLE = int(sys.argv[1])
 
-CATEGORIES = [
-    ("Movies", "movies"),
-    ("Shows", "shows"),
-    ("Settings", "settings"),
-]
 
-MOVIE_CATEGORIES = [
-    ("Popular", "popular"),
-    ("Trending", "trending"),
-    ("Now Playing", "now_playing"),
-    ("Top Rated", "top_rated"),
-    ("Genres", "genres"),
-]
-
-
-def get_params():
+def _params() -> dict:
     return dict(parse_qsl(sys.argv[2].lstrip("?")))
 
 
-def show_home():
-    for label, key in CATEGORIES:
-        li = xbmcgui.ListItem(label=label)
-        url = f"{sys.argv[0]}?category={key}"
-        success = xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
-        if not success:
-            error(f"Error building home page entry for: {key}")
-    xbmcplugin.endOfDirectory(HANDLE)
+def _route():
+    params = _params()
+    action = params.get("action")
+    category = params.get("category")
+    subcategory = params.get("subcategory")
+    genre_id = params.get("genre_id")
+    genre_name = unquote_plus(params.get("genre_name", ""))
 
-
-def show_movies():
-    for label, key in MOVIE_CATEGORIES:
-        li = xbmcgui.ListItem(label=label)
-        url = f"{sys.argv[0]}?category=movies&subcategory={key}"
-        success = xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
-        if not success:
-            error(f"Error adding movie subcategory: {key}")
-    xbmcplugin.endOfDirectory(HANDLE)
-
-
-def show_movie_list(subcategory: str):
-    if subcategory == "popular":
-        results = Tmdb.popular_movies()["results"]
-    elif subcategory == "trending":
-        results = Tmdb.trending_movies()["results"]
-    elif subcategory == "now_playing":
-        results = Tmdb.now_playing_movies()["results"]
-    elif subcategory == "top_rated":
-        results = Tmdb.top_rated_movies()["results"]
-    else:
+    if action == "play":
+        from services.player import resolve_and_play
+        resolve_and_play(
+            item_type=params.get("type", "movie"),
+            tmdb_id=params.get("id", ""),
+            handle=HANDLE,
+            season=params.get("season", ""),
+            episode=params.get("episode", ""),
+        )
         return
 
-    for movie in results:
-        title = movie["title"]
-        year = movie.get("release_date", "")[:4]
-        rating = movie.get("vote_average", 0)
-        label = f"{title} ({year}) [{rating}]"
-        li = xbmcgui.ListItem(label=label)
-        url = f"{sys.argv[0]}?action=play&type=movie&id={movie['id']}"
-        success = xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
-        if not success:
-            error(f"Error adding movie item: {title}")
+    if action == "seasons":
+        show_id = params.get("show_id")
+        show_title = unquote_plus(params.get("show_title", ""))
+        if show_id:
+            from views.shows import show_seasons
+            show_seasons(int(show_id), show_title)
+        return
 
-    xbmcplugin.endOfDirectory(HANDLE)
+    if action == "episodes":
+        show_id = params.get("show_id")
+        show_title = unquote_plus(params.get("show_title", ""))
+        season_number = params.get("season_number")
+        if show_id and season_number:
+            from views.shows import show_episodes
+            show_episodes(int(show_id), show_title, int(season_number))
+        return
 
+    if not category:
+        from views.home import show_home
+        show_home()
+        return
 
-def play_movie(_: str):
-    error("Not implemented")
+    if category == "movies":
+        from views.movies import (
+            show_movie_categories,
+            show_movie_list,
+            show_movie_genres,
+            show_movies_by_genre,
+        )
+        if subcategory == "genres":
+            show_movie_genres()
+        elif subcategory == "genre" and genre_id:
+            show_movies_by_genre(int(genre_id), genre_name)
+        elif subcategory:
+            show_movie_list(subcategory)
+        else:
+            show_movie_categories()
+        return
 
+    if category == "shows":
+        from views.shows import (
+            show_tv_categories,
+            show_tv_list,
+            show_tv_genres,
+            show_shows_by_genre,
+        )
+        if subcategory == "genres":
+            show_tv_genres()
+        elif subcategory == "genre" and genre_id:
+            show_shows_by_genre(int(genre_id), genre_name)
+        elif subcategory:
+            show_tv_list(subcategory)
+        else:
+            show_tv_categories()
+        return
 
-def show_tv_shows():
-    error("Not implemented")
+    if category == "settings":
+        xbmcaddon.Addon().openSettings()
+        return
+
+    error(f"Unknown route: category={category} action={action}")
 
 
 if __name__ == "__main__":
-    params = get_params()
-    category = params.get("category")
-    subcategory = params.get("subcategory")
-    action = params.get("action")
-
-    if action == "play":
-        id = params.get("id")
-        if id:
-            play_movie(id)
-    elif not category:
-        show_home()
-    elif category == "movies":
-        if subcategory:
-            show_movie_list(subcategory)
-        else:
-            show_movies()
-    elif category == "shows":
-        show_tv_shows()
-    elif category == "settings":
-        xbmcaddon.Addon().openSettings()
+    _route()
