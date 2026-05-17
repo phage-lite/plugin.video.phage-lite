@@ -3,7 +3,7 @@ import xbmcgui
 import xbmcplugin
 import xbmcaddon
 
-from urllib.parse import parse_qsl, urlparse
+from urllib.parse import parse_qsl
 
 HANDLE = int(sys.argv[1])
 
@@ -13,8 +13,10 @@ CATEGORIES = [
     "Settings",
 ]
 
+
 def get_params():
     return dict(parse_qsl(sys.argv[2].lstrip("?")))
+
 
 def show_home():
     for category in CATEGORIES:
@@ -25,16 +27,19 @@ def show_home():
             xbmcgui.Dialog().notification("Bacterio", "Error building home page")
     xbmcplugin.endOfDirectory(HANDLE)
 
+
 def show_movies():
     xbmcgui.Dialog().notification("Bacterio", "Not implemented")
+
 
 def show_tv_shows():
     xbmcgui.Dialog().notification("Bacterio", "Not implemented")
 
+
 if __name__ == "__main__":
     params = get_params()
     category = params.get("category")
-    
+
     if not category:
         show_home()
     elif category == "Movies":
