@@ -1,6 +1,7 @@
 import sys
 import xbmcgui
 import xbmcplugin
+from typing import Any, Callable
 from urllib.parse import quote_plus
 
 from services.tmdb import Tmdb
@@ -18,34 +19,39 @@ _SUBCATEGORIES = [
     ("Genres", "genres"),
 ]
 
-_FETCHERS = {
-    "popular": lambda: Tmdb.popular_tv()["results"],
-    "trending": lambda: Tmdb.trending_tv()["results"],
-    "airing_today": lambda: Tmdb.airing_today_tv()["results"],
-    "top_rated": lambda: Tmdb.top_rated_tv()["results"],
+_FETCHERS: dict[str, Callable[[int], dict[str, Any]]] = {
+    "popular":     lambda page: Tmdb.popular_tv(page),
+    "trending":    lambda page: Tmdb.trending_tv(page=page),
+    "airing_today": lambda page: Tmdb.airing_today_tv(page),
+    "top_rated":   lambda page: Tmdb.top_rated_tv(page),
 }
 
 
 def show_tv_categories():
     for label, key in _SUBCATEGORIES:
         li = xbmcgui.ListItem(label=label)
-        url = f"{_BASE}?category=shows&subcategory={key}"
-        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+        xbmcplugin.addDirectoryItem(HANDLE, f"{_BASE}?category=shows&subcategory={key}", li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
 
 
-def show_tv_list(subcategory: str):
+def show_tv_list(subcategory: str, page: int = 1):
     fetch = _FETCHERS.get(subcategory)
     if fetch is None:
         xbmcplugin.endOfDirectory(HANDLE)
         return
     try:
-        results = fetch()
+        data = fetch(page)
     except Exception as e:
         error(f"TMDB error: {e}")
         xbmcplugin.endOfDirectory(HANDLE)
         return
-    _render_shows(results)
+    results: list[dict[str, Any]] = data.get("results", [])
+    total_pages: int = data.get("total_pages", 1)
+    next_url = (
+        f"{_BASE}?category=shows&subcategory={subcategory}&page={page + 1}"
+        if page < total_pages else ""
+    )
+    _render_shows(results, next_url)
 
 
 def show_tv_genres():
@@ -57,19 +63,29 @@ def show_tv_genres():
         return
     for genre in genres:
         li = xbmcgui.ListItem(label=genre["name"])
-        url = f"{_BASE}?category=shows&subcategory=genre&genre_id={genre['id']}&genre_name={quote_plus(genre['name'])}"
+        url = (
+            f"{_BASE}?category=shows&subcategory=genre"
+            f"&genre_id={genre['id']}&genre_name={quote_plus(genre['name'])}"
+        )
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
 
 
-def show_shows_by_genre(genre_id: int, genre_name: str = ""):
+def show_shows_by_genre(genre_id: int, genre_name: str = "", page: int = 1):
     try:
-        results = Tmdb.tv_by_genre(genre_id).get("results", [])
+        data = Tmdb.tv_by_genre(genre_id, page)
     except Exception as e:
         error(f"TMDB error: {e}")
         xbmcplugin.endOfDirectory(HANDLE)
         return
-    _render_shows(results)
+    results: list[dict[str, Any]] = data.get("results", [])
+    total_pages: int = data.get("total_pages", 1)
+    next_url = (
+        f"{_BASE}?category=shows&subcategory=genre"
+        f"&genre_id={genre_id}&genre_name={quote_plus(genre_name)}&page={page + 1}"
+        if page < total_pages else ""
+    )
+    _render_shows(results, next_url)
 
 
 def show_seasons(show_id: int, show_title: str = ""):
@@ -81,7 +97,7 @@ def show_seasons(show_id: int, show_title: str = ""):
         return
 
     xbmcplugin.setContent(HANDLE, "tvshows")
-    seasons = details.get("seasons", [])
+    seasons: list[dict[str, Any]] = details.get("seasons", [])
     fanart = f"{_IMG}{details.get('backdrop_path')}" if details.get("backdrop_path") else ""
 
     for season in seasons:
@@ -131,7 +147,7 @@ def show_episodes(show_id: int, show_title: str, season_number: int):
     xbmcplugin.addSortMethod(HANDLE, xbmcplugin.SORT_METHOD_LABEL)
 
     season_poster = season.get("poster_path") or ""
-    episodes = season.get("episodes", [])
+    episodes: list[dict[str, Any]] = season.get("episodes", [])
 
     for ep in episodes:
         ep_num = ep.get("episode_number", 0)
@@ -143,6 +159,7 @@ def show_episodes(show_id: int, show_title: str, season_number: int):
 
         label = f"{ep_num:02d}. {ep_name}"
         li = xbmcgui.ListItem(label=label)
+        li.setProperty("IsPlayable", "true")
         li.setInfo("video", {
             "title": ep_name,
             "plot": overview,
@@ -168,7 +185,7 @@ def show_episodes(show_id: int, show_title: str, season_number: int):
     xbmcplugin.endOfDirectory(HANDLE)
 
 
-def _render_shows(results: list):
+def _render_shows(results: list[dict[str, Any]], next_url: str = ""):
     xbmcplugin.setContent(HANDLE, "tvshows")
     xbmcplugin.addSortMethod(HANDLE, xbmcplugin.SORT_METHOD_LABEL)
     xbmcplugin.addSortMethod(HANDLE, xbmcplugin.SORT_METHOD_VIDEO_RATING)
@@ -196,11 +213,16 @@ def _render_shows(results: list):
             "poster": f"{_IMG}{poster}" if poster else "",
             "fanart": f"{_IMG}{backdrop}" if backdrop else "",
         })
-        url = (
-            f"{_BASE}?action=seasons"
-            f"&show_id={tmdb_id}"
-            f"&show_title={quote_plus(title)}"
+        fav_url = (
+            f"{_BASE}?action=favourite_add&type=show&id={tmdb_id}"
+            f"&title={quote_plus(title)}&year={year_str}&poster={quote_plus(poster)}"
         )
+        li.addContextMenuItems([("Add to Favourites", f"RunPlugin({fav_url})")])
+        url = f"{_BASE}?action=seasons&show_id={tmdb_id}&show_title={quote_plus(title)}"
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+
+    if next_url:
+        li = xbmcgui.ListItem(label="Next Page →")
+        xbmcplugin.addDirectoryItem(HANDLE, next_url, li, isFolder=True)
 
     xbmcplugin.endOfDirectory(HANDLE)

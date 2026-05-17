@@ -1,6 +1,14 @@
 {
     "venvPath": ".",
     "venv": ".venv",
+    "include": ["resources/lib"],
+    "exclude": [
+        "resources/lib/modules",
+        "resources/lib/windows",
+        "resources/lib/scrapers",
+        "resources/lib/segno",
+        "resources/lib/services/imdb.py"
+    ],
     "reportMissingTypeStubs": "none",
     "allowedUntypedLibraries": ["sqlite3", "xbmc", "xbmcgui", "xbmcaddon", "xbmcplugin", "xbmcvfs"],
     "reportAny": "none",

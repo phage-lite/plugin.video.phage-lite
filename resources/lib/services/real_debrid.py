@@ -1,4 +1,4 @@
-from typing import override
+from typing import Any, override
 import requests
 from services.types import Service, AuthData, PollStatus
 from utils.logger import log
@@ -102,45 +102,73 @@ class RealDebridAPI(Service):
             except Exception as e:
                 log(str(e))
 
-    def _api_get(self, endpoint: str, params: dict | None = None) -> dict:
+    def _refresh_token(self) -> bool:
+        if not self.refresh_token or not self.client_id or not self.client_secret:
+            return False
+        data = {
+            "client_id": self.client_id,
+            "client_secret": self.client_secret,
+            "code": self.refresh_token,
+            "grant_type": "http://oauth.net/grant_type/device/1.0",
+        }
+        try:
+            response = requests.post(self.token_url, data=data, timeout=20)
+            response.raise_for_status()
+            result: dict[str, Any] = response.json()
+            self.access_token = result["access_token"]
+            self.refresh_token = result.get("refresh_token", self.refresh_token)
+            set_setting(SID.ACCESS_TOKEN, self.access_token, RD_PREFIX)
+            set_setting(SID.REFRESH_TOKEN, self.refresh_token, RD_PREFIX)
+            return True
+        except Exception as e:
+            log(str(e), "_refresh_token")
+            return False
+
+    def _api_get(self, endpoint: str, params: dict[str, str] | None = None) -> dict[str, Any]:
         url = f"https://api.real-debrid.com/rest/1.0/{endpoint}"
         headers = {"Authorization": f"Bearer {self.access_token}"}
         response = requests.get(url, headers=headers, params=params or {}, timeout=20)
+        if response.status_code == 401 and self._refresh_token():
+            headers["Authorization"] = f"Bearer {self.access_token}"
+            response = requests.get(url, headers=headers, params=params or {}, timeout=20)
         response.raise_for_status()
         return response.json()
 
-    def _api_post(self, endpoint: str, data: dict | None = None) -> dict:
+    def _api_post(self, endpoint: str, data: dict[str, str] | None = None) -> dict[str, Any]:
         url = f"https://api.real-debrid.com/rest/1.0/{endpoint}"
         headers = {"Authorization": f"Bearer {self.access_token}"}
         response = requests.post(url, headers=headers, data=data or {}, timeout=20)
+        if response.status_code == 401 and self._refresh_token():
+            headers["Authorization"] = f"Bearer {self.access_token}"
+            response = requests.post(url, headers=headers, data=data or {}, timeout=20)
         response.raise_for_status()
+        if not response.content:
+            return {}
         return response.json()
 
-    def unrestrict_link(self, link: str) -> dict:
+    def unrestrict_link(self, link: str) -> dict[str, Any]:
         return self._api_post("unrestrict/link", {"link": link})
 
-    def add_magnet(self, magnet: str) -> dict:
+    def add_magnet(self, magnet: str) -> dict[str, Any]:
         return self._api_post("torrents/addMagnet", {"magnet": magnet})
 
-    def get_torrent_info(self, torrent_id: str) -> dict:
+    def get_torrent_info(self, torrent_id: str) -> dict[str, Any]:
         return self._api_get(f"torrents/info/{torrent_id}")
 
     def select_files(self, torrent_id: str, file_ids: str = "all") -> None:
-        url = f"https://api.real-debrid.com/rest/1.0/torrents/selectFiles/{torrent_id}"
-        headers = {"Authorization": f"Bearer {self.access_token}"}
-        requests.post(url, headers=headers, data={"files": file_ids}, timeout=20)
+        self._api_post(f"torrents/selectFiles/{torrent_id}", {"files": file_ids})
 
-    def get_downloads(self) -> list:
-        return self._api_get("downloads")
+    def get_downloads(self) -> list[dict[str, Any]]:
+        result = self._api_get("downloads")
+        return result if isinstance(result, list) else []
 
     def is_authenticated(self) -> bool:
         return bool(self.access_token)
 
-    def check_instant_availability(self, hashes: list) -> set:
-        """Return the subset of hashes that are cached on RealDebrid."""
+    def check_instant_availability(self, hashes: list[str]) -> set[str]:
         if not hashes or not self.access_token:
             return set()
-        cached: set = set()
+        cached: set[str] = set()
         for i in range(0, len(hashes), 40):
             chunk = hashes[i:i + 40]
             endpoint = "torrents/instantAvailability/" + "/".join(chunk)

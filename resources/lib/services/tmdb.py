@@ -11,27 +11,25 @@ class TmdbAPI:
     def __init__(self):
         self.api_key: str = get_setting(SID.CLIENT_SECRET, PREFIX)
         self.session: Session = Session()
-        self.session.headers.update(
-            {
-                "Accept": "application/json",
-            }
-        )
+        self.session.headers.update({"Accept": "application/json"})
 
-    def _get(self, endpoint: str, params: dict[str, Any] = {}) -> dict[str, Any]:
+    def _get(self, endpoint: str, params: dict[str, Any] | None = None) -> dict[str, Any]:
         url = f"{BASE_URL}/{endpoint}"
         headers = {
             "accept": "application/json",
-            "Authorization": f"Bearer {self.api_key}"
+            "Authorization": f"Bearer {self.api_key}",
         }
-        response = self.session.get(url, params=params, headers=headers, timeout=20)
+        response = self.session.get(url, params=params or {}, headers=headers, timeout=20)
         response.raise_for_status()
         return response.json()
+
+    # ── Movies ───────────────────────────────────────────────────────────────
 
     def popular_movies(self, page: int = 1) -> dict[str, Any]:
         return self._get("movie/popular", {"page": page})
 
-    def trending_movies(self, window: str = "week") -> dict[str, Any]:
-        return self._get(f"trending/movie/{window}")
+    def trending_movies(self, window: str = "week", page: int = 1) -> dict[str, Any]:
+        return self._get(f"trending/movie/{window}", {"page": page})
 
     def now_playing_movies(self, page: int = 1) -> dict[str, Any]:
         return self._get("movie/now_playing", {"page": page})
@@ -45,11 +43,20 @@ class TmdbAPI:
     def movies_by_genre(self, genre_id: int, page: int = 1) -> dict[str, Any]:
         return self._get("discover/movie", {"with_genres": genre_id, "page": page})
 
+    def adult_movies(self, page: int = 1) -> dict[str, Any]:
+        return self._get("discover/movie", {
+            "include_adult": "true",
+            "sort_by": "popularity.desc",
+            "page": page,
+        })
+
+    # ── TV ───────────────────────────────────────────────────────────────────
+
     def popular_tv(self, page: int = 1) -> dict[str, Any]:
         return self._get("tv/popular", {"page": page})
 
-    def trending_tv(self, window: str = "week") -> dict[str, Any]:
-        return self._get(f"trending/tv/{window}")
+    def trending_tv(self, window: str = "week", page: int = 1) -> dict[str, Any]:
+        return self._get(f"trending/tv/{window}", {"page": page})
 
     def airing_today_tv(self, page: int = 1) -> dict[str, Any]:
         return self._get("tv/airing_today", {"page": page})
@@ -62,6 +69,13 @@ class TmdbAPI:
 
     def tv_by_genre(self, genre_id: int, page: int = 1) -> dict[str, Any]:
         return self._get("discover/tv", {"with_genres": genre_id, "page": page})
+
+    # ── Search ───────────────────────────────────────────────────────────────
+
+    def search(self, query: str, page: int = 1) -> dict[str, Any]:
+        return self._get("search/multi", {"query": query, "page": page, "include_adult": "false"})
+
+    # ── Detail / metadata ────────────────────────────────────────────────────
 
     def movie_external_ids(self, tmdb_id: int) -> dict[str, Any]:
         return self._get(f"movie/{tmdb_id}/external_ids")

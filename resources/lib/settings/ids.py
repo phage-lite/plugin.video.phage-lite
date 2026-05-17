@@ -7,3 +7,4 @@ class SettingID(StrEnum):
     CLIENT_ID = "client_id"
     CLIENT_SECRET = "client_secret"
     REFRESH_TOKEN = "refresh_token"
+    AUTO_PLAY = "auto_play"

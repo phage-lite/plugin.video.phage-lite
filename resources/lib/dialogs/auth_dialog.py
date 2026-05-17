@@ -1,4 +1,4 @@
-from typing import override
+from typing import cast, override
 import xbmcgui
 import xbmcaddon
 
@@ -17,9 +17,9 @@ class AuthDialog(xbmcgui.WindowXMLDialog):
 
     @override
     def onInit(self):
-        self.getControl(CONTROL_TITLE).setLabel(self.title)
-        self.getControl(CONTROL_QR).setImage(self.qr_path)
-        self.getControl(CONTROL_LABEL).setLabel(self.message)
+        cast(xbmcgui.ControlLabel, self.getControl(CONTROL_TITLE)).setLabel(self.title)
+        cast(xbmcgui.ControlImage, self.getControl(CONTROL_QR)).setImage(self.qr_path)
+        cast(xbmcgui.ControlLabel, self.getControl(CONTROL_LABEL)).setLabel(self.message)
 
     @override
     def onClick(self, controlId: int):

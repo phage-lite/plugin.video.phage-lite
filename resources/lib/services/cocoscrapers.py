@@ -1,7 +1,9 @@
+import importlib
 import sys
 import time
 import xbmcaddon
 from threading import Thread, Lock
+from typing import Any
 
 from utils.logger import log
 
@@ -29,26 +31,13 @@ def _inject_path() -> bool:
         return False
 
 
-def scrape(data: dict, timeout: int = _SCRAPE_TIMEOUT) -> list:
-    """
-    Run all enabled cocoscrapers in parallel and return combined sources.
-
-    data for movies:
-        {'title': str, 'year': str, 'imdb': str, 'aliases': []}
-
-    data for episodes:
-        {'tvshowtitle': str, 'title': str, 'year': str, 'imdb': str,
-         'season': str, 'episode': str, 'aliases': []}
-
-    Each returned source dict has at minimum:
-        hash (str, 40-char hex), url (magnet str), quality (str), seeders (int)
-    """
+def scrape(data: dict[str, Any], timeout: int = _SCRAPE_TIMEOUT) -> list[dict[str, Any]]:
     if not _inject_path():
         return []
 
     try:
-        import cocoscrapers
-        source_modules = cocoscrapers.sources()
+        cocos = importlib.import_module("cocoscrapers")
+        source_modules: list[tuple[str, type]] = getattr(cocos, "sources")()
     except Exception as e:
         log(str(e), "scrape")
         return []
@@ -56,7 +45,7 @@ def scrape(data: dict, timeout: int = _SCRAPE_TIMEOUT) -> list:
     if not source_modules:
         return []
 
-    all_sources: list = []
+    all_sources: list[dict[str, Any]] = []
     lock = Lock()
 
     def _run(name: str, cls):
@@ -84,7 +73,7 @@ def scrape(data: dict, timeout: int = _SCRAPE_TIMEOUT) -> list:
     return all_sources
 
 
-def pick_best_cached(sources: list, cached_hashes: set) -> str:
+def pick_best_cached(sources: list[dict[str, Any]], cached_hashes: set[str]) -> str:
     """Return the magnet URL of the best quality RD-cached source, or ''."""
     candidates = [
         s for s in sources

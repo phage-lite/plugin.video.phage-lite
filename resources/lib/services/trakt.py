@@ -1,12 +1,13 @@
 import requests
+from typing import Any, override
 
-from typing import override
 from utils.logger import log
 from settings.settings import get_setting, set_setting
 from services.types import AuthData, PollStatus, Service
 from settings.ids import SettingID as SID
 
 PREFIX = "trakt"
+PAGE_SIZE = 20
 
 
 class TraktAPI(Service):
@@ -21,71 +22,144 @@ class TraktAPI(Service):
         self.base_url: str = "https://api.trakt.tv"
         self.auth_url: str = f"{self.base_url}/oauth"
         self.token_url: str = f"{self.auth_url}/token"
-        self.refresh_retries: int = 0
-        self.break_auth_loop: bool = False
+
+    # ── OAuth device flow ─────────────────────────────────────────────────────
 
     @override
     def start_auth(self) -> AuthData:
-        device_code_url: str = f"{self.auth_url}/device/code"
-        data = {"client_id": self.client_id}
-        response = requests.post(device_code_url, data=data, timeout=20)
-
-        if not response.ok:
-            log(str(response))
-            raise Exception(response.json()["error"])
-
-        self.user_code = response.json()["user_code"]
-        self.device_code = response.json()["device_code"]
-        direct_verification_url = (
-            f"{response.json()['verification_url']}/{response.json()['user_code']}"
+        response = requests.post(
+            f"{self.auth_url}/device/code",
+            data={"client_id": self.client_id},
+            timeout=20,
         )
-        log(response.json())
-
+        if not response.ok:
+            raise Exception(response.json().get("error", "auth failed"))
+        data = response.json()
+        self.user_code = data["user_code"]
+        self.device_code = data["device_code"]
+        log(data)
         return {
-            "verification_url": response.json()["verification_url"],
-            "direct_verification_url": direct_verification_url,
+            "verification_url": data["verification_url"],
+            "direct_verification_url": f"{data['verification_url']}/{data['user_code']}",
             "user_code": self.user_code,
-            "expiry": int(response.json()["expires_in"]),
+            "expiry": int(data["expires_in"]),
             "device_code": self.device_code,
-            "interval": int(response.json()["interval"]),
+            "interval": int(data["interval"]),
         }
 
     @override
     def poll(self) -> PollStatus:
-        poll_status = PollStatus.PENDING
-        poll_url: str = f"{self.auth_url}/device/token"
-        data = {
-            "code": self.device_code,
-            "client_id": self.client_id,
-            "client_secret": self.client_secret,
-        }
-        response = requests.post(poll_url, data=data, timeout=20)
-
+        response = requests.post(
+            f"{self.auth_url}/device/token",
+            data={
+                "code": self.device_code,
+                "client_id": self.client_id,
+                "client_secret": self.client_secret,
+            },
+            timeout=20,
+        )
         match response.status_code:
-            case 400:
-                poll_status = PollStatus.PENDING
             case 200:
                 self.access_token = response.json()["access_token"]
                 self.refresh_token = response.json()["refresh_token"]
-                poll_status = PollStatus.SUCCESS
-            case 404:
-                poll_status = PollStatus.ERROR
-            case 409:
-                poll_status = PollStatus.ERROR
+                return PollStatus.SUCCESS
             case 410:
-                poll_status = PollStatus.EXPIRED
+                return PollStatus.EXPIRED
             case 418:
-                poll_status = PollStatus.DENIED
+                return PollStatus.DENIED
+            case 404 | 409:
+                return PollStatus.ERROR
             case _:
-                poll_status = PollStatus.PENDING
-
-        return poll_status
+                return PollStatus.PENDING
 
     @override
     def auth_complete(self) -> None:
         if self.access_token:
             set_setting(SID.ACCESS_TOKEN, self.access_token, prefix=PREFIX)
             set_setting(SID.REFRESH_TOKEN, self.refresh_token, prefix=PREFIX)
+
+    # ── Token management ──────────────────────────────────────────────────────
+
+    def is_authenticated(self) -> bool:
+        if not self.access_token:
+            self.access_token = get_setting(SID.ACCESS_TOKEN, PREFIX)
+        return bool(self.access_token)
+
+    def _refresh_access_token(self) -> bool:
+        if not self.refresh_token:
+            self.refresh_token = get_setting(SID.REFRESH_TOKEN, PREFIX)
+        if not self.refresh_token or not self.client_id or not self.client_secret:
+            return False
+        try:
+            response = requests.post(
+                self.token_url,
+                json={
+                    "refresh_token": self.refresh_token,
+                    "client_id": self.client_id,
+                    "client_secret": self.client_secret,
+                    "redirect_uri": "urn:ietf:wg:oauth:2.0:oob",
+                    "grant_type": "refresh_token",
+                },
+                timeout=20,
+            )
+            response.raise_for_status()
+            data = response.json()
+            self.access_token = data["access_token"]
+            self.refresh_token = data.get("refresh_token", self.refresh_token)
+            set_setting(SID.ACCESS_TOKEN, self.access_token, prefix=PREFIX)
+            set_setting(SID.REFRESH_TOKEN, self.refresh_token, prefix=PREFIX)
+            return True
+        except Exception as e:
+            log(str(e), "_refresh_access_token")
+            return False
+
+    def _headers(self) -> dict[str, str]:
+        return {
+            "Authorization": f"Bearer {self.access_token}",
+            "Content-Type": "application/json",
+            "trakt-api-version": "2",
+            "trakt-api-key": self.client_id,
+        }
+
+    def _api_get(self, endpoint: str, params: dict[str, Any] | None = None) -> list[Any] | dict[str, Any]:
+        url = f"{self.base_url}/{endpoint}"
+        response = requests.get(url, headers=self._headers(), params=params or {}, timeout=20)
+        if response.status_code == 401 and self._refresh_access_token():
+            response = requests.get(url, headers=self._headers(), params=params or {}, timeout=20)
+        response.raise_for_status()
+        return response.json()
+
+    # ── Watchlist ─────────────────────────────────────────────────────────────
+
+    def watchlist_movies(self, page: int = 1, limit: int = PAGE_SIZE) -> list[dict[str, Any]]:
+        result = self._api_get(
+            "users/me/watchlist/movies",
+            {"extended": "full", "limit": limit, "page": page},
+        )
+        return result if isinstance(result, list) else []
+
+    def watchlist_shows(self, page: int = 1, limit: int = PAGE_SIZE) -> list[dict[str, Any]]:
+        result = self._api_get(
+            "users/me/watchlist/shows",
+            {"extended": "full", "limit": limit, "page": page},
+        )
+        return result if isinstance(result, list) else []
+
+    # ── Recommendations ───────────────────────────────────────────────────────
+
+    def recommendations_movies(self, page: int = 1, limit: int = PAGE_SIZE) -> list[dict[str, Any]]:
+        result = self._api_get(
+            "recommendations/movies",
+            {"extended": "full", "limit": limit, "page": page},
+        )
+        return result if isinstance(result, list) else []
+
+    def recommendations_shows(self, page: int = 1, limit: int = PAGE_SIZE) -> list[dict[str, Any]]:
+        result = self._api_get(
+            "recommendations/shows",
+            {"extended": "full", "limit": limit, "page": page},
+        )
+        return result if isinstance(result, list) else []
 
 
 Trakt = TraktAPI()
