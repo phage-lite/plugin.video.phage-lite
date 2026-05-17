@@ -4,6 +4,7 @@ import xbmcplugin
 import xbmcaddon
 
 from urllib.parse import parse_qsl
+from utils.notifications import error
 
 HANDLE = int(sys.argv[1])
 
@@ -24,16 +25,16 @@ def show_home():
         url = f"{sys.argv[0]}?category={category}"
         success = xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
         if not success:
-            xbmcgui.Dialog().notification("Bacterio", "Error building home page")
+            error("Error building home page")
     xbmcplugin.endOfDirectory(HANDLE)
 
 
 def show_movies():
-    xbmcgui.Dialog().notification("Bacterio", "Not implemented")
+    error("Not implemented")
 
 
 def show_tv_shows():
-    xbmcgui.Dialog().notification("Bacterio", "Not implemented")
+    error("Not implemented")
 
 
 if __name__ == "__main__":
