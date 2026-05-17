@@ -23,77 +23,35 @@
                     <level>0</level>
                     <control type="button" format="action">
                         <data>
-                            RunPlugin(plugin://plugin.video.bacterio/?mode=trakt.trakt_authenticate)
+                            RunScript(plugin.video.bacterio, trakt)
                         </data>
                     </control>
                 </setting>
-                <setting id="trakt.user" type="string" label="30402">
-                    <default></default>
-                    <constraints>
-                        <allowempty>true</allowempty>
-                    </constraints>
-                    <control type="edit" format="string" />
-                </setting>
-                <setting id="trakt.token" type="string" label="30401">
-                    <default></default>
-                    <level>2</level>
-                    <constraints>
-                        <allowempty>true</allowempty>
-                    </constraints>
-                    <control type="edit" format="string" />
-                </setting>
-                <setting id="trakt.client" type="string" label="30180" help="30181">
+                <setting id="trakt.client_id" type="string" label="30180" help="30181">
                     <default>e4a935fb153dfb977aba0b565e8cb6240316ca603fceb79dfe7e288143f904fa</default>
                     <level>4</level>
                     <control type="edit" format="string" />
                 </setting>
-                <setting id="trakt.secret" type="string" label="30182" help="30183">
+                <setting id="trakt.client_secret" type="string" label="30182" help="30183">
                     <default>9acab525f674ebead791dd5687ea2947f09c5f3cead4c07a7603b244e6bd3d18</default>
                     <level>4</level>
                     <control type="edit" format="string" />
                 </setting>
-            </group>
-            <group id="2" label="30035">
-                <setting id="trakt.sync_interval" type="integer" label="30036" help="30037">
-                    <level>2</level>
-                    <default>60</default>
+                <setting id="trakt.refresh_token" label="30403" type="string" help="30186">
+                    <level>4</level>
+                    <default></default>
+                    <control type="edit" format="string" />
                     <constraints>
-                        <minimum>5</minimum>
-                        <maximum>1440</maximum>
+                        <allowempty>true</allowempty>
                     </constraints>
-                    <control type="spinner" format="integer" />
                 </setting>
-                <setting id="trakt.refresh_widgets" type="boolean" label="30038" help="30039">
-                    <level>2</level>
-                    <default>false</default>
-                    <control type="toggle" />
-                </setting>
-            </group>
-            <group id="3" label="30170">
-                <setting id="trakt.flatten_episodes" type="boolean" label="30171" help="30172">
-                    <level>2</level>
-                    <default>false</default>
-                    <control type="toggle" />
-                </setting>
-                <setting id="trakt.calendar_sort_order" type="integer" label="30173" help="30174">
-                    <default>0</default>
-                    <control type="spinner" format="integer" />
-                </setting>
-                <setting id="trakt.calendar_previous_days" type="integer" label="30175" help="30176">
-                    <default>7</default>
+                <setting id="trakt.access_token" label="30403" type="string" help="30186">
+                    <level>4</level>
+                    <default></default>
+                    <control type="edit" format="string" />
                     <constraints>
-                        <minimum>0</minimum>
-                        <maximum>30</maximum>
+                        <allowempty>true</allowempty>
                     </constraints>
-                    <control type="spinner" format="integer" />
-                </setting>
-                <setting id="trakt.calendar_future_days" type="integer" label="30177" help="30178">
-                    <default>7</default>
-                    <constraints>
-                        <minimum>0</minimum>
-                        <maximum>30</maximum>
-                    </constraints>
-                    <control type="spinner" format="integer" />
                 </setting>
             </group>
         </category>
@@ -103,25 +61,9 @@
                     <level>0</level>
                     <control type="button" format="action">
                         <data>
-                            RunPlugin(plugin://plugin.video.bacterio/?mode=tmdblist_api.authenticate)
+                            RunScript(plugin.video.bacterio, tmdb)
                         </data>
                     </control>
-                </setting>
-                <setting id="tmdb.user" type="string" label="30402">
-                    <default></default>
-                    <level>2</level>
-                    <constraints>
-                        <allowempty>true</allowempty>
-                    </constraints>
-                    <control type="edit" format="string" />
-                </setting>
-                <setting id="tmdb.token" type="string" label="30401">
-                    <default></default>
-                    <level>2</level>
-                    <constraints>
-                        <allowempty>true</allowempty>
-                    </constraints>
-                    <control type="edit" format="string" />
                 </setting>
                 <setting id="tmdb.client" type="string" label="30185" help="30186">
                     <level>4</level>
@@ -142,7 +84,6 @@
             </group>
         </category>
 
-        <!-- ======================== SOURCES ACCOUNTS ======================== -->
         <category id="real_debrid" label="30209">
             <group id="2" label="30209">
                 <setting id="rd.enabled" type="boolean" label="30210" help="30211">
@@ -154,743 +95,45 @@
                     <level>0</level>
                     <control type="button" format="action">
                         <data>
-                            RunPlugin(plugin://plugin.video.bacterio/?mode=real_debrid.authenticate)</data>
+                            RunScript(plugin.video.bacterio, real_debrid)</data>
                     </control>
                     <dependencies>
                         <dependency type="enable" setting="rd.enabled">true</dependency>
                     </dependencies>
                 </setting>
-                <setting id="rd.token" type="string" label="30401">
+                <setting id="rd.refresh_token" label="30403" type="string" help="30186">
+                    <level>4</level>
                     <default></default>
-                    <level>3</level>
-                    <constraints>
-                        <allowempty>true</allowempty>
-                    </constraints>
                     <control type="edit" format="string" />
-                    <dependencies>
-                        <dependency type="enable" setting="rd.enabled">true</dependency>
-                    </dependencies>
-                </setting>
-                <setting id="rd.account_id" type="string" label="30402">
-                    <default></default>
-                    <level>3</level>
                     <constraints>
                         <allowempty>true</allowempty>
                     </constraints>
+                </setting>
+                <setting id="rd.access_token" label="30403" type="string" help="30186">
+                    <level>4</level>
+                    <default></default>
                     <control type="edit" format="string" />
-                    <dependencies>
-                        <dependency type="enable" setting="rd.enabled">true</dependency>
-                    </dependencies>
-                </setting>
-                <setting id="store_resolved_to_cloud.real-debrid" type="integer" label="30212"
-                    help="30213" parent="rd.enabled">
-                    <default>false</default>
-                    <control type="toggle" />
-                    <dependencies>
-                        <dependency type="enable" setting="rd.enabled">true</dependency>
-                    </dependencies>
-                </setting>
-                <setting id="provider.rd_cloud" type="boolean" label="30214" help="30215"
-                    parent="rd.enabled">
-                    <default>false</default>
-                    <dependencies>
-                        <dependency type="enable" setting="rd.enabled">true</dependency>
-                    </dependencies>
-                    <control type="toggle" />
-                </setting>
-                <setting id="rd_cloud.title_filter" type="boolean" label="30216" help="30217"
-                    parent="provider.rd_cloud">
-                    <default>false</default>
-                    <dependencies>
-                        <dependency type="enable" setting="provider.rd_cloud">true</dependency>
-                    </dependencies>
-                    <control type="toggle" />
-                </setting>
-                <setting id="check.rd_cloud" type="boolean" label="30218" help="30219"
-                    parent="provider.rd_cloud">
-                    <default>false</default>
-                    <dependencies>
-                        <dependency type="enable" setting="provider.rd_cloud">true</dependency>
-                    </dependencies>
-                    <control type="toggle" />
-                </setting>
-                <setting id="autoplay.rd_cloud" type="boolean" label="30220" help="30221"
-                    parent="check.rd_cloud">
-                    <default>false</default>
-                    <dependencies>
-                        <dependency type="enable" setting="check.rd_cloud">true</dependency>
-                    </dependencies>
-                    <control type="toggle" />
-                </setting>
-                <setting id="results.sort_rdcloud_first" type="boolean" label="30222" help="30223"
-                    parent="provider.rd_cloud">
-                    <default>false</default>
-                    <dependencies>
-                        <dependency type="enable" setting="provider.rd_cloud">true</dependency>
-                    </dependencies>
-                    <control type="toggle" />
-                </setting>
-                <setting id="rd.priority" type="integer" label="30224" help="30225"
-                    parent="rd.enabled">
-                    <default>1</default>
-                    <constraints>
-                        <minimum>1</minimum>
-                        <maximum>20</maximum>
-                    </constraints>
-                    <dependencies>
-                        <dependency type="enable" setting="rd.enabled">true</dependency>
-                    </dependencies>
-                    <control type="spinner" format="integer" />
-                </setting>
-                <setting id="rd.alternate_base_url" type="boolean" label="30226" help="30227"
-                    parent="rd.enabled">
-                    <level>2</level>
-                    <default>false</default>
-                    <dependencies>
-                        <dependency type="enable" setting="rd.enabled">true</dependency>
-                    </dependencies>
-                    <control type="toggle" />
-                </setting>
-            </group>
-        </category>
-        <category id="sources_accounts" label="30199">
-            <group id="1" label="30200">
-                <setting id="provider.external" type="boolean" label="30201" help="30202">
-                    <level>0</level>
-                    <default>false</default>
-                    <control type="toggle" />
-                </setting>
-                <setting id="external_scraper.module" type="addon" label="30203" help="30204"
-                    parent="provider.external">
-                    <level>0</level>
-                    <default />
-                    <constraints>
-                        <addontype>xbmc.python.module</addontype>
-                        <allowempty>true</allowempty>
-                    </constraints>
-                    <dependencies>
-                        <dependency type="enable" setting="provider.external">true</dependency>
-                    </dependencies>
-                    <control type="button" format="addon">
-                        <heading>30203</heading>
-                        <show more="true" details="true">installed</show>
-                    </control>
-                </setting>
-                <setting id="external_scraper.name" type="string" label="30203" help="30204"
-                    parent="provider.external">
-                    <level>2</level>
-                    <default></default>
                     <constraints>
                         <allowempty>true</allowempty>
                     </constraints>
-                    <dependencies>
-                        <dependency type="enable" setting="provider.external">true</dependency>
-                    </dependencies>
+                </setting>
+                <setting id="rd.app_id" label="30403" type="string" help="30186">
+                    <level>4</level>
+                    <default>X245A4XAIBGVM</default>
                     <control type="edit" format="string" />
                 </setting>
-                <setting id="external.cache_check" type="boolean" label="30205" help="30206"
-                    parent="provider.external">
-                    <level>2</level>
-                    <default>false</default>
-                    <dependencies>
-                        <dependency type="enable" setting="provider.external">true</dependency>
-                    </dependencies>
-                    <control type="toggle" />
+                <setting id="rd.client_id" label="30403" type="string" help="30186">
+                    <level>4</level>
+                    <default>X245A4XAIBGVM</default>
+                    <control type="edit" format="string" />
                 </setting>
-                <setting id="external.filter_sources" type="boolean" label="30207" help="30208"
-                    parent="provider.external">
-                    <level>2</level>
-                    <default>false</default>
-                    <dependencies>
-                        <dependency type="enable" setting="provider.external">true</dependency>
-                    </dependencies>
-                    <control type="toggle" />
-                </setting>
-            </group>
-            <group id="8" label="30255">
-                <setting id="provider.folders" type="boolean" label="30256" help="30257">
-                    <level>0</level>
-                    <default>false</default>
-                    <control type="toggle" />
-                </setting>
-                <setting id="folders.title_filter" type="boolean" label="30247" help="30259"
-                    parent="provider.folders">
-                    <default>false</default>
-                    <dependencies>
-                        <dependency type="enable" setting="provider.folders">true</dependency>
-                    </dependencies>
-                    <control type="toggle" />
-                </setting>
-                <setting id="check.folders" type="boolean" label="30218" help="30219"
-                    parent="provider.folders">
-                    <default>false</default>
-                    <dependencies>
-                        <dependency type="enable" setting="provider.folders">true</dependency>
-                    </dependencies>
-                    <control type="toggle" />
-                </setting>
-                <setting id="autoplay.folders" type="boolean" label="30253" help="30254"
-                    parent="check.folders">
-                    <default>false</default>
-                    <dependencies>
-                        <dependency type="enable" setting="check.folders">true</dependency>
-                    </dependencies>
-                    <control type="toggle" />
-                </setting>
-                <setting id="results.sort_folders_first" type="boolean" label="30260" help="30261"
-                    parent="provider.folders">
-                    <default>false</default>
-                    <dependencies>
-                        <dependency type="enable" setting="provider.folders">true</dependency>
-                    </dependencies>
-                    <control type="toggle" />
-                </setting>
-                <setting id="results.folders_ignore_filters" type="boolean" label="30262"
-                    help="30263"
-                    parent="provider.folders">
-                    <default>false</default>
-                    <dependencies>
-                        <dependency type="enable" setting="provider.folders">true</dependency>
-                    </dependencies>
-                    <control type="toggle" />
-                </setting>
-                <setting id="folders.priority" type="integer" label="30224" help="30225"
-                    parent="provider.folders">
-                    <default>7</default>
-                    <constraints>
-                        <minimum>1</minimum>
-                        <maximum>20</maximum>
-                    </constraints>
-                    <dependencies>
-                        <dependency type="enable" setting="provider.folders">true</dependency>
-                    </dependencies>
-                    <control type="spinner" format="integer" />
-                </setting>
-            </group>
-        </category>
-
-        <!-- ======================== RESULTS ======================== -->
-        <category id="results" label="30017">
-
-            <group id="1" label="30001">
-                <setting id="results.timeout" type="integer" label="30264" help="30265">
-                    <default>30</default>
-                    <constraints>
-                        <minimum>5</minimum>
-                        <maximum>120</maximum>
-                    </constraints>
-                    <control type="spinner" format="integer" />
-                </setting>
-                <setting id="results.list_format" type="integer" label="30266" help="30267">
-                    <default>0</default>
-                    <control type="spinner" format="integer" />
-                </setting>
-            </group>
-
-            <group id="2" label="30001">
-                <setting id="results.auto_rescrape_cache_ignored" type="integer" label="30268"
-                    help="30269">
-                    <default>0</default>
-                    <control type="spinner" format="integer" />
-                </setting>
-                <setting id="results.auto_rescrape_imdb_year" type="integer" label="30270"
-                    help="30271">
-                    <default>0</default>
-                    <control type="spinner" format="integer" />
-                </setting>
-                <setting id="results.auto_rescrape_with_all" type="integer" label="30272"
-                    help="30273">
-                    <default>0</default>
-                    <control type="spinner" format="integer" />
-                </setting>
-                <setting id="results.auto_episode_group" type="integer" label="30274" help="30275">
-                    <level>2</level>
-                    <default>0</default>
-                    <control type="spinner" format="integer" />
-                </setting>
-                <setting id="results.ignore_filter" type="integer" label="30276" help="30277">
-                    <default>0</default>
-                    <control type="spinner" format="integer" />
-                </setting>
-            </group>
-
-            <group id="3" label="30278">
-                <setting id="results.filter_size_method" type="integer" label="30279" help="30280">
-                    <default>0</default>
-                    <control type="spinner" format="integer" />
-                </setting>
-                <setting id="results.line_speed" type="integer" label="30281" help="30282"
-                    parent="results.filter_size_method">
-                    <default>50</default>
-                    <constraints>
-                        <minimum>1</minimum>
-                        <maximum>10000</maximum>
-                    </constraints>
-                    <control type="spinner" format="integer" />
-                </setting>
-                <setting id="results.movie_size_max" type="integer" label="30283" help="30284"
-                    parent="results.filter_size_method">
-                    <default>10000</default>
-                    <constraints>
-                        <minimum>0</minimum>
-                        <maximum>100000</maximum>
-                    </constraints>
-                    <control type="spinner" format="integer" />
-                </setting>
-                <setting id="results.episode_size_max" type="integer" label="30285" help="30286"
-                    parent="results.filter_size_method">
-                    <default>4000</default>
-                    <constraints>
-                        <minimum>0</minimum>
-                        <maximum>100000</maximum>
-                    </constraints>
-                    <control type="spinner" format="integer" />
-                </setting>
-                <setting id="results.movie_size_min" type="integer" label="30287" help="30288"
-                    parent="results.filter_size_method">
-                    <default>200</default>
-                    <constraints>
-                        <minimum>0</minimum>
-                        <maximum>100000</maximum>
-                    </constraints>
-                    <control type="spinner" format="integer" />
-                </setting>
-                <setting id="results.episode_size_min" type="integer" label="30289" help="30290"
-                    parent="results.filter_size_method">
-                    <default>50</default>
-                    <constraints>
-                        <minimum>0</minimum>
-                        <maximum>100000</maximum>
-                    </constraints>
-                    <control type="spinner" format="integer" />
-                </setting>
-                <setting id="results.size_unknown" type="boolean" label="30291" help="30292">
-                    <default>true</default>
-                    <control type="toggle" />
-                </setting>
-                <setting id="results.size_sort_weighted" type="boolean" label="30293" help="30294">
-                    <level>3</level>
-                    <default>false</default>
-                    <control type="toggle" />
-                </setting>
-                <setting id="results.size_sort_direction" type="integer" label="30295" help="30296">
-                    <level>3</level>
-                    <default>0</default>
-                    <control type="spinner" format="integer" />
-                </setting>
-                <setting id="results.limit_number_quality" type="integer" label="30297" help="30298">
-                    <level>3</level>
-                    <default>0</default>
-                    <control type="spinner" format="integer" />
-                </setting>
-                <setting id="results.limit_number_total" type="integer" label="30299" help="30300">
-                    <level>3</level>
-                    <default>0</default>
-                    <control type="spinner" format="integer" />
-                </setting>
-                <setting id="filter.include_prerelease" type="boolean" label="30301" help="30302">
-                    <default>false</default>
-                    <control type="toggle" />
-                </setting>
-                <setting id="filter.3d" type="boolean" label="30303" help="30304">
-                    <default>false</default>
-                    <control type="toggle" />
-                </setting>
-                <setting id="filter.hdr" type="boolean" label="30305" help="30306">
-                    <default>false</default>
-                    <control type="toggle" />
-                </setting>
-                <setting id="filter.dv" type="boolean" label="30307" help="30308">
-                    <default>false</default>
-                    <control type="toggle" />
-                </setting>
-                <setting id="filter.av1" type="boolean" label="30309" help="30310">
-                    <default>false</default>
-                    <control type="toggle" />
-                </setting>
-                <setting id="filter.enhanced_upscaled" type="boolean" label="30311" help="30312">
-                    <default>false</default>
-                    <control type="toggle" />
-                </setting>
-                <setting id="filter.hevc" type="boolean" label="30313" help="30314">
-                    <default>false</default>
-                    <control type="toggle" />
-                </setting>
-                <setting id="filter.hevc.max_quality" type="string" label="30315" help="30316"
-                    parent="filter.hevc">
-                    <default>4K</default>
-                    <constraints>
-                        <options>
-                            <option>4K</option>
-                            <option>1080p</option>
-                            <option>720p</option>
-                            <option>SD</option>
-                            <option>SCR</option>
-                            <option>CAM</option>
-                            <option>TELE</option>
-                        </options>
-                    </constraints>
-                    <dependencies>
-                        <dependency type="enable" setting="filter.hevc">true</dependency>
-                    </dependencies>
-                    <control type="spinner" format="string" />
-                </setting>
-                <setting id="filter.hevc.max_autoplay_quality" type="string" label="30317"
-                    help="30318"
-                    parent="filter.hevc">
-                    <default>4K</default>
-                    <constraints>
-                        <options>
-                            <option>4K</option>
-                            <option>1080p</option>
-                            <option>720p</option>
-                            <option>SD</option>
-                            <option>SCR</option>
-                            <option>CAM</option>
-                            <option>TELE</option>
-                        </options>
-                    </constraints>
-                    <dependencies>
-                        <dependency type="enable" setting="filter.hevc">true</dependency>
-                    </dependencies>
-                    <control type="spinner" format="string" />
-                </setting>
-                <!-- filter.sort_to_top: stored value is the string itself (labelenum behaviour).
-             Python reads: get_setting('bacterio.filter.sort_to_top') -> 'none'|'source'|'autoplay'|'both' -->
-                <setting id="filter.sort_to_top" type="string" label="30319" help="30320">
-                    <default>none</default>
-                    <constraints>
-                        <options>
-                            <option>none</option>
-                            <option>source</option>
-                            <option>autoplay</option>
-                            <option>both</option>
-                        </options>
-                    </constraints>
-                    <control type="spinner" format="string" />
-                </setting>
-                <setting id="filter.preferred_filters" type="string" label="30321" help="30322"
-                    parent="filter.sort_to_top">
-                    <level>2</level>
+                <setting id="rd.client_secret" label="30403" type="string" help="30186">
+                    <level>4</level>
                     <default></default>
+                    <control type="edit" format="string" />
                     <constraints>
                         <allowempty>true</allowempty>
                     </constraints>
-                    <dependencies>
-                        <dependency type="enable" setting="filter.sort_to_top">none</dependency>
-                    </dependencies>
-                    <control type="edit" format="string" />
-                </setting>
-                <setting id="filter_audio" type="string" label="30323" help="30324">
-                    <level>2</level>
-                    <default></default>
-                    <constraints>
-                        <allowempty>true</allowempty>
-                    </constraints>
-                    <control type="edit" format="string" />
-                </setting>
-            </group>
-
-            <group id="4" label="30325">
-                <setting id="highlight.type" type="integer" label="30326" help="30327">
-                    <level>2</level>
-                    <default>0</default>
-                    <control type="spinner" format="integer" />
-                </setting>
-                <setting id="provider.rd_highlight" type="string" label="30328"
-                    parent="highlight.type">
-                    <level>2</level>
-                    <default>FF00FF00</default>
-                    <control type="colorbutton" />
-                </setting>
-                <setting id="provider.oc_highlight" type="string" label="30331"
-                    parent="highlight.type">
-                    <level>2</level>
-                    <default>FFFF0000</default>
-                    <control type="colorbutton" />
-                </setting>
-                <setting id="provider.tb_highlight" type="string" label="30333"
-                    parent="highlight.type">
-                    <level>2</level>
-                    <default>FFDA70D6</default>
-                    <control type="colorbutton" />
-                </setting>
-                <setting id="provider.folders_highlight" type="string" label="30336"
-                    parent="highlight.type">
-                    <level>2</level>
-                    <default>FFFFA500</default>
-                    <control type="colorbutton" />
-                </setting>
-                <setting id="scraper_4k_highlight" type="string" label="30337"
-                    parent="highlight.type">
-                    <level>2</level>
-                    <default>FFFF00FF</default>
-                    <control type="colorbutton" />
-                </setting>
-                <setting id="scraper_1080p_highlight" type="string" label="30338"
-                    parent="highlight.type">
-                    <level>2</level>
-                    <default>FF00FF00</default>
-                    <control type="colorbutton" />
-                </setting>
-                <setting id="scraper_720p_highlight" type="string" label="30339"
-                    parent="highlight.type">
-                    <level>2</level>
-                    <default>FFFFFF00</default>
-                    <control type="colorbutton" />
-                </setting>
-                <setting id="scraper_SD_highlight" type="string" label="30340"
-                    parent="highlight.type">
-                    <level>2</level>
-                    <default>FFCCCCCC</default>
-                    <control type="colorbutton" />
-                </setting>
-                <setting id="scraper_single_highlight" type="string" label="30341"
-                    parent="highlight.type">
-                    <level>2</level>
-                    <default>FFCCCCCC</default>
-                    <control type="colorbutton" />
-                </setting>
-            </group>
-
-        </category>
-
-        <!-- ======================== PLAYBACK ======================== -->
-        <category id="playback" label="30018">
-
-            <group id="1" label="30011">
-                <setting id="auto_play_movie" type="boolean" label="30342" help="30343">
-                    <level>0</level>
-                    <default>false</default>
-                    <control type="toggle" />
-                </setting>
-                <setting id="results_quality_movie" type="string" label="30344" help="30345"
-                    parent="auto_play_movie">
-                    <default>4K</default>
-                    <constraints>
-                        <options>
-                            <option>4K</option>
-                            <option>1080p</option>
-                            <option>720p</option>
-                            <option>SD</option>
-                            <option>SCR</option>
-                            <option>CAM</option>
-                            <option>TELE</option>
-                        </options>
-                    </constraints>
-                    <control type="spinner" format="string" />
-                </setting>
-                <setting id="autoplay_quality_movie" type="string" label="30346" help="30347"
-                    parent="auto_play_movie">
-                    <default>4K</default>
-                    <constraints>
-                        <options>
-                            <option>4K</option>
-                            <option>1080p</option>
-                            <option>720p</option>
-                            <option>SD</option>
-                            <option>SCR</option>
-                            <option>CAM</option>
-                            <option>TELE</option>
-                        </options>
-                    </constraints>
-                    <control type="spinner" format="string" />
-                </setting>
-                <setting id="auto_resume_movie" type="boolean" label="30348" help="30349">
-                    <default>false</default>
-                    <control type="toggle" />
-                </setting>
-                <setting id="stinger_alert.show" type="boolean" label="30350" help="30351">
-                    <default>false</default>
-                    <control type="toggle" />
-                </setting>
-                <setting id="stinger_alert.window_percentage" type="integer" label="30352"
-                    help="30353"
-                    parent="stinger_alert.show">
-                    <level>2</level>
-                    <default>85</default>
-                    <constraints>
-                        <minimum>1</minimum>
-                        <maximum>99</maximum>
-                    </constraints>
-                    <dependencies>
-                        <dependency type="enable" setting="stinger_alert.show">true</dependency>
-                    </dependencies>
-                    <control type="slider" format="integer" />
-                </setting>
-                <setting id="stinger_alert.use_chapters" type="boolean" label="30354" help="30355"
-                    parent="stinger_alert.show">
-                    <level>2</level>
-                    <default>false</default>
-                    <dependencies>
-                        <dependency type="enable" setting="stinger_alert.show">true</dependency>
-                    </dependencies>
-                    <control type="toggle" />
-                </setting>
-            </group>
-
-            <group id="2" label="30021">
-                <setting id="auto_play_episode" type="boolean" label="30356" help="30357">
-                    <level>0</level>
-                    <default>false</default>
-                    <control type="toggle" />
-                </setting>
-                <setting id="results_quality_episode" type="string" label="30344" help="30345"
-                    parent="auto_play_episode">
-                    <default>4K</default>
-                    <constraints>
-                        <options>
-                            <option>4K</option>
-                            <option>1080p</option>
-                            <option>720p</option>
-                            <option>SD</option>
-                            <option>SCR</option>
-                            <option>CAM</option>
-                            <option>TELE</option>
-                        </options>
-                    </constraints>
-                    <control type="spinner" format="string" />
-                </setting>
-                <setting id="autoplay_quality_episode" type="string" label="30346" help="30347"
-                    parent="auto_play_episode">
-                    <default>4K</default>
-                    <constraints>
-                        <options>
-                            <option>4K</option>
-                            <option>1080p</option>
-                            <option>720p</option>
-                            <option>SD</option>
-                            <option>SCR</option>
-                            <option>CAM</option>
-                            <option>TELE</option>
-                        </options>
-                    </constraints>
-                    <control type="spinner" format="string" />
-                </setting>
-                <setting id="autoplay_next_episode" type="boolean" label="30358" help="30359"
-                    parent="auto_play_episode">
-                    <default>false</default>
-                    <dependencies>
-                        <dependency type="enable" setting="auto_play_episode">true</dependency>
-                    </dependencies>
-                    <control type="toggle" />
-                </setting>
-                <setting id="autoplay_alert_method" type="integer" label="30360" help="30361"
-                    parent="autoplay_next_episode">
-                    <level>2</level>
-                    <default>0</default>
-                    <dependencies>
-                        <dependency type="enable" setting="autoplay_next_episode">true</dependency>
-                    </dependencies>
-                    <control type="spinner" format="integer" />
-                </setting>
-                <setting id="autoplay_default_action" type="integer" label="30362" help="30363"
-                    parent="autoplay_next_episode">
-                    <level>2</level>
-                    <default>0</default>
-                    <dependencies>
-                        <dependency type="enable" setting="autoplay_next_episode">true</dependency>
-                    </dependencies>
-                    <control type="spinner" format="integer" />
-                </setting>
-                <setting id="autoplay_next_window_percentage" type="integer" label="30364"
-                    help="30365"
-                    parent="autoplay_next_episode">
-                    <level>2</level>
-                    <default>85</default>
-                    <constraints>
-                        <minimum>1</minimum>
-                        <maximum>99</maximum>
-                    </constraints>
-                    <dependencies>
-                        <dependency type="enable" setting="autoplay_next_episode">true</dependency>
-                    </dependencies>
-                    <control type="slider" format="integer" />
-                </setting>
-                <setting id="autoplay_use_chapters" type="boolean" label="30366" help="30367"
-                    parent="autoplay_next_episode">
-                    <level>2</level>
-                    <default>false</default>
-                    <dependencies>
-                        <dependency type="enable" setting="autoplay_next_episode">true</dependency>
-                    </dependencies>
-                    <control type="toggle" />
-                </setting>
-                <setting id="autoplay_watching_check" type="integer" label="30368" help="30369"
-                    parent="autoplay_next_episode">
-                    <level>2</level>
-                    <default>0</default>
-                    <constraints>
-                        <minimum>0</minimum>
-                        <maximum>50</maximum>
-                    </constraints>
-                    <dependencies>
-                        <dependency type="enable" setting="autoplay_next_episode">true</dependency>
-                    </dependencies>
-                    <control type="spinner" format="integer" />
-                </setting>
-                <setting id="autoscrape_next_episode" type="boolean" label="30370" help="30371"
-                    parent="auto_play_episode">
-                    <default>false</default>
-                    <control type="toggle" />
-                </setting>
-                <setting id="autoscrape_next_window_percentage" type="integer" label="30372"
-                    help="30373"
-                    parent="autoscrape_next_episode">
-                    <level>2</level>
-                    <default>85</default>
-                    <constraints>
-                        <minimum>1</minimum>
-                        <maximum>99</maximum>
-                    </constraints>
-                    <dependencies>
-                        <dependency type="enable" setting="autoscrape_next_episode">true</dependency>
-                    </dependencies>
-                    <control type="slider" format="integer" />
-                </setting>
-                <setting id="autoscrape_use_chapters" type="boolean" label="30374" help="30367"
-                    parent="autoscrape_next_episode">
-                    <level>2</level>
-                    <default>false</default>
-                    <dependencies>
-                        <dependency type="enable" setting="autoscrape_next_episode">true</dependency>
-                    </dependencies>
-                    <control type="toggle" />
-                </setting>
-                <setting id="auto_resume_episode" type="integer" label="30375" help="30376">
-                    <default>0</default>
-                    <control type="spinner" format="integer" />
-                </setting>
-            </group>
-
-            <group id="3" label="30377">
-                <setting id="playback.limit_resolve" type="boolean" label="30378" help="30379">
-                    <level>2</level>
-                    <default>false</default>
-                    <control type="toggle" />
-                </setting>
-                <setting id="playback.volumecheck_enabled" type="boolean" label="30384" help="30385">
-                    <level>2</level>
-                    <default>false</default>
-                    <control type="toggle" />
-                </setting>
-                <setting id="playback.volumecheck_percent" type="integer" label="30386" help="30387"
-                    parent="playback.volumecheck_enabled">
-                    <level>2</level>
-                    <default>100</default>
-                    <constraints>
-                        <minimum>0</minimum>
-                        <maximum>100</maximum>
-                    </constraints>
-                    <dependencies>
-                        <dependency type="enable" setting="playback.volumecheck_enabled">true</dependency>
-                    </dependencies>
-                    <control type="slider" format="integer" />
-                </setting>
-                <setting id="playback.auto_enable_subs" type="boolean" label="30388" help="30389">
-                    <level>2</level>
-                    <default>false</default>
-                    <control type="toggle" />
                 </setting>
             </group>
         </category>
