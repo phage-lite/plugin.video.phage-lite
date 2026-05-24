@@ -24,7 +24,7 @@ class TorBoxAPI:
     def _headers(self) -> dict[str, str]:
         return {"Authorization": f"Bearer {self.api_key}"}
 
-    def _get(self, endpoint: str, params: dict[str, Any] | None = None) -> dict[str, Any]:
+    def _get(self, endpoint: str, params: dict[str, Any] | list[tuple[str, str]] | None = None) -> dict[str, Any]:
         response = requests.get(
             f"{BASE_URL}/{endpoint}", headers=self._headers(), params=params or {}, timeout=20
         )
@@ -46,7 +46,17 @@ class TorBoxAPI:
             return False
 
     def add_magnet(self, magnet: str) -> dict[str, Any]:
-        return self._post("torrents/createtorrent", {"magnet": magnet, "seed": "3"})
+        result = self._post("torrents/createtorrent", {"magnet": magnet, "seed": "3"})
+        if result.get("success"):
+            return result
+        # Torrent already in user's list — look it up by hash so the caller can proceed
+        hash_val = _extract_hash(magnet)
+        if hash_val:
+            existing = self.find_torrent_by_hash(hash_val)
+            if existing:
+                torrent_id = existing.get("id")
+                return {"success": True, "data": {"torrent_id": torrent_id}}
+        return result
 
     def get_torrent_info(self, torrent_id: int) -> dict[str, Any]:
         return self._get("torrents/mylist", {"id": str(torrent_id), "bypass_cache": "true"})
@@ -59,6 +69,18 @@ class TorBoxAPI:
             "zip_link": "false",
         })
 
+    def find_torrent_by_hash(self, hash_str: str) -> dict[str, Any] | None:
+        try:
+            result = self._get("torrents/mylist", {"bypass_cache": "true"})
+            data = result.get("data") or []
+            if isinstance(data, list):
+                for t in data:
+                    if isinstance(t, dict) and t.get("hash", "").lower() == hash_str.lower():
+                        return t
+        except Exception as e:
+            log(str(e), "torbox.find_torrent_by_hash")
+        return None
+
     def check_instant_availability(self, hashes: list[str]) -> set[str]:
         if not hashes:
             return set()
@@ -66,11 +88,10 @@ class TorBoxAPI:
         for i in range(0, len(hashes), 100):
             chunk = hashes[i:i + 100]
             try:
-                result = self._get("torrents/checkcached", {
-                    "hash": ",".join(chunk),
-                    "format": "list",
-                    "list_files": "false",
-                })
+                # TorBox requires repeated `hash` params, not comma-joined
+                params: list[tuple[str, str]] = [("hash", h) for h in chunk]
+                params += [("format", "list"), ("list_files", "false")]
+                result = self._get("torrents/checkcached", params)
                 data = result.get("data") or []
                 if isinstance(data, list):
                     for h in data:
@@ -87,6 +108,15 @@ class TorBoxAPI:
             f.get("name", "").lower().endswith(ext) for ext in _VIDEO_EXTS
         )]
         return max(video or files, key=lambda f: f.get("size", 0))
+
+
+def _extract_hash(magnet: str) -> str:
+    """Extract the infohash from a magnet URI."""
+    lower = magnet.lower()
+    if "btih:" in lower:
+        part = magnet[lower.index("btih:") + 5:]
+        return part.split("&")[0]
+    return ""
 
 
 TorBox = TorBoxAPI()

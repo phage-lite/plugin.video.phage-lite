@@ -128,7 +128,7 @@ class RealDebridAPI(Service):
         url = f"https://api.real-debrid.com/rest/1.0/{endpoint}"
         headers = {"Authorization": f"Bearer {self.access_token}"}
         response = requests.get(url, headers=headers, params=params or {}, timeout=20)
-        if response.status_code == 401 and self._refresh_token():
+        if response.status_code in (401, 403) and self._refresh_token():
             headers["Authorization"] = f"Bearer {self.access_token}"
             response = requests.get(url, headers=headers, params=params or {}, timeout=20)
         response.raise_for_status()
@@ -138,7 +138,7 @@ class RealDebridAPI(Service):
         url = f"https://api.real-debrid.com/rest/1.0/{endpoint}"
         headers = {"Authorization": f"Bearer {self.access_token}"}
         response = requests.post(url, headers=headers, data=data or {}, timeout=20)
-        if response.status_code == 401 and self._refresh_token():
+        if response.status_code in (401, 403) and self._refresh_token():
             headers["Authorization"] = f"Bearer {self.access_token}"
             response = requests.post(url, headers=headers, data=data or {}, timeout=20)
         response.raise_for_status()

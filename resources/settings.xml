@@ -120,7 +120,7 @@
             <group id="1" label="30237">
                 <setting id="torbox.enabled" type="boolean" label="30238" help="30239">
                     <level>0</level>
-                    <default>false</default>
+                    <default>true</default>
                     <control type="toggle" />
                 </setting>
                 <setting id="torbox.authenticate" label="30403" type="action" help="30404">

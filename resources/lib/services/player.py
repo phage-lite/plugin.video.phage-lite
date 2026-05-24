@@ -30,7 +30,7 @@ def _rd_ok() -> bool:
 
 
 def _tb_ok() -> bool:
-    return TorBox.is_enabled() and TorBox.is_authenticated()
+    return TorBox.is_authenticated()
 
 
 def _sort_sources(sources: list[dict[str, Any]], cached: set[str]) -> list[dict[str, Any]]:
