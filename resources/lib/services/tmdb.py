@@ -19,7 +19,10 @@ class TmdbAPI:
             "accept": "application/json",
             "Authorization": f"Bearer {self.api_key}",
         }
-        response = self.session.get(url, params=params or {}, headers=headers, timeout=20)
+        lang = get_setting("language", PREFIX) or "en-US"
+        merged: dict[str, Any] = {"language": lang}
+        merged.update(params or {})
+        response = self.session.get(url, params=merged, headers=headers, timeout=20)
         response.raise_for_status()
         return response.json()
 
@@ -97,6 +100,12 @@ class TmdbAPI:
 
     def tv_season(self, show_id: int, season_number: int) -> dict[str, Any]:
         return self._get(f"tv/{show_id}/season/{season_number}")
+
+    def movie_rich_details(self, tmdb_id: int) -> dict[str, Any]:
+        return self._get(f"movie/{tmdb_id}", {"append_to_response": "credits"})
+
+    def tv_rich_details(self, tmdb_id: int) -> dict[str, Any]:
+        return self._get(f"tv/{tmdb_id}", {"append_to_response": "credits"})
 
 
 Tmdb = TmdbAPI()

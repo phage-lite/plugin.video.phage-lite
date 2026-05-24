@@ -176,7 +176,35 @@ class TraktAPI(Service):
         )
         return result if isinstance(result, dict) else {}
 
+    def my_calendar(self, days: int = 7) -> dict[str, list[dict[str, Any]]]:
+        from datetime import date
+        start = date.today().isoformat()
+        result = self._api_get(
+            f"calendars/my/shows/{start}/{days}",
+            {"extended": "full"},
+        )
+        return result if isinstance(result, dict) else {}
+
+    def mark_watched_movie(self, tmdb_id: int) -> None:
+        self._api_post("sync/history", {"movies": [{"ids": {"tmdb": tmdb_id}}]})
+
+    def mark_watched_episode(self, tmdb_id: int, season: int, episode: int) -> None:
+        self._api_post("sync/history", {
+            "shows": [{
+                "ids": {"tmdb": tmdb_id},
+                "seasons": [{"number": season, "episodes": [{"number": episode}]}],
+            }]
+        })
+
     # ── Watchlist ─────────────────────────────────────────────────────────────
+
+    def watched_shows(self, limit: int = 30) -> list[dict[str, Any]]:
+        result = self._api_get(
+            "users/me/watched/shows",
+            {"extended": "noseasons"},
+        )
+        items = result if isinstance(result, list) else []
+        return items[:limit]
 
     def watchlist_movies(self, page: int = 1, limit: int = PAGE_SIZE) -> list[dict[str, Any]]:
         result = self._api_get(

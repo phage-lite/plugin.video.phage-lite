@@ -78,6 +78,10 @@
         </category>
         <category id="tmdb" label="30405">
             <group id="1" label="30184">
+                <setting id="tmdb.language" type="string" label="Content language" help="BCP 47 language code for titles and descriptions (e.g. en-US, fr-FR, de-DE, es-ES, ja-JP). TMDB returns your language when available, falling back to English.">
+                    <default>en-US</default>
+                    <control type="edit" format="string" />
+                </setting>
                 <setting id="tmdb.authenticate" label="30403" type="action" help="30404">
                     <level>0</level>
                     <control type="button" format="action">

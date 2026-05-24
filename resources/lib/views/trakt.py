@@ -88,10 +88,10 @@ def show_up_next():
 
 
 def _fetch_up_next() -> list[dict[str, Any]]:
-    watchlist = Trakt.watchlist_shows(limit=20)
+    watched = Trakt.watched_shows(limit=30)
 
-    def _progress(wl_item: dict[str, Any]) -> dict[str, Any] | None:
-        show = wl_item.get("show", {})
+    def _progress(watched_item: dict[str, Any]) -> dict[str, Any] | None:
+        show = watched_item.get("show", {})
         trakt_id: int | None = show.get("ids", {}).get("trakt")
         tmdb_id: int | None = show.get("ids", {}).get("tmdb")
         if not trakt_id or not tmdb_id:
@@ -103,26 +103,27 @@ def _fetch_up_next() -> list[dict[str, Any]]:
                 return None
             poster, backdrop = _tmdb_images(tmdb_id, "tv")
             return {
-                "title":   show.get("title", "Unknown"),
-                "tmdb_id": tmdb_id,
-                "season":  int(next_ep.get("season") or 1),
-                "episode": int(next_ep.get("number") or 1),
-                "ep_title": next_ep.get("title") or "",
-                "poster":  poster,
-                "backdrop": backdrop,
+                "title":            show.get("title", "Unknown"),
+                "tmdb_id":          tmdb_id,
+                "season":           int(next_ep.get("season") or 1),
+                "episode":          int(next_ep.get("number") or 1),
+                "ep_title":         next_ep.get("title") or "",
+                "poster":           poster,
+                "backdrop":         backdrop,
+                "last_watched_at":  watched_item.get("last_watched_at", ""),
             }
         except Exception:
             return None
 
     results: list[dict[str, Any]] = []
     with ThreadPoolExecutor(max_workers=5) as executor:
-        futures = [executor.submit(_progress, item) for item in watchlist]
+        futures = [executor.submit(_progress, item) for item in watched]
         for future in as_completed(futures):
             val = future.result()
             if val:
                 results.append(val)
 
-    results.sort(key=lambda x: (x["title"], x["season"], x["episode"]))
+    results.sort(key=lambda x: x.get("last_watched_at", ""), reverse=True)
     return results
 
 
