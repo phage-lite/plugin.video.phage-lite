@@ -53,9 +53,11 @@ def _menus(media_type: str, tmdb_id: int, title: str, year: str, poster: str) ->
         f"&title={quote_plus(title)}&year={year}&poster={quote_plus(poster)}"
     )
     wl = f"{_BASE}?action=trakt_watchlist_add&type={media_type}&id={tmdb_id}"
+    mw = f"{_BASE}?action=trakt_mark_watched&type={media_type}&id={tmdb_id}"
     return [
         ("Add to Favourites", f"RunPlugin({fav})"),
         ("Add to Trakt Watchlist", f"RunPlugin({wl})"),
+        ("Mark as Watched", f"RunPlugin({mw})"),
     ]
 
 
@@ -63,6 +65,20 @@ def show_movie_categories():
     for label, key in _SUBCATEGORIES:
         li = xbmcgui.ListItem(label=label)
         xbmcplugin.addDirectoryItem(HANDLE, f"{_BASE}?category=movies&subcategory={key}", li, isFolder=True)
+
+    li = xbmcgui.ListItem(label="My Favourites")
+    xbmcplugin.addDirectoryItem(HANDLE, f"{_BASE}?category=movies&subcategory=favourites", li, isFolder=True)
+
+    try:
+        from services.trakt import Trakt
+        if Trakt.is_authenticated():
+            li = xbmcgui.ListItem(label="Trakt Watchlist")
+            xbmcplugin.addDirectoryItem(HANDLE, f"{_BASE}?category=movies&subcategory=trakt_watchlist", li, isFolder=True)
+            li = xbmcgui.ListItem(label="Trakt Recommendations")
+            xbmcplugin.addDirectoryItem(HANDLE, f"{_BASE}?category=movies&subcategory=trakt_recommendations", li, isFolder=True)
+    except Exception:
+        pass
+
     xbmcplugin.endOfDirectory(HANDLE)
 
 

@@ -75,6 +75,26 @@ def _route():
             info("Removed from Trakt Watchlist")
         return
 
+    if action == "trakt_mark_watched":
+        from services.trakt import Trakt
+        from utils.notifications import info
+        tmdb_id_str = params.get("id", "")
+        item_type = params.get("type", "movie")
+        season_str = params.get("season", "")
+        episode_str = params.get("episode", "")
+        if not tmdb_id_str:
+            return
+        if not Trakt.is_authenticated():
+            error("Connect Trakt in Settings to mark as watched")
+            return
+        if item_type == "movie":
+            Trakt.mark_watched_movie(int(tmdb_id_str))
+            info("Marked as Watched")
+        elif item_type in ("episode", "tv", "show") and season_str and episode_str:
+            Trakt.mark_watched_episode(int(tmdb_id_str), int(season_str), int(episode_str))
+            info("Marked as Watched")
+        return
+
     if action == "seasons":
         show_id = params.get("show_id")
         show_title = unquote_plus(params.get("show_title", ""))
@@ -108,6 +128,15 @@ def _route():
             show_movie_genres()
         elif subcategory == "genre" and genre_id:
             show_movies_by_genre(int(genre_id), genre_name, page=page)
+        elif subcategory == "favourites":
+            from views.favourites import show_movie_favourites
+            show_movie_favourites()
+        elif subcategory == "trakt_watchlist":
+            from views.trakt import show_trakt_watchlist_movies
+            show_trakt_watchlist_movies(page=page)
+        elif subcategory == "trakt_recommendations":
+            from views.trakt import show_trakt_recommendations_movies
+            show_trakt_recommendations_movies(page=page)
         elif subcategory:
             show_movie_list(subcategory, page=page)
         else:
@@ -125,6 +154,21 @@ def _route():
             show_tv_genres()
         elif subcategory == "genre" and genre_id:
             show_shows_by_genre(int(genre_id), genre_name, page=page)
+        elif subcategory == "favourites":
+            from views.favourites import show_show_favourites
+            show_show_favourites()
+        elif subcategory == "upnext":
+            from views.trakt import show_up_next
+            show_up_next()
+        elif subcategory == "trakt_watchlist":
+            from views.trakt import show_trakt_watchlist_shows
+            show_trakt_watchlist_shows(page=page)
+        elif subcategory == "trakt_recommendations":
+            from views.trakt import show_trakt_recommendations_shows
+            show_trakt_recommendations_shows(page=page)
+        elif subcategory == "calendar":
+            from views.trakt import show_calendar
+            show_calendar()
         elif subcategory:
             show_tv_list(subcategory, page=page)
         else:

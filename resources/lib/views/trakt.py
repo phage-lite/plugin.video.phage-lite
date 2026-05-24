@@ -23,10 +23,14 @@ def _menus_browse(media_type: str, tmdb_id: int, title: str, year: str, poster: 
         f"&title={quote_plus(title)}&year={year}&poster={quote_plus(poster)}"
     )
     wl = f"{_BASE}?action=trakt_watchlist_add&type={media_type}&id={tmdb_id}"
-    return [
+    mw = f"{_BASE}?action=trakt_mark_watched&type={media_type}&id={tmdb_id}"
+    menus = [
         ("Add to Favourites", f"RunPlugin({fav})"),
         ("Add to Trakt Watchlist", f"RunPlugin({wl})"),
     ]
+    if media_type == "movie":
+        menus.append(("Mark as Watched", f"RunPlugin({mw})"))
+    return menus
 
 
 def _menus_watchlist(media_type: str, tmdb_id: int, title: str, year: str, poster: str) -> list[tuple[str, str]]:
@@ -36,10 +40,14 @@ def _menus_watchlist(media_type: str, tmdb_id: int, title: str, year: str, poste
         f"&title={quote_plus(title)}&year={year}&poster={quote_plus(poster)}"
     )
     rem = f"{_BASE}?action=trakt_watchlist_remove&type={media_type}&id={tmdb_id}"
-    return [
+    mw = f"{_BASE}?action=trakt_mark_watched&type={media_type}&id={tmdb_id}"
+    menus = [
         ("Add to Favourites", f"RunPlugin({fav})"),
         ("Remove from Trakt Watchlist", f"RunPlugin({rem})"),
     ]
+    if media_type == "movie":
+        menus.append(("Mark as Watched", f"RunPlugin({mw})"))
+    return menus
 
 
 # ── Category chooser ──────────────────────────────────────────────────────────
@@ -145,6 +153,8 @@ def _add_up_next_item(item: dict[str, Any]):
         "poster": f"{_IMG}{poster}" if poster else "",
         "fanart": f"{_IMG}{backdrop}" if backdrop else "",
     })
+    mw = f"{_BASE}?action=trakt_mark_watched&type=episode&id={tmdb_id}&season={season}&episode={episode}"
+    li.addContextMenuItems([("Mark as Watched", f"RunPlugin({mw})")])
     url = (
         f"{_BASE}?action=play&type=episode"
         f"&id={tmdb_id}&season={season}&episode={episode}"
@@ -313,6 +323,71 @@ def _add_recommendation_movie(item: dict[str, Any]):
         li.addContextMenuItems(_menus_browse("movie", tmdb_id, title, year_str, poster))
         xbmcplugin.addDirectoryItem(HANDLE, f"{_BASE}?action=play&type=movie&id={tmdb_id}", li, isFolder=False)
 
+
+# ── Calendar ──────────────────────────────────────────────────────────────────
+
+def show_calendar():
+    try:
+        data = Trakt.my_calendar(days=7)
+    except Exception as e:
+        error(f"Trakt error: {e}")
+        xbmcplugin.endOfDirectory(HANDLE)
+        return
+
+    if not data:
+        xbmcgui.Dialog().ok(
+            "My Calendar",
+            "No upcoming episodes in the next 7 days.\n\nMake sure shows are in your Trakt Watchlist.",
+        )
+        xbmcplugin.endOfDirectory(HANDLE)
+        return
+
+    xbmcplugin.setContent(HANDLE, "episodes")
+    for date_str in sorted(data.keys()):
+        for ep_item in data[date_str]:
+            _add_calendar_item(date_str, ep_item)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def _add_calendar_item(date_str: str, item: dict[str, Any]):
+    show = item.get("show", {})
+    ep = item.get("episode", {})
+    tmdb_id: int = int(show.get("ids", {}).get("tmdb") or 0)
+    show_title = show.get("title", "Unknown")
+    season = int(ep.get("season") or 1)
+    episode = int(ep.get("number") or 1)
+    ep_title = ep.get("title") or f"Episode {episode}"
+    overview = ep.get("overview", "")
+    rating = float(ep.get("rating") or 0)
+
+    poster, backdrop = _tmdb_images(tmdb_id, "tv") if tmdb_id else ("", "")
+
+    label = f"[{date_str}]  {show_title}  S{season:02d}E{episode:02d} · {ep_title}"
+    li = xbmcgui.ListItem(label=label)
+    li.setProperty("IsPlayable", "true")
+    li.setInfo("video", {
+        "title": ep_title,
+        "tvshowtitle": show_title,
+        "season": season,
+        "episode": episode,
+        "plot": overview,
+        "rating": rating,
+        "aired": date_str,
+        "mediatype": "episode",
+    })
+    li.setArt({
+        "thumb": f"{_IMG}{backdrop}" if backdrop else f"{_IMG}{poster}" if poster else "",
+        "poster": f"{_IMG}{poster}" if poster else "",
+        "fanart": f"{_IMG}{backdrop}" if backdrop else "",
+    })
+    if tmdb_id:
+        mw = f"{_BASE}?action=trakt_mark_watched&type=episode&id={tmdb_id}&season={season}&episode={episode}"
+        li.addContextMenuItems([("Mark as Watched", f"RunPlugin({mw})")])
+        url = f"{_BASE}?action=play&type=episode&id={tmdb_id}&season={season}&episode={episode}"
+        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
+
+
+# ── Item renderers ────────────────────────────────────────────────────────────
 
 def _add_recommendation_show(item: dict[str, Any]):
     tmdb_id: int = int(item.get("ids", {}).get("tmdb") or 0)

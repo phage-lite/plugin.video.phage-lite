@@ -59,6 +59,27 @@ def remove_favourite(key: str) -> None:
         xbmcgui.Dialog().notification("Bacterio", f"Removed: {entry.get('title', '')}", time=2000)
 
 
+def show_movie_favourites() -> None:
+    _show_filtered("movie")
+
+
+def show_show_favourites() -> None:
+    _show_filtered("show")
+
+
+def _show_filtered(filter_type: str) -> None:
+    favs = [f for f in _load() if f.get("type") == filter_type]
+    if not favs:
+        label = "Movies" if filter_type == "movie" else "TV Shows"
+        xbmcgui.Dialog().ok(
+            f"My {label}",
+            f"No favourite {label.lower()} yet.\n\nLong-press any item and choose Add to Favourites.",
+        )
+        xbmcplugin.endOfDirectory(HANDLE)
+        return
+    _render_favourites(favs)
+
+
 def show_favourites() -> None:
     favs = _load()
     if not favs:
@@ -68,7 +89,10 @@ def show_favourites() -> None:
         )
         xbmcplugin.endOfDirectory(HANDLE)
         return
+    _render_favourites(favs)
 
+
+def _render_favourites(favs: list[dict[str, Any]]) -> None:
     for fav in favs:
         item_type = fav.get("type", "movie")
         tmdb_id = fav.get("tmdb_id", "")
@@ -87,9 +111,11 @@ def show_favourites() -> None:
         remove_url = f"{_BASE}?action=favourite_remove&key={quote_plus(key)}"
         wl_type = "movie" if item_type == "movie" else "show"
         wl_url = f"{_BASE}?action=trakt_watchlist_add&type={wl_type}&id={tmdb_id}"
+        mw_url = f"{_BASE}?action=trakt_mark_watched&type={wl_type}&id={tmdb_id}"
         li.addContextMenuItems([
             ("Remove from Favourites", f"RunPlugin({remove_url})"),
             ("Add to Trakt Watchlist", f"RunPlugin({wl_url})"),
+            ("Mark as Watched", f"RunPlugin({mw_url})"),
         ])
 
         if item_type == "movie":

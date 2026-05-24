@@ -62,6 +62,24 @@ def show_tv_categories():
     for label, key in _SUBCATEGORIES:
         li = xbmcgui.ListItem(label=label)
         xbmcplugin.addDirectoryItem(HANDLE, f"{_BASE}?category=shows&subcategory={key}", li, isFolder=True)
+
+    li = xbmcgui.ListItem(label="My Favourites")
+    xbmcplugin.addDirectoryItem(HANDLE, f"{_BASE}?category=shows&subcategory=favourites", li, isFolder=True)
+
+    try:
+        from services.trakt import Trakt
+        if Trakt.is_authenticated():
+            li = xbmcgui.ListItem(label="Up Next")
+            xbmcplugin.addDirectoryItem(HANDLE, f"{_BASE}?category=shows&subcategory=upnext", li, isFolder=True)
+            li = xbmcgui.ListItem(label="Trakt Watchlist")
+            xbmcplugin.addDirectoryItem(HANDLE, f"{_BASE}?category=shows&subcategory=trakt_watchlist", li, isFolder=True)
+            li = xbmcgui.ListItem(label="Trakt Recommendations")
+            xbmcplugin.addDirectoryItem(HANDLE, f"{_BASE}?category=shows&subcategory=trakt_recommendations", li, isFolder=True)
+            li = xbmcgui.ListItem(label="My Calendar")
+            xbmcplugin.addDirectoryItem(HANDLE, f"{_BASE}?category=shows&subcategory=calendar", li, isFolder=True)
+    except Exception:
+        pass
+
     xbmcplugin.endOfDirectory(HANDLE)
 
 
@@ -205,6 +223,11 @@ def show_episodes(show_id: int, show_title: str, season_number: int):
             "thumb": f"{_IMG}{still}" if still else f"{_IMG}{season_poster}" if season_poster else "",
             "poster": f"{_IMG}{season_poster}" if season_poster else "",
         })
+        mw = (
+            f"{_BASE}?action=trakt_mark_watched&type=episode"
+            f"&id={show_id}&season={season_number}&episode={ep_num}"
+        )
+        li.addContextMenuItems([("Mark as Watched", f"RunPlugin({mw})")])
         url = (
             f"{_BASE}?action=play&type=episode"
             f"&id={show_id}"
