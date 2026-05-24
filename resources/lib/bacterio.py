@@ -180,32 +180,6 @@ def _route():
         show_favourites()
         return
 
-    if category == "trakt":
-        from views.trakt import (
-            show_trakt_categories,
-            show_trakt_watchlist_movies,
-            show_trakt_watchlist_shows,
-            show_trakt_recommendations_movies,
-            show_trakt_recommendations_shows,
-        )
-        from views.trakt import show_up_next
-        match subcategory:
-            case "upnext":
-                show_up_next()
-            case "watchlist" | "recommendations":
-                show_trakt_categories(subcategory)
-            case "watchlist_movies":
-                show_trakt_watchlist_movies(page=page)
-            case "watchlist_shows":
-                show_trakt_watchlist_shows(page=page)
-            case "recommendations_movies":
-                show_trakt_recommendations_movies(page=page)
-            case "recommendations_shows":
-                show_trakt_recommendations_shows(page=page)
-            case _:
-                error(f"Unknown trakt subcategory: {subcategory}")
-        return
-
     if category == "settings":
         xbmcaddon.Addon().openSettings()
         return

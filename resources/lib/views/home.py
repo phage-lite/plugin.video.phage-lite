@@ -20,7 +20,8 @@ def show_home():
 def _first_run_check():
     try:
         from services.real_debrid import RealDebrid
-        if RealDebrid.is_authenticated():
+        from services.torbox import TorBox
+        if RealDebrid.is_authenticated() or TorBox.is_authenticated():
             return
         win = xbmcgui.Window(10000)
         if win.getProperty("bacterio.welcome_shown"):
@@ -29,7 +30,8 @@ def _first_run_check():
         go = xbmcgui.Dialog().yesno(
             "Welcome to Bacterio!",
             (
-                "To stream movies and TV shows you need a [B]Real Debrid[/B] subscription.\n\n"
+                "To stream movies and TV shows you need a debrid service.\n\n"
+                "Supported: [B]TorBox[/B] (recommended) or [B]Real Debrid[/B].\n\n"
                 "Open Settings now to connect your account?"
             ),
             nolabel="Later",

@@ -50,19 +50,6 @@ def _menus_watchlist(media_type: str, tmdb_id: int, title: str, year: str, poste
     return menus
 
 
-# ── Category chooser ──────────────────────────────────────────────────────────
-
-def show_trakt_categories(subcategory: str):
-    items = [
-        ("Movies", f"?category=trakt&subcategory={subcategory}_movies"),
-        ("TV Shows", f"?category=trakt&subcategory={subcategory}_shows"),
-    ]
-    for label, qs in items:
-        li = xbmcgui.ListItem(label=label)
-        xbmcplugin.addDirectoryItem(HANDLE, f"{_BASE}{qs}", li, isFolder=True)
-    xbmcplugin.endOfDirectory(HANDLE)
-
-
 # ── Up Next ───────────────────────────────────────────────────────────────────
 
 def show_up_next():
