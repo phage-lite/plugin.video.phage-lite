@@ -109,6 +109,27 @@
             </group>
         </category>
 
+        <category id="torbox" label="TorBox">
+            <group id="1" label="TorBox">
+                <setting id="torbox.enabled" type="boolean" label="Enable TorBox" help="Use TorBox as a debrid provider for streaming.">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle" />
+                </setting>
+                <setting id="torbox.api_key" type="string" label="API key" help="Your TorBox API key. Find it at torbox.app in your account settings.">
+                    <level>0</level>
+                    <default></default>
+                    <control type="edit" format="string" option="hidden" />
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <dependencies>
+                        <dependency type="enable" setting="torbox.enabled">true</dependency>
+                    </dependencies>
+                </setting>
+            </group>
+        </category>
+
         <category id="real_debrid" label="30209">
             <group id="2" label="30209">
                 <setting id="rd.enabled" type="boolean" label="30210" help="30211">
