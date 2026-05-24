@@ -325,15 +325,15 @@ def resolve_and_play(
 
         # Prefer whichever provider has this hash cached; fall back to the other
         providers: list[str] = []
-        if use_rd and h in rd_cached:
-            providers.append("rd")
         if use_tb and h in tb_cached:
             providers.append("torbox")
+        if use_rd and h in rd_cached:
+            providers.append("rd")
         if not providers:
-            if use_rd:
-                providers.append("rd")
             if use_tb:
                 providers.append("torbox")
+            if use_rd:
+                providers.append("rd")
 
         for provider in providers:
             direct_url = _add_to_rd(magnet, title) if provider == "rd" else _add_to_torbox(magnet, title)
@@ -356,9 +356,9 @@ def resolve_magnet_and_play(magnet: str, handle: int, title: str = "",
         xbmcplugin.setResolvedUrl(handle, False, xbmcgui.ListItem())
         return
 
-    direct_url = _add_to_rd(magnet, title) if use_rd else _add_to_torbox(magnet, title)
+    direct_url = _add_to_torbox(magnet, title) if use_tb else _add_to_rd(magnet, title)
     if not direct_url and use_rd and use_tb:
-        direct_url = _add_to_torbox(magnet, title)
+        direct_url = _add_to_rd(magnet, title)
 
     if direct_url:
         if tmdb_id:
