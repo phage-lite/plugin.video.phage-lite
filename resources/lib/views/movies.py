@@ -20,12 +20,41 @@ _SUBCATEGORIES = [
 ]
 
 _FETCHERS: dict[str, Callable[[int], dict[str, Any]]] = {
-    "popular":    lambda page: Tmdb.popular_movies(page),
-    "trending":   lambda page: Tmdb.trending_movies(page=page),
+    "popular":     lambda page: Tmdb.popular_movies(page),
+    "trending":    lambda page: Tmdb.trending_movies(page=page),
     "now_playing": lambda page: Tmdb.now_playing_movies(page),
-    "top_rated":  lambda page: Tmdb.top_rated_movies(page),
-    "adult":      lambda page: Tmdb.adult_movies(page),
+    "top_rated":   lambda page: Tmdb.top_rated_movies(page),
+    "adult":       lambda page: Tmdb.adult_movies(page),
 }
+
+_genre_cache: dict[int, str] = {}
+
+
+def _ensure_genres() -> None:
+    global _genre_cache
+    if not _genre_cache:
+        try:
+            genres = Tmdb.movie_genres().get("genres", [])
+            _genre_cache = {int(g["id"]): str(g["name"]) for g in genres}
+        except Exception:
+            pass
+
+
+def _genre_str(ids: list[int]) -> str:
+    _ensure_genres()
+    return " / ".join(_genre_cache[g] for g in ids[:3] if g in _genre_cache)
+
+
+def _menus(media_type: str, tmdb_id: int, title: str, year: str, poster: str) -> list[tuple[str, str]]:
+    fav = (
+        f"{_BASE}?action=favourite_add&type={media_type}&id={tmdb_id}"
+        f"&title={quote_plus(title)}&year={year}&poster={quote_plus(poster)}"
+    )
+    wl = f"{_BASE}?action=trakt_watchlist_add&type={media_type}&id={tmdb_id}"
+    return [
+        ("Add to Favourites", f"RunPlugin({fav})"),
+        ("Add to Trakt Watchlist", f"RunPlugin({wl})"),
+    ]
 
 
 def show_movie_categories():
@@ -104,7 +133,8 @@ def _render_movies(results: list[dict[str, Any]], next_url: str = ""):
         backdrop = movie.get("backdrop_path") or ""
         rating = float(movie.get("vote_average") or 0)
         year_str = (movie.get("release_date") or "")[:4]
-        tmdb_id = movie.get("id")
+        tmdb_id = int(movie.get("id") or 0)
+        genre_ids = [int(g) for g in movie.get("genre_ids", [])]
 
         li = xbmcgui.ListItem(label=title)
         li.setProperty("IsPlayable", "true")
@@ -113,6 +143,7 @@ def _render_movies(results: list[dict[str, Any]], next_url: str = ""):
             "plot": overview,
             "year": int(year_str) if year_str.isdigit() else 0,
             "rating": rating,
+            "genre": _genre_str(genre_ids),
             "mediatype": "movie",
         })
         li.setArt({
@@ -120,12 +151,10 @@ def _render_movies(results: list[dict[str, Any]], next_url: str = ""):
             "poster": f"{_IMG}{poster}" if poster else "",
             "fanart": f"{_IMG}{backdrop}" if backdrop else "",
         })
-        fav_url = (
-            f"{_BASE}?action=favourite_add&type=movie&id={tmdb_id}"
-            f"&title={quote_plus(title)}&year={year_str}&poster={quote_plus(poster)}"
+        li.addContextMenuItems(_menus("movie", tmdb_id, title, year_str, poster))
+        xbmcplugin.addDirectoryItem(
+            HANDLE, f"{_BASE}?action=play&type=movie&id={tmdb_id}", li, isFolder=False
         )
-        li.addContextMenuItems([("Add to Favourites", f"RunPlugin({fav_url})")])
-        xbmcplugin.addDirectoryItem(HANDLE, f"{_BASE}?action=play&type=movie&id={tmdb_id}", li, isFolder=False)
 
     if next_url:
         li = xbmcgui.ListItem(label="Next Page →")

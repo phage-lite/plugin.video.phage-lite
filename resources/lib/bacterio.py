@@ -52,6 +52,29 @@ def _route():
         remove_favourite(key=unquote_plus(params.get("key", "")))
         return
 
+    if action == "trakt_watchlist_add":
+        from services.trakt import Trakt
+        from utils.notifications import info
+        tmdb_id_str = params.get("id", "")
+        item_type = params.get("type", "movie")
+        if tmdb_id_str:
+            if Trakt.is_authenticated():
+                Trakt.add_to_watchlist(item_type, int(tmdb_id_str))
+                info("Added to Trakt Watchlist")
+            else:
+                error("Connect Trakt in Settings to use watchlist")
+        return
+
+    if action == "trakt_watchlist_remove":
+        from services.trakt import Trakt
+        from utils.notifications import info
+        tmdb_id_str = params.get("id", "")
+        item_type = params.get("type", "movie")
+        if tmdb_id_str and Trakt.is_authenticated():
+            Trakt.remove_from_watchlist(item_type, int(tmdb_id_str))
+            info("Removed from Trakt Watchlist")
+        return
+
     if action == "seasons":
         show_id = params.get("show_id")
         show_title = unquote_plus(params.get("show_title", ""))
@@ -121,7 +144,10 @@ def _route():
             show_trakt_recommendations_movies,
             show_trakt_recommendations_shows,
         )
+        from views.trakt import show_up_next
         match subcategory:
+            case "upnext":
+                show_up_next()
             case "watchlist" | "recommendations":
                 show_trakt_categories(subcategory)
             case "watchlist_movies":
