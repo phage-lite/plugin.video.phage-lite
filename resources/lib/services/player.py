@@ -199,11 +199,13 @@ def resolve_and_play(
     episode: str = "",
 ):
     def _fail(msg: str):
+        log(msg, "resolve_and_play")
         error(msg)
         xbmcplugin.setResolvedUrl(handle, False, xbmcgui.ListItem())
 
     use_rd = _rd_ok()
     use_tb = _tb_ok()
+    log(f"use_tb={use_tb} use_rd={use_rd} type={item_type} id={tmdb_id} s={season} e={episode}", "resolve_and_play")
     if not use_rd and not use_tb:
         _fail("No debrid service configured. Add Real Debrid or TorBox in Settings.")
         return
@@ -223,11 +225,12 @@ def resolve_and_play(
             year = (details.get("release_date") or "")[:4]
             ep_title = ""
     except Exception as e:
-        log(str(e), "resolve_and_play")
+        log(str(e), "resolve_and_play/tmdb")
         _fail("Could not fetch metadata from TMDB.")
         return
 
     imdb_id = ext.get("imdb_id") or ""
+    log(f"title={title!r} year={year} imdb={imdb_id}", "resolve_and_play")
     if not imdb_id:
         _fail("No IMDB ID found for this title.")
         return
@@ -236,11 +239,11 @@ def resolve_and_play(
     if item_type == "episode":
         scrape_data: dict[str, Any] = {
             "tvshowtitle": title,
-            "title": ep_title or f"Episode {episode}",
+            "title": title,   # show title — scrapers use this as the primary search key
             "year": year,
             "imdb": imdb_id,
-            "season": season,
-            "episode": episode,
+            "season": int(season),
+            "episode": int(episode),
             "aliases": [],
         }
     else:
@@ -279,7 +282,22 @@ def resolve_and_play(
     progress.update(100)
     progress.close()
 
+    log(f"raw sources={len(sources)}", "resolve_and_play")
+    raw_sources = sources[:]
     sources = [s for s in sources if len(s.get("hash", "")) == 40]
+    # Also accept sources whose hash is embedded in the magnet URL
+    if not sources:
+        def _with_hash(s: dict[str, Any]) -> dict[str, Any] | None:
+            url = s.get("url", "")
+            lower = url.lower()
+            if "btih:" in lower:
+                h = url[lower.index("btih:") + 5:].split("&")[0]
+                if len(h) == 40:
+                    return {**s, "hash": h}
+            return None
+        sources = [h for s in raw_sources if (h := _with_hash(s)) is not None]
+
+    log(f"filtered sources={len(sources)}", "resolve_and_play")
     if not sources:
         _fail(f"No sources found for {title}.")
         return
