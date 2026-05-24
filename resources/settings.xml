@@ -3,20 +3,20 @@
     <section id="plugin.video.bacterio">
 
         <!-- ======================== PLAYBACK ======================== -->
-        <category id="playback" label="Playback">
-            <group id="1" label="Playback">
-                <setting id="playback.auto_play" type="boolean" label="Auto-play best source" help="Skip the source picker and automatically select the best available source.">
+        <category id="playback" label="30018">
+            <group id="1" label="30018">
+                <setting id="playback.auto_play" type="boolean" label="30253" help="30254">
                     <level>0</level>
                     <default>false</default>
                     <control type="toggle" />
                 </setting>
-                <setting id="playback.quality_pref" type="integer" label="Quality preference" help="When auto-playing, prefer cached (fastest) or highest quality.">
+                <setting id="playback.quality_pref" type="integer" label="30407" help="30408">
                     <level>0</level>
                     <default>0</default>
                     <control type="spinner" format="integer">
                         <values>
-                            <value label="Cached first (fastest)" />
-                            <value label="Best quality (4K → SD)" />
+                            <value label="30409" />
+                            <value label="30410" />
                         </values>
                     </control>
                 </setting>
@@ -78,7 +78,7 @@
         </category>
         <category id="tmdb" label="30405">
             <group id="1" label="30184">
-                <setting id="tmdb.language" type="string" label="Content language" help="BCP 47 language code for titles and descriptions (e.g. en-US, fr-FR, de-DE, es-ES, ja-JP). TMDB returns your language when available, falling back to English.">
+                <setting id="tmdb.language" type="string" label="30411" help="30412">
                     <default>en-US</default>
                     <control type="edit" format="string" />
                 </setting>
@@ -104,28 +104,42 @@
             <group id="2" label="30118">
                 <setting id="tmdblist.list_sort" type="integer" label="30119" help="30120">
                     <default>0</default>
-                    <control type="spinner" format="integer" />
+                    <control type="spinner" format="integer">
+                        <values>
+                            <value label="Popularity" />
+                            <value label="Highest rated" />
+                            <value label="Newest first" />
+                            <value label="Title A-Z" />
+                        </values>
+                    </control>
                 </setting>
             </group>
         </category>
 
-        <category id="torbox" label="TorBox">
-            <group id="1" label="TorBox">
-                <setting id="torbox.enabled" type="boolean" label="Enable TorBox" help="Use TorBox as a debrid provider for streaming.">
+        <category id="torbox" label="30237">
+            <group id="1" label="30237">
+                <setting id="torbox.enabled" type="boolean" label="30238" help="30239">
                     <level>0</level>
                     <default>false</default>
                     <control type="toggle" />
                 </setting>
-                <setting id="torbox.api_key" type="string" label="API key" help="Your TorBox API key. Find it at torbox.app in your account settings.">
+                <setting id="torbox.authenticate" label="30403" type="action" help="30404">
                     <level>0</level>
-                    <default></default>
-                    <control type="edit" format="string" option="hidden" />
-                    <constraints>
-                        <allowempty>true</allowempty>
-                    </constraints>
+                    <control type="button" format="action">
+                        <data>
+                            RunScript(plugin.video.bacterio, tor_box)</data>
+                    </control>
                     <dependencies>
                         <dependency type="enable" setting="torbox.enabled">true</dependency>
                     </dependencies>
+                </setting>
+                <setting id="torbox.api_key" type="string" label="30185" help="30406">
+                    <level>4</level>
+                    <default>e61e1aee-25a0-40cb-9e6a-7eea3689598b</default>
+                    <control type="edit" format="string" />
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
                 </setting>
             </group>
         </category>
