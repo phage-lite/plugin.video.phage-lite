@@ -15,6 +15,7 @@ _SUBCATEGORIES = [
     ("Popular", "popular"),
     ("Trending", "trending"),
     ("Now Playing", "now_playing"),
+    ("Coming Soon", "upcoming"),
     ("Top Rated", "top_rated"),
     ("Genres", "genres"),
 ]
@@ -23,6 +24,7 @@ _FETCHERS: dict[str, Callable[[int], dict[str, Any]]] = {
     "popular":     lambda page: Tmdb.popular_movies(page),
     "trending":    lambda page: Tmdb.trending_movies(page=page),
     "now_playing": lambda page: Tmdb.now_playing_movies(page),
+    "upcoming":    lambda page: Tmdb.upcoming_movies(page),
     "top_rated":   lambda page: Tmdb.top_rated_movies(page),
     "adult":       lambda page: Tmdb.adult_movies(page),
 }

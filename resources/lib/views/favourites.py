@@ -42,7 +42,7 @@ def add_favourite(item_type: str, tmdb_id: str, title: str, year: str = "", post
     favs = _load()
     key = f"{item_type}:{tmdb_id}"
     if any(f.get("key") == key for f in favs):
-        xbmcgui.Dialog().notification("Bacterio", f"Already in Favourites", time=2000)
+        xbmcgui.Dialog().notification("Bacterio", "Already in Favourites", time=2000)
         return
     favs.append({"key": key, "type": item_type, "tmdb_id": tmdb_id,
                  "title": title, "year": year, "poster": poster})
@@ -62,7 +62,10 @@ def remove_favourite(key: str) -> None:
 def show_favourites() -> None:
     favs = _load()
     if not favs:
-        xbmcgui.Dialog().ok("Favourites", "No favourites yet.\n\nLong-press any movie or show and choose Add to Favourites.")
+        xbmcgui.Dialog().ok(
+            "Favourites",
+            "No favourites yet.\n\nLong-press any movie or show and choose Add to Favourites.",
+        )
         xbmcplugin.endOfDirectory(HANDLE)
         return
 
@@ -80,8 +83,14 @@ def show_favourites() -> None:
             "thumb": f"{_IMG}{poster}" if poster else "",
             "poster": f"{_IMG}{poster}" if poster else "",
         })
+
         remove_url = f"{_BASE}?action=favourite_remove&key={quote_plus(key)}"
-        li.addContextMenuItems([("Remove from Favourites", f"RunPlugin({remove_url})")])
+        wl_type = "movie" if item_type == "movie" else "show"
+        wl_url = f"{_BASE}?action=trakt_watchlist_add&type={wl_type}&id={tmdb_id}"
+        li.addContextMenuItems([
+            ("Remove from Favourites", f"RunPlugin({remove_url})"),
+            ("Add to Trakt Watchlist", f"RunPlugin({wl_url})"),
+        ])
 
         if item_type == "movie":
             li.setProperty("IsPlayable", "true")
@@ -90,7 +99,9 @@ def show_favourites() -> None:
                 "year": int(year) if year.isdigit() else 0,
                 "mediatype": "movie",
             })
-            xbmcplugin.addDirectoryItem(HANDLE, f"{_BASE}?action=play&type=movie&id={tmdb_id}", li, isFolder=False)
+            xbmcplugin.addDirectoryItem(
+                HANDLE, f"{_BASE}?action=play&type=movie&id={tmdb_id}", li, isFolder=False
+            )
         else:
             li.setInfo("video", {
                 "title": title,

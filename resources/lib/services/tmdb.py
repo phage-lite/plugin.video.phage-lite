@@ -34,6 +34,9 @@ class TmdbAPI:
     def now_playing_movies(self, page: int = 1) -> dict[str, Any]:
         return self._get("movie/now_playing", {"page": page})
 
+    def upcoming_movies(self, page: int = 1) -> dict[str, Any]:
+        return self._get("movie/upcoming", {"page": page})
+
     def top_rated_movies(self, page: int = 1) -> dict[str, Any]:
         return self._get("movie/top_rated", {"page": page})
 
@@ -60,6 +63,9 @@ class TmdbAPI:
 
     def airing_today_tv(self, page: int = 1) -> dict[str, Any]:
         return self._get("tv/airing_today", {"page": page})
+
+    def on_air_tv(self, page: int = 1) -> dict[str, Any]:
+        return self._get("tv/on_the_air", {"page": page})
 
     def top_rated_tv(self, page: int = 1) -> dict[str, Any]:
         return self._get("tv/top_rated", {"page": page})
