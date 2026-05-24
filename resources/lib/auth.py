@@ -2,6 +2,7 @@ import os
 import sys
 import threading
 import xbmc
+import xbmcgui
 
 from services.config import get_service
 from services.types import PollStatus
@@ -9,8 +10,25 @@ from dialogs.auth_dialog import create_auth_dialog
 from utils.logger import log
 from utils.utils import make_qrcode, make_tinyurl
 
+
+def _test_torbox() -> None:
+    from services.torbox import TorBox
+    if not TorBox.api_key:
+        xbmcgui.Dialog().ok("TorBox", "No API key set.\n\nGo to Settings → TorBox and enter your API key.")
+        return
+    if TorBox.test_connection():
+        xbmcgui.Dialog().notification("TorBox", "Connected successfully!", time=3000)
+    else:
+        xbmcgui.Dialog().ok("TorBox", "Could not connect. Please check your API key.")
+
+
 def main():
     service_arg = sys.argv[1]
+
+    if service_arg == "tor_box":
+        _test_torbox()
+        return
+
     service = get_service(service_arg)
     auth_data = service.start_auth()
 
