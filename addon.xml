@@ -10,6 +10,9 @@
     </extension>
     <extension point="xbmc.python.module" library="resources/lib/"/>
     <extension point="xbmc.python.script" library="resources/lib/auth.py"/>
+    <extension point="xbmc.python.script" library="resources/lib/service.py">
+        <provides>service</provides>
+    </extension>
     <extension point="xbmc.addon.metadata">
         <summary lang="en">Access your content from Easynews and Debrid Clouds.</summary>
         <description lang="en">This add-on is intended for advanced Kodi users only. You must own the content of any media you play through this addon. This is an English language only add-on.</description>

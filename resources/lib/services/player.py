@@ -108,6 +108,14 @@ def _add_to_rd(magnet: str, title: str) -> str:
         progress.close()
 
 
+def _tag_playing(item_type: str, tmdb_id: str, season: str, episode: str) -> None:
+    win = xbmcgui.Window(10000)
+    win.setProperty("bacterio.type", item_type)
+    win.setProperty("bacterio.tmdb_id", tmdb_id)
+    win.setProperty("bacterio.season", season)
+    win.setProperty("bacterio.episode", episode)
+
+
 def _play_url(direct_url: str, handle: int):
     li = xbmcgui.ListItem(path=direct_url)
     li.setContentLookup(False)
@@ -237,13 +245,16 @@ def resolve_and_play(
 
         direct_url = _add_to_rd(magnet, title)
         if direct_url:
+            _tag_playing(item_type, tmdb_id, season, episode)
             _play_url(direct_url, handle)
             return
 
     _fail(f"All {len(ordered)} sources failed for {title}.")
 
 
-def resolve_magnet_and_play(magnet: str, handle: int, title: str = ""):
+def resolve_magnet_and_play(magnet: str, handle: int, title: str = "",
+                            item_type: str = "movie", tmdb_id: str = "",
+                            season: str = "", episode: str = "") -> None:
     """Resolve a single magnet directly — used when the caller already has a magnet URI."""
     if not RealDebrid.is_authenticated():
         error("RealDebrid not authenticated.")
@@ -252,6 +263,8 @@ def resolve_magnet_and_play(magnet: str, handle: int, title: str = ""):
 
     direct_url = _add_to_rd(magnet, title)
     if direct_url:
+        if tmdb_id:
+            _tag_playing(item_type, tmdb_id, season, episode)
         _play_url(direct_url, handle)
     else:
         error("Failed to resolve via RealDebrid.")

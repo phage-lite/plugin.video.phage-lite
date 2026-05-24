@@ -129,6 +129,53 @@ class TraktAPI(Service):
         response.raise_for_status()
         return response.json()
 
+    def _api_post(self, endpoint: str, body: dict[str, Any]) -> dict[str, Any]:
+        url = f"{self.base_url}/{endpoint}"
+        response = requests.post(url, headers=self._headers(), json=body, timeout=20)
+        if response.status_code == 401 and self._refresh_access_token():
+            response = requests.post(url, headers=self._headers(), json=body, timeout=20)
+        if response.ok and response.content:
+            return response.json()
+        return {}
+
+    # ── Scrobble ──────────────────────────────────────────────────────────────
+
+    def scrobble(self, action: str, media_type: str, tmdb_id: int, progress: float,
+                 season: int = 0, episode: int = 0) -> None:
+        if not self.is_authenticated():
+            return
+        if media_type in ("episode", "tv", "show"):
+            body: dict[str, Any] = {
+                "show": {"ids": {"tmdb": tmdb_id}},
+                "episode": {"season": season, "number": episode},
+                "progress": round(progress, 1),
+            }
+        else:
+            body = {"movie": {"ids": {"tmdb": tmdb_id}}, "progress": round(progress, 1)}
+        try:
+            self._api_post(f"scrobble/{action}", body)
+        except Exception as e:
+            log(str(e), f"scrobble/{action}")
+
+    # ── Watchlist sync ────────────────────────────────────────────────────────
+
+    def add_to_watchlist(self, media_type: str, tmdb_id: int) -> None:
+        key = "movies" if media_type == "movie" else "shows"
+        self._api_post("sync/watchlist", {key: [{"ids": {"tmdb": tmdb_id}}]})
+
+    def remove_from_watchlist(self, media_type: str, tmdb_id: int) -> None:
+        key = "movies" if media_type == "movie" else "shows"
+        self._api_post("sync/watchlist/remove", {key: [{"ids": {"tmdb": tmdb_id}}]})
+
+    # ── Show progress (for Up Next) ───────────────────────────────────────────
+
+    def show_progress(self, trakt_id: int) -> dict[str, Any]:
+        result = self._api_get(
+            f"shows/{trakt_id}/progress/watched",
+            {"specials": "false", "count_specials": "false"},
+        )
+        return result if isinstance(result, dict) else {}
+
     # ── Watchlist ─────────────────────────────────────────────────────────────
 
     def watchlist_movies(self, page: int = 1, limit: int = PAGE_SIZE) -> list[dict[str, Any]]:
