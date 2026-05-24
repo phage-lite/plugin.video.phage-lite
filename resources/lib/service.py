@@ -3,38 +3,49 @@ import xbmc
 import xbmcgui
 
 _WIN_ID = 10000
-_PROP_TYPE = "bacterio.type"
-_PROP_TMDB = "bacterio.tmdb_id"
-_PROP_SEASON = "bacterio.season"
+_PROP_TYPE    = "bacterio.type"
+_PROP_TMDB    = "bacterio.tmdb_id"
+_PROP_SEASON  = "bacterio.season"
 _PROP_EPISODE = "bacterio.episode"
 
-_NEXT_UP_DELAY = 2000   # ms after playback ends before showing dialog
-_NEXT_UP_SECS = 10      # countdown seconds
+_THRESHOLD_SECS = 80   # seconds before end to trigger (when no chapters)
+_COUNTDOWN_SECS = 20   # how long the widget stays visible
 
 
 # ── Next-episode helpers ──────────────────────────────────────────────────────
+
+def _near_end(player: xbmc.Player) -> bool:
+    try:
+        total = player.getTotalTime()
+        if total <= 0:
+            return False
+        chapters = player.getChapters()
+        if chapters >= 2:
+            return player.getCurrentChapter() >= chapters
+        return (total - player.getTime()) <= _THRESHOLD_SECS
+    except Exception:
+        return False
+
 
 def _find_next(show_id: int, season: int, episode: int) -> tuple[int, int, str, str] | None:
     """Return (next_season, next_ep, ep_title, show_title) or None."""
     from services.tmdb import Tmdb
     try:
         season_data = Tmdb.tv_season(show_id, season)
-        ep_nums = sorted(e["episode_number"] for e in season_data.get("episodes", []))
+        ep_nums = {e["episode_number"] for e in season_data.get("episodes", [])}
 
-        next_ep = episode + 1
-        next_season = season
+        next_ep, next_season = episode + 1, season
         ep_info: dict = {}
 
         if next_ep in ep_nums:
             ep_info = next((e for e in season_data["episodes"] if e["episode_number"] == next_ep), {})
         else:
-            next_season = season + 1
-            next_ep = 1
+            next_season, next_ep = season + 1, 1
             next_data = Tmdb.tv_season(show_id, next_season)
-            next_episodes = next_data.get("episodes", [])
-            if not next_episodes:
+            next_eps = next_data.get("episodes", [])
+            if not next_eps:
                 return None
-            ep_info = next((e for e in next_episodes if e["episode_number"] == 1), {})
+            ep_info = next((e for e in next_eps if e["episode_number"] == 1), {})
 
         ep_title = ep_info.get("name") or f"Episode {next_ep}"
         show_title = Tmdb.tv_details(show_id).get("name", "")
@@ -43,21 +54,73 @@ def _find_next(show_id: int, season: int, episode: int) -> tuple[int, int, str, 
         return None
 
 
-def _countdown(show_title: str, season: int, episode: int, ep_title: str) -> bool:
-    label = f"S{season:02d}E{episode:02d}  ·  {ep_title}"
-    steps = _NEXT_UP_SECS * 10
-    dlg = xbmcgui.DialogProgress()
-    dlg.create("Up Next", f"{show_title}\n{label}")
+# ── Small overlay widget ──────────────────────────────────────────────────────
+
+class _NextUpWidget(xbmcgui.WindowDialog):
+    _W, _H, _PAD, _MARGIN = 600, 88, 14, 48
+
+    def __init__(self, show_title: str, season: int, episode: int, ep_title: str):
+        super().__init__()
+        self.cancelled = False
+        sw, sh = xbmcgui.getScreenWidth(), xbmcgui.getScreenHeight()
+        x = sw - self._W - self._MARGIN
+        y = sh - self._H - self._MARGIN
+
+        header = f"[B]Up Next  ·  S{season:02d}E{episode:02d}[/B]  {ep_title}"
+        self._lbl_header = xbmcgui.ControlLabel(
+            x + self._PAD, y + self._PAD, self._W - self._PAD, 30,
+            header, font="font13",
+            textColor="0xFFFFFFFF", shadowColor="0xDD000000",
+        )
+        self._lbl_show = xbmcgui.ControlLabel(
+            x + self._PAD, y + self._PAD + 30, self._W - self._PAD, 24,
+            f"[I]{show_title}[/I]", font="font12",
+            textColor="0xFFBBBBBB", shadowColor="0xDD000000",
+        )
+        self._bar = xbmcgui.ControlProgress(
+            x + self._PAD, y + self._H - 14, self._W - self._PAD * 2, 6,
+        )
+        for ctrl in (self._lbl_header, self._lbl_show, self._bar):
+            self.addControl(ctrl)
+        self._bar.setPercent(100)
+
+    def set_pct(self, pct: float) -> None:
+        self._bar.setPercent(pct)
+
+    def onAction(self, action: xbmcgui.Action) -> None:
+        if action.getId() in (9, 10, 92):  # Back / PreviousMenu / NavBack
+            self.cancelled = True
+            self.close()
+
+
+def _run_widget(meta: dict[str, str]) -> None:
+    show_id = int(meta["tmdb_id"])
+    season  = int(meta["season"])
+    episode = int(meta["episode"])
+
+    result = _find_next(show_id, season, episode)
+    if not result:
+        return
+    next_season, next_ep, ep_title, show_title = result
+
+    widget = _NextUpWidget(show_title, next_season, next_ep, ep_title)
+    widget.show()
+
+    steps = _COUNTDOWN_SECS * 5  # update every 200 ms
     for i in range(steps, -1, -1):
-        pct = int(i / steps * 100)
-        secs_left = (i + 9) // 10
-        dlg.update(pct, f"{show_title}\n{label}\n\nPlaying in {secs_left}s  ·  Back to cancel")
-        if dlg.iscanceled():
-            dlg.close()
-            return False
-        xbmc.sleep(100)
-    dlg.close()
-    return True
+        if widget.cancelled:
+            return
+        widget.set_pct(i / steps * 100)
+        xbmc.sleep(200)
+
+    widget.close()
+
+    url = (
+        "plugin://plugin.video.bacterio"
+        f"?action=play&type=episode&id={show_id}"
+        f"&season={next_season}&episode={next_ep}"
+    )
+    xbmc.executebuiltin(f"RunPlugin({url})")
 
 
 # ── Player ────────────────────────────────────────────────────────────────────
@@ -66,6 +129,7 @@ class _Player(xbmc.Player):
     def __init__(self):
         super().__init__()
         self._meta: dict[str, str] | None = None
+        self._next_shown = False
 
     def _read_meta(self) -> dict[str, str] | None:
         win = xbmcgui.Window(_WIN_ID)
@@ -96,41 +160,29 @@ class _Player(xbmc.Player):
             if not Trakt.is_authenticated():
                 return
             m = self._meta
-            Trakt.scrobble(
-                action,
-                m["type"],
-                int(m["tmdb_id"]),
-                progress,
-                int(m["season"]),
-                int(m["episode"]),
-            )
+            Trakt.scrobble(action, m["type"], int(m["tmdb_id"]), progress,
+                           int(m["season"]), int(m["episode"]))
         except Exception:
             pass
 
-    def _maybe_play_next(self, meta: dict[str, str]) -> None:
-        xbmc.sleep(_NEXT_UP_DELAY)
-        try:
-            show_id = int(meta["tmdb_id"])
-            season = int(meta["season"])
-            episode = int(meta["episode"])
-            result = _find_next(show_id, season, episode)
-            if not result:
-                return
-            next_season, next_ep, ep_title, show_title = result
-            if not _countdown(show_title, next_season, next_ep, ep_title):
-                return
-            url = (
-                f"plugin://plugin.video.bacterio"
-                f"?action=play&type=episode&id={show_id}"
-                f"&season={next_season}&episode={next_ep}"
-            )
-            xbmc.executebuiltin(f"RunPlugin({url})")
-        except Exception:
-            pass
+    def _monitor(self) -> None:
+        """Polls position; fires next-up widget near episode end."""
+        while self.isPlaying() or self.isPaused():
+            if (not self._next_shown
+                    and self.isPlaying()
+                    and self._meta
+                    and self._meta.get("type") == "episode"
+                    and _near_end(self)):
+                self._next_shown = True
+                meta = self._meta
+                threading.Thread(target=_run_widget, args=(meta,), daemon=True).start()
+            xbmc.sleep(1000)
 
     def onPlayBackStarted(self):
         self._meta = self._read_meta()
+        self._next_shown = False
         self._scrobble("start", 0.0)
+        threading.Thread(target=self._monitor, daemon=True).start()
 
     def onPlayBackPaused(self):
         self._scrobble("pause", self._progress())
@@ -140,17 +192,17 @@ class _Player(xbmc.Player):
 
     def onPlayBackEnded(self):
         self._scrobble("stop", 100.0)
-        meta = self._meta
         self._meta = None
-        if meta and meta.get("type") == "episode":
-            threading.Thread(target=self._maybe_play_next, args=(meta,), daemon=True).start()
+        self._next_shown = False
 
     def onPlayBackStopped(self):
         self._scrobble("stop", self._progress())
         self._meta = None
+        self._next_shown = False
 
     def onPlayBackError(self):
         self._meta = None
+        self._next_shown = False
 
 
 # ── Monitor ───────────────────────────────────────────────────────────────────
