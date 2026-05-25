@@ -13,7 +13,7 @@ _SCRAPE_TIMEOUT = 20
 
 def is_available() -> bool:
     try:
-        xbmcaddon.Addon(_ADDON_ID)
+        _ = xbmcaddon.Addon(_ADDON_ID)
         return True
     except Exception:
         return False

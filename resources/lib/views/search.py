@@ -91,7 +91,7 @@ def do_search(query: str = "", page: int = 1):
     total_pages: int = data.get("total_pages", 1)
 
     if not results:
-        xbmcgui.Dialog().ok("No results", f'Nothing found for "{query}".')
+        _ = xbmcgui.Dialog().ok("No results", f'Nothing found for "{query}".')
         xbmcplugin.endOfDirectory(HANDLE)
         return
 
@@ -106,7 +106,7 @@ def do_search(query: str = "", page: int = 1):
     if page < total_pages:
         li = xbmcgui.ListItem(label=f"Next Page → ({page + 1} / {total_pages})")
         next_url = f"{_BASE}?action=search&query={quote_plus(query)}&page={page + 1}"
-        xbmcplugin.addDirectoryItem(HANDLE, next_url, li, isFolder=True)
+        _ = xbmcplugin.addDirectoryItem(HANDLE, next_url, li, isFolder=True)
 
     xbmcplugin.endOfDirectory(HANDLE)
 
@@ -162,7 +162,7 @@ def _add_movie(movie: dict[str, Any]):
         "fanart": f"{_IMG}{backdrop}" if backdrop else "",
     })
     li.addContextMenuItems(_menus("movie", tmdb_id, title, year_str, poster))
-    xbmcplugin.addDirectoryItem(
+    _ = xbmcplugin.addDirectoryItem(
         HANDLE, f"{_BASE}?action=play&type=movie&id={tmdb_id}", li, isFolder=False
     )
 
@@ -191,4 +191,4 @@ def _add_show(show: dict[str, Any]):
     })
     li.addContextMenuItems(_menus("show", tmdb_id, title, year_str, poster))
     url = f"{_BASE}?action=seasons&show_id={tmdb_id}&show_title={quote_plus(title)}"
-    xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+    _ = xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)

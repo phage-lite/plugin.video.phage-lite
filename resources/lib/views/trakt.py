@@ -61,7 +61,7 @@ def show_up_next():
         return
 
     if not items:
-        xbmcgui.Dialog().ok(
+        _ = xbmcgui.Dialog().ok(
             "Up Next",
             "Nothing up next.\n\nAdd shows to your Trakt Watchlist and watch some episodes to get started.",
         )
@@ -147,7 +147,7 @@ def _add_up_next_item(item: dict[str, Any]):
         f"{_BASE}?action=play&type=episode"
         f"&id={tmdb_id}&season={season}&episode={episode}"
     )
-    xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
+    _ = xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
 
 
 # ── Watchlist ─────────────────────────────────────────────────────────────────
@@ -166,7 +166,7 @@ def show_trakt_watchlist_movies(page: int = 1):
 
     if len(items) >= PAGE_SIZE:
         li = xbmcgui.ListItem(label=f"Next Page → ({page + 1})")
-        xbmcplugin.addDirectoryItem(
+        _ = xbmcplugin.addDirectoryItem(
             HANDLE, f"{_BASE}?category=trakt&subcategory=watchlist_movies&page={page + 1}", li, isFolder=True
         )
     xbmcplugin.endOfDirectory(HANDLE)
@@ -186,7 +186,7 @@ def show_trakt_watchlist_shows(page: int = 1):
 
     if len(items) >= PAGE_SIZE:
         li = xbmcgui.ListItem(label=f"Next Page → ({page + 1})")
-        xbmcplugin.addDirectoryItem(
+        _ = xbmcplugin.addDirectoryItem(
             HANDLE, f"{_BASE}?category=trakt&subcategory=watchlist_shows&page={page + 1}", li, isFolder=True
         )
     xbmcplugin.endOfDirectory(HANDLE)
@@ -208,7 +208,7 @@ def show_trakt_recommendations_movies(page: int = 1):
 
     if len(items) >= PAGE_SIZE:
         li = xbmcgui.ListItem(label=f"Next Page → ({page + 1})")
-        xbmcplugin.addDirectoryItem(
+        _ = xbmcplugin.addDirectoryItem(
             HANDLE, f"{_BASE}?category=trakt&subcategory=recommendations_movies&page={page + 1}", li, isFolder=True
         )
     xbmcplugin.endOfDirectory(HANDLE)
@@ -228,7 +228,7 @@ def show_trakt_recommendations_shows(page: int = 1):
 
     if len(items) >= PAGE_SIZE:
         li = xbmcgui.ListItem(label=f"Next Page → ({page + 1})")
-        xbmcplugin.addDirectoryItem(
+        _ = xbmcplugin.addDirectoryItem(
             HANDLE, f"{_BASE}?category=trakt&subcategory=recommendations_shows&page={page + 1}", li, isFolder=True
         )
     xbmcplugin.endOfDirectory(HANDLE)
@@ -264,7 +264,7 @@ def _add_watchlist_movie(item: dict[str, Any]):
     })
     if tmdb_id:
         li.addContextMenuItems(_menus_watchlist("movie", tmdb_id, title, year_str, poster))
-        xbmcplugin.addDirectoryItem(HANDLE, f"{_BASE}?action=play&type=movie&id={tmdb_id}", li, isFolder=False)
+        _ = xbmcplugin.addDirectoryItem(HANDLE, f"{_BASE}?action=play&type=movie&id={tmdb_id}", li, isFolder=False)
 
 
 def _add_watchlist_show(item: dict[str, Any]):
@@ -287,7 +287,7 @@ def _add_watchlist_show(item: dict[str, Any]):
     if tmdb_id:
         li.addContextMenuItems(_menus_watchlist("show", tmdb_id, title, year_str, poster))
         url = f"{_BASE}?action=seasons&show_id={tmdb_id}&show_title={quote_plus(title)}"
-        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+        _ = xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
 
 
 def _add_recommendation_movie(item: dict[str, Any]):
@@ -309,7 +309,7 @@ def _add_recommendation_movie(item: dict[str, Any]):
     })
     if tmdb_id:
         li.addContextMenuItems(_menus_browse("movie", tmdb_id, title, year_str, poster))
-        xbmcplugin.addDirectoryItem(HANDLE, f"{_BASE}?action=play&type=movie&id={tmdb_id}", li, isFolder=False)
+        _ = xbmcplugin.addDirectoryItem(HANDLE, f"{_BASE}?action=play&type=movie&id={tmdb_id}", li, isFolder=False)
 
 
 # ── Calendar ──────────────────────────────────────────────────────────────────
@@ -323,7 +323,7 @@ def show_calendar():
         return
 
     if not data:
-        xbmcgui.Dialog().ok(
+        _ = xbmcgui.Dialog().ok(
             "My Calendar",
             "No upcoming episodes in the next 7 days.\n\nMake sure shows are in your Trakt Watchlist.",
         )
@@ -372,7 +372,7 @@ def _add_calendar_item(date_str: str, item: dict[str, Any]):
         mw = f"{_BASE}?action=trakt_mark_watched&type=episode&id={tmdb_id}&season={season}&episode={episode}"
         li.addContextMenuItems([("Mark as Watched", f"RunPlugin({mw})")])
         url = f"{_BASE}?action=play&type=episode&id={tmdb_id}&season={season}&episode={episode}"
-        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
+        _ = xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
 
 
 # ── Item renderers ────────────────────────────────────────────────────────────
@@ -396,4 +396,4 @@ def _add_recommendation_show(item: dict[str, Any]):
     if tmdb_id:
         li.addContextMenuItems(_menus_browse("show", tmdb_id, title, year_str, poster))
         url = f"{_BASE}?action=seasons&show_id={tmdb_id}&show_title={quote_plus(title)}"
-        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+        _ = xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)

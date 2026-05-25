@@ -61,22 +61,22 @@ def _menus(media_type: str, tmdb_id: int, title: str, year: str, poster: str) ->
 def show_tv_categories():
     for label, key in _SUBCATEGORIES:
         li = xbmcgui.ListItem(label=label)
-        xbmcplugin.addDirectoryItem(HANDLE, f"{_BASE}?category=shows&subcategory={key}", li, isFolder=True)
+        _ = xbmcplugin.addDirectoryItem(HANDLE, f"{_BASE}?category=shows&subcategory={key}", li, isFolder=True)
 
     li = xbmcgui.ListItem(label="My Favourites")
-    xbmcplugin.addDirectoryItem(HANDLE, f"{_BASE}?category=shows&subcategory=favourites", li, isFolder=True)
+    _ = xbmcplugin.addDirectoryItem(HANDLE, f"{_BASE}?category=shows&subcategory=favourites", li, isFolder=True)
 
     try:
         from services.trakt import Trakt
         if Trakt.is_authenticated():
             li = xbmcgui.ListItem(label="Up Next")
-            xbmcplugin.addDirectoryItem(HANDLE, f"{_BASE}?category=shows&subcategory=upnext", li, isFolder=True)
+            _ = xbmcplugin.addDirectoryItem(HANDLE, f"{_BASE}?category=shows&subcategory=upnext", li, isFolder=True)
             li = xbmcgui.ListItem(label="Trakt Watchlist")
-            xbmcplugin.addDirectoryItem(HANDLE, f"{_BASE}?category=shows&subcategory=trakt_watchlist", li, isFolder=True)
+            _ = xbmcplugin.addDirectoryItem(HANDLE, f"{_BASE}?category=shows&subcategory=trakt_watchlist", li, isFolder=True)
             li = xbmcgui.ListItem(label="Trakt Recommendations")
-            xbmcplugin.addDirectoryItem(HANDLE, f"{_BASE}?category=shows&subcategory=trakt_recommendations", li, isFolder=True)
+            _ = xbmcplugin.addDirectoryItem(HANDLE, f"{_BASE}?category=shows&subcategory=trakt_recommendations", li, isFolder=True)
             li = xbmcgui.ListItem(label="My Calendar")
-            xbmcplugin.addDirectoryItem(HANDLE, f"{_BASE}?category=shows&subcategory=calendar", li, isFolder=True)
+            _ = xbmcplugin.addDirectoryItem(HANDLE, f"{_BASE}?category=shows&subcategory=calendar", li, isFolder=True)
     except Exception:
         pass
 
@@ -116,7 +116,7 @@ def show_tv_genres():
             f"{_BASE}?category=shows&subcategory=genre"
             f"&genre_id={genre['id']}&genre_name={quote_plus(genre['name'])}"
         )
-        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+        _ = xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
 
 
@@ -130,8 +130,7 @@ def show_shows_by_genre(genre_id: int, genre_name: str = "", page: int = 1):
     results: list[dict[str, Any]] = data.get("results", [])
     total_pages: int = data.get("total_pages", 1)
     next_url = (
-        f"{_BASE}?category=shows&subcategory=genre"
-        f"&genre_id={genre_id}&genre_name={quote_plus(genre_name)}&page={page + 1}"
+        f"{_BASE}?category=shows&subcategory=genre&genre_id={genre_id}&genre_name={quote_plus(genre_name)}&page={page + 1}"
         if page < total_pages else ""
     )
     _render_shows(results, next_url)
@@ -178,7 +177,7 @@ def show_seasons(show_id: int, show_title: str = ""):
             f"&show_title={quote_plus(show_title)}"
             f"&season_number={season_num}"
         )
-        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+        _ = xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
 
     xbmcplugin.endOfDirectory(HANDLE)
 
@@ -234,7 +233,7 @@ def show_episodes(show_id: int, show_title: str, season_number: int):
             f"&season={season_number}"
             f"&episode={ep_num}"
         )
-        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
+        _ = xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
 
     xbmcplugin.endOfDirectory(HANDLE)
 
@@ -271,10 +270,10 @@ def _render_shows(results: list[dict[str, Any]], next_url: str = ""):
         })
         li.addContextMenuItems(_menus("show", tmdb_id, title, year_str, poster))
         url = f"{_BASE}?action=seasons&show_id={tmdb_id}&show_title={quote_plus(title)}"
-        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+        _ = xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
 
     if next_url:
         li = xbmcgui.ListItem(label="Next Page →")
-        xbmcplugin.addDirectoryItem(HANDLE, next_url, li, isFolder=True)
+        _ = xbmcplugin.addDirectoryItem(HANDLE, next_url, li, isFolder=True)
 
     xbmcplugin.endOfDirectory(HANDLE)

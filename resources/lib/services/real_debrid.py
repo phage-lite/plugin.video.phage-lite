@@ -1,4 +1,5 @@
-from typing import Any, override
+from typing import Any
+from typing_extensions import override
 import requests
 from services.types import Service, AuthData, PollStatus
 from utils.logger import log
@@ -156,7 +157,7 @@ class RealDebridAPI(Service):
         return self._api_get(f"torrents/info/{torrent_id}")
 
     def select_files(self, torrent_id: str, file_ids: str = "all") -> None:
-        self._api_post(f"torrents/selectFiles/{torrent_id}", {"files": file_ids})
+        _ = self._api_post(f"torrents/selectFiles/{torrent_id}", {"files": file_ids})
 
     def get_downloads(self) -> list[dict[str, Any]]:
         result = self._api_get("downloads")

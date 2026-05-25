@@ -71,7 +71,7 @@ def _show_filtered(filter_type: str) -> None:
     favs = [f for f in _load() if f.get("type") == filter_type]
     if not favs:
         label = "Movies" if filter_type == "movie" else "TV Shows"
-        xbmcgui.Dialog().ok(
+        _ = xbmcgui.Dialog().ok(
             f"My {label}",
             f"No favourite {label.lower()} yet.\n\nLong-press any item and choose Add to Favourites.",
         )
@@ -83,7 +83,7 @@ def _show_filtered(filter_type: str) -> None:
 def show_favourites() -> None:
     favs = _load()
     if not favs:
-        xbmcgui.Dialog().ok(
+        _ = xbmcgui.Dialog().ok(
             "Favourites",
             "No favourites yet.\n\nLong-press any movie or show and choose Add to Favourites.",
         )
@@ -125,7 +125,7 @@ def _render_favourites(favs: list[dict[str, Any]]) -> None:
                 "year": int(year) if year.isdigit() else 0,
                 "mediatype": "movie",
             })
-            xbmcplugin.addDirectoryItem(
+            _ = xbmcplugin.addDirectoryItem(
                 HANDLE, f"{_BASE}?action=play&type=movie&id={tmdb_id}", li, isFolder=False
             )
         else:
@@ -135,6 +135,6 @@ def _render_favourites(favs: list[dict[str, Any]]) -> None:
                 "mediatype": "tvshow",
             })
             url = f"{_BASE}?action=seasons&show_id={tmdb_id}&show_title={quote_plus(title)}"
-            xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+            _ = xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
 
     xbmcplugin.endOfDirectory(HANDLE)

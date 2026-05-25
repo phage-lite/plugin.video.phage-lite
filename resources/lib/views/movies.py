@@ -64,18 +64,18 @@ def _menus(media_type: str, tmdb_id: int, title: str, year: str, poster: str) ->
 def show_movie_categories():
     for label, key in _SUBCATEGORIES:
         li = xbmcgui.ListItem(label=label)
-        xbmcplugin.addDirectoryItem(HANDLE, f"{_BASE}?category=movies&subcategory={key}", li, isFolder=True)
+        _ = xbmcplugin.addDirectoryItem(HANDLE, f"{_BASE}?category=movies&subcategory={key}", li, isFolder=True)
 
     li = xbmcgui.ListItem(label="My Favourites")
-    xbmcplugin.addDirectoryItem(HANDLE, f"{_BASE}?category=movies&subcategory=favourites", li, isFolder=True)
+    _ = xbmcplugin.addDirectoryItem(HANDLE, f"{_BASE}?category=movies&subcategory=favourites", li, isFolder=True)
 
     try:
         from services.trakt import Trakt
         if Trakt.is_authenticated():
             li = xbmcgui.ListItem(label="Trakt Watchlist")
-            xbmcplugin.addDirectoryItem(HANDLE, f"{_BASE}?category=movies&subcategory=trakt_watchlist", li, isFolder=True)
+            _ = xbmcplugin.addDirectoryItem(HANDLE, f"{_BASE}?category=movies&subcategory=trakt_watchlist", li, isFolder=True)
             li = xbmcgui.ListItem(label="Trakt Recommendations")
-            xbmcplugin.addDirectoryItem(HANDLE, f"{_BASE}?category=movies&subcategory=trakt_recommendations", li, isFolder=True)
+            _ = xbmcplugin.addDirectoryItem(HANDLE, f"{_BASE}?category=movies&subcategory=trakt_recommendations", li, isFolder=True)
     except Exception:
         pass
 
@@ -115,9 +115,9 @@ def show_movie_genres():
             f"{_BASE}?category=movies&subcategory=genre"
             f"&genre_id={genre['id']}&genre_name={quote_plus(genre['name'])}"
         )
-        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+        _ = xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
     li = xbmcgui.ListItem(label="Adult")
-    xbmcplugin.addDirectoryItem(HANDLE, f"{_BASE}?category=movies&subcategory=adult", li, isFolder=True)
+    _ = xbmcplugin.addDirectoryItem(HANDLE, f"{_BASE}?category=movies&subcategory=adult", li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
 
 
@@ -131,8 +131,7 @@ def show_movies_by_genre(genre_id: int, genre_name: str = "", page: int = 1):
     results: list[dict[str, Any]] = data.get("results", [])
     total_pages: int = data.get("total_pages", 1)
     next_url = (
-        f"{_BASE}?category=movies&subcategory=genre"
-        f"&genre_id={genre_id}&genre_name={quote_plus(genre_name)}&page={page + 1}"
+        f"{_BASE}?category=movies&subcategory=genre&genre_id={genre_id}&genre_name={quote_plus(genre_name)}&page={page + 1}"
         if page < total_pages else ""
     )
     _render_movies(results, next_url)
@@ -170,12 +169,12 @@ def _render_movies(results: list[dict[str, Any]], next_url: str = ""):
             "fanart": f"{_IMG}{backdrop}" if backdrop else "",
         })
         li.addContextMenuItems(_menus("movie", tmdb_id, title, year_str, poster))
-        xbmcplugin.addDirectoryItem(
+        _ = xbmcplugin.addDirectoryItem(
             HANDLE, f"{_BASE}?action=play&type=movie&id={tmdb_id}", li, isFolder=False
         )
 
     if next_url:
         li = xbmcgui.ListItem(label="Next Page →")
-        xbmcplugin.addDirectoryItem(HANDLE, next_url, li, isFolder=True)
+        _ = xbmcplugin.addDirectoryItem(HANDLE, next_url, li, isFolder=True)
 
     xbmcplugin.endOfDirectory(HANDLE)

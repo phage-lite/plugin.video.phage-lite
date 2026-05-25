@@ -1,5 +1,7 @@
 import requests
-from typing import Any, override
+from typing import Any
+
+from typing_extensions import override
 
 from utils.logger import log
 from settings.settings import get_setting, set_setting
@@ -153,7 +155,7 @@ class TraktAPI(Service):
         else:
             body = {"movie": {"ids": {"tmdb": tmdb_id}}, "progress": round(progress, 1)}
         try:
-            self._api_post(f"scrobble/{action}", body)
+            _ = self._api_post(f"scrobble/{action}", body)
         except Exception as e:
             log(str(e), f"scrobble/{action}")
 
@@ -161,11 +163,11 @@ class TraktAPI(Service):
 
     def add_to_watchlist(self, media_type: str, tmdb_id: int) -> None:
         key = "movies" if media_type == "movie" else "shows"
-        self._api_post("sync/watchlist", {key: [{"ids": {"tmdb": tmdb_id}}]})
+        _ = self._api_post("sync/watchlist", {key: [{"ids": {"tmdb": tmdb_id}}]})
 
     def remove_from_watchlist(self, media_type: str, tmdb_id: int) -> None:
         key = "movies" if media_type == "movie" else "shows"
-        self._api_post("sync/watchlist/remove", {key: [{"ids": {"tmdb": tmdb_id}}]})
+        _ = self._api_post("sync/watchlist/remove", {key: [{"ids": {"tmdb": tmdb_id}}]})
 
     # ── Show progress (for Up Next) ───────────────────────────────────────────
 
@@ -186,10 +188,10 @@ class TraktAPI(Service):
         return result if isinstance(result, dict) else {}
 
     def mark_watched_movie(self, tmdb_id: int) -> None:
-        self._api_post("sync/history", {"movies": [{"ids": {"tmdb": tmdb_id}}]})
+        _ = self._api_post("sync/history", {"movies": [{"ids": {"tmdb": tmdb_id}}]})
 
     def mark_watched_episode(self, tmdb_id: int, season: int, episode: int) -> None:
-        self._api_post("sync/history", {
+        _ = self._api_post("sync/history", {
             "shows": [{
                 "ids": {"tmdb": tmdb_id},
                 "seasons": [{"number": season, "episodes": [{"number": episode}]}],

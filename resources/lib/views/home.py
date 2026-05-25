@@ -45,4 +45,4 @@ def _first_run_check():
 
 def _item(label: str, url: str, is_folder: bool = True):
     li = xbmcgui.ListItem(label=label)
-    xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=is_folder)
+    _ = xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=is_folder)

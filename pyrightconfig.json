@@ -1,7 +1,9 @@
 {
     "venvPath": ".",
     "venv": ".venv",
+    "pythonVersion": "3.11",
     "include": ["resources/lib"],
+    "extraPaths": ["resources/lib"],
     "exclude": [
         "resources/lib/modules",
         "resources/lib/windows",

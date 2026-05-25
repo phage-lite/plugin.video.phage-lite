@@ -8,6 +8,7 @@ from typing import Any
 from services.tmdb import Tmdb
 from services.real_debrid import RealDebrid
 from services.torbox import TorBox
+from scrapers import torrentio as torrentio_scraper
 from utils.notifications import error, info
 from utils.logger import log
 from settings.settings import get_setting
@@ -140,7 +141,7 @@ def _add_to_torbox(magnet: str, title: str) -> str:
                 return ""
             info_result = TorBox.get_torrent_info(torrent_id)
             raw_data = info_result.get("data") or {}
-            info_data: dict[str, Any] = raw_data[0] if isinstance(raw_data, list) and raw_data else raw_data if isinstance(raw_data, dict) else {}
+            info_data = raw_data[0] if isinstance(raw_data, list) and raw_data else raw_data if isinstance(raw_data, dict) else {}
             state: str = info_data.get("download_state", "")
             pct = int(float(info_data.get("progress", 0)) * 100)
             progress.update(pct, f"TorBox: {state}")
@@ -217,13 +218,11 @@ def resolve_and_play(
             details = Tmdb.tv_details(int(tmdb_id))
             title = details.get("name", "")
             year = (details.get("first_air_date") or "")[:4]
-            ep_title = _get_episode_title(int(tmdb_id), int(season), int(episode))
         else:
             ext = Tmdb.movie_external_ids(int(tmdb_id))
             details = Tmdb.movie_details(int(tmdb_id))
             title = details.get("title", "")
             year = (details.get("release_date") or "")[:4]
-            ep_title = ""
     except Exception as e:
         log(str(e), "resolve_and_play/tmdb")
         _fail("Could not fetch metadata from TMDB.")
@@ -255,7 +254,6 @@ def resolve_and_play(
         }
 
     # 3. Scrape ──────────────────────────────────────────────────────────────
-    from scrapers import torrentio
     from services import cocoscrapers as cocos
 
     sources: list[dict[str, Any]] = []
@@ -263,9 +261,9 @@ def resolve_and_play(
 
     def _run_torrentio() -> None:
         if item_type == "episode":
-            torrentio_sources.extend(torrentio.scrape(imdb_id, int(season), int(episode)))
+            torrentio_sources.extend(torrentio_scraper.scrape(imdb_id, int(season), int(episode)))
         else:
-            torrentio_sources.extend(torrentio.scrape(imdb_id))
+            torrentio_sources.extend(torrentio_scraper.scrape(imdb_id))
 
     torrentio_thread = Thread(target=_run_torrentio, daemon=True)
     torrentio_thread.start()
@@ -442,12 +440,3 @@ def _select_source(
     return sources[idx]
 
 
-def _get_episode_title(show_id: int, season: int, episode: int) -> str:
-    try:
-        season_data = Tmdb.tv_season(show_id, season)
-        for ep in season_data.get("episodes", []):
-            if ep.get("episode_number") == episode:
-                return ep.get("name", "")
-    except Exception:
-        pass
-    return ""

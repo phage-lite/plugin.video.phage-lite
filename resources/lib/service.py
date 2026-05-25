@@ -1,4 +1,6 @@
 import threading
+from typing import Any, final
+from typing_extensions import override
 import xbmc
 import xbmcgui
 
@@ -35,17 +37,19 @@ def _find_next(show_id: int, season: int, episode: int) -> tuple[int, int, str, 
         ep_nums = {e["episode_number"] for e in season_data.get("episodes", [])}
 
         next_ep, next_season = episode + 1, season
-        ep_info: dict = {}
+        _empty: dict[str, Any] = {}
+        ep_info: dict[str, Any] = _empty
 
         if next_ep in ep_nums:
-            ep_info = next((e for e in season_data["episodes"] if e["episode_number"] == next_ep), {})
+            episodes: list[dict[str, Any]] = season_data.get("episodes") or []
+            ep_info = next((e for e in episodes if e["episode_number"] == next_ep), _empty)
         else:
             next_season, next_ep = season + 1, 1
             next_data = Tmdb.tv_season(show_id, next_season)
-            next_eps = next_data.get("episodes", [])
+            next_eps: list[dict[str, Any]] = next_data.get("episodes") or []
             if not next_eps:
                 return None
-            ep_info = next((e for e in next_eps if e["episode_number"] == 1), {})
+            ep_info = next((e for e in next_eps if e["episode_number"] == 1), _empty)
 
         ep_title = ep_info.get("name") or f"Episode {next_ep}"
         show_title = Tmdb.tv_details(show_id).get("name", "")
@@ -56,6 +60,7 @@ def _find_next(show_id: int, season: int, episode: int) -> tuple[int, int, str, 
 
 # ── Small overlay widget ──────────────────────────────────────────────────────
 
+@final
 class _NextUpWidget(xbmcgui.WindowDialog):
     _W, _H, _PAD, _MARGIN = 600, 88, 14, 48
 
@@ -87,6 +92,7 @@ class _NextUpWidget(xbmcgui.WindowDialog):
     def set_pct(self, pct: float) -> None:
         self._bar.setPercent(pct)
 
+    @override
     def onAction(self, action: xbmcgui.Action) -> None:
         if action.getId() in (9, 10, 92):  # Back / PreviousMenu / NavBack
             self.cancelled = True
@@ -125,11 +131,12 @@ def _run_widget(meta: dict[str, str]) -> None:
 
 # ── Player ────────────────────────────────────────────────────────────────────
 
+@final
 class _Player(xbmc.Player):
     def __init__(self):
         super().__init__()
         self._meta: dict[str, str] | None = None
-        self._next_shown = False
+        self._next_shown: bool = False
 
     def _read_meta(self) -> dict[str, str] | None:
         win = xbmcgui.Window(_WIN_ID)
@@ -178,28 +185,34 @@ class _Player(xbmc.Player):
                 threading.Thread(target=_run_widget, args=(meta,), daemon=True).start()
             xbmc.sleep(1000)
 
+    @override
     def onPlayBackStarted(self):
         self._meta = self._read_meta()
         self._next_shown = False
         self._scrobble("start", 0.0)
         threading.Thread(target=self._monitor, daemon=True).start()
 
+    @override
     def onPlayBackPaused(self):
         self._scrobble("pause", self._progress())
 
+    @override
     def onPlayBackResumed(self):
         self._scrobble("start", self._progress())
 
+    @override
     def onPlayBackEnded(self):
         self._scrobble("stop", 100.0)
         self._meta = None
         self._next_shown = False
 
+    @override
     def onPlayBackStopped(self):
         self._scrobble("stop", self._progress())
         self._meta = None
         self._next_shown = False
 
+    @override
     def onPlayBackError(self):
         self._meta = None
         self._next_shown = False
@@ -207,6 +220,7 @@ class _Player(xbmc.Player):
 
 # ── Monitor ───────────────────────────────────────────────────────────────────
 
+@final
 class _Monitor(xbmc.Monitor):
     def __init__(self):
         super().__init__()

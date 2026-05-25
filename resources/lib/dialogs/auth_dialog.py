@@ -1,4 +1,5 @@
-from typing import cast, override
+from typing import Any, cast
+from typing_extensions import override
 import xbmcgui
 import xbmcaddon
 
@@ -8,7 +9,7 @@ CONTROL_TITLE = 3
 CONTROL_CANCEL = 100
 
 class AuthDialog(xbmcgui.WindowXMLDialog):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
         self.title: str = "Authenticate"
         self.qr_path: str = ""

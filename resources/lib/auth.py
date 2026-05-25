@@ -14,12 +14,12 @@ from utils.utils import make_qrcode, make_tinyurl
 def _test_torbox() -> None:
     from services.torbox import TorBox
     if not TorBox.api_key:
-        xbmcgui.Dialog().ok("TorBox", "No API key set.\n\nGo to Settings → TorBox and enter your API key.")
+        _ = xbmcgui.Dialog().ok("TorBox", "No API key set.\n\nGo to Settings → TorBox and enter your API key.")
         return
     if TorBox.test_connection():
         xbmcgui.Dialog().notification("TorBox", "Connected successfully!", time=3000)
     else:
-        xbmcgui.Dialog().ok("TorBox", "Could not connect. Please check your API key.")
+        _ = xbmcgui.Dialog().ok("TorBox", "Could not connect. Please check your API key.")
 
 
 def main():
