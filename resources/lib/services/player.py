@@ -255,32 +255,56 @@ def resolve_and_play(
         }
 
     # 3. Scrape ──────────────────────────────────────────────────────────────
+    from scrapers import torrentio
     from services import cocoscrapers as cocos
 
-    if not cocos.is_available():
-        _fail("script.module.cocoscrapers is not installed.")
-        return
-
     sources: list[dict[str, Any]] = []
-    scrape_thread = Thread(target=lambda: sources.extend(cocos.scrape(scrape_data)), daemon=True)
-    scrape_thread.start()
+    torrentio_sources: list[dict[str, Any]] = []
+
+    def _run_torrentio() -> None:
+        if item_type == "episode":
+            torrentio_sources.extend(torrentio.scrape(imdb_id, int(season), int(episode)))
+        else:
+            torrentio_sources.extend(torrentio.scrape(imdb_id))
+
+    torrentio_thread = Thread(target=_run_torrentio, daemon=True)
+    torrentio_thread.start()
+
+    if cocos.is_available():
+        scrape_thread: Thread | None = Thread(
+            target=lambda: sources.extend(cocos.scrape(scrape_data)), daemon=True
+        )
+        scrape_thread.start()
+    else:
+        scrape_thread = None
 
     progress = xbmcgui.DialogProgress()
     progress.create("Bacterio", f"Searching — {title}…")
     start = time.monotonic()
 
-    while scrape_thread.is_alive():
+    active = scrape_thread
+    while active and active.is_alive():
         elapsed = time.monotonic() - start
         pct = min(int((elapsed / _SCRAPE_TIMEOUT) * 100), 99)
-        progress.update(pct, f"Found {len(sources)} sources…")
+        progress.update(pct, f"Found {len(sources) + len(torrentio_sources)} sources…")
         if progress.iscanceled():
             progress.close()
             _fail("Cancelled.")
             return
         xbmc.sleep(300)
 
+    torrentio_thread.join(timeout=max(0.0, _SCRAPE_TIMEOUT - (time.monotonic() - start)))
+
     progress.update(100)
     progress.close()
+
+    # Merge: cocoscrapers first, then any new hashes from Torrentio
+    seen: set[str] = {s.get("hash", "").lower() for s in sources}
+    for s in torrentio_sources:
+        h = s.get("hash", "").lower()
+        if h and h not in seen:
+            sources.append(s)
+            seen.add(h)
 
     log(f"raw sources={len(sources)}", "resolve_and_play")
     raw_sources = sources[:]
