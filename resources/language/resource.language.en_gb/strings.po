@@ -2094,3 +2094,23 @@ msgstr ""
 msgctxt "#30412"
 msgid "BCP 47 language code for titles and descriptions (e.g. en-US, fr-FR, de-DE, es-ES, ja-JP). TMDB returns your language when available, falling back to English."
 msgstr ""
+
+#: /resources/settings.xml
+msgctxt "#30413"
+msgid "Adds an Adult category to the list of categories in Movies. Adult content is never mixed into regular browse lists."
+msgstr ""
+
+#: /resources/settings.xml
+msgctxt "#30414"
+msgid "Allow Adult"
+msgstr ""
+
+#: /resources/settings.xml
+msgctxt "#30415"
+msgid "Clear Cache"
+msgstr ""
+
+#: /resources/settings.xml
+msgctxt "#30416"
+msgid "Delete all locally cached TMDB data. The next browse will re-fetch from the network."
+msgstr ""

@@ -160,6 +160,7 @@ def show_trakt_watchlist_movies(page: int = 1):
         xbmcplugin.endOfDirectory(HANDLE)
         return
 
+    _warm_images([(int(i.get("movie", {}).get("ids", {}).get("tmdb") or 0), "movie") for i in items])
     xbmcplugin.setContent(HANDLE, "movies")
     for item in items:
         _add_watchlist_movie(item)
@@ -180,6 +181,7 @@ def show_trakt_watchlist_shows(page: int = 1):
         xbmcplugin.endOfDirectory(HANDLE)
         return
 
+    _warm_images([(int(i.get("show", {}).get("ids", {}).get("tmdb") or 0), "tv") for i in items])
     xbmcplugin.setContent(HANDLE, "tvshows")
     for item in items:
         _add_watchlist_show(item)
@@ -202,6 +204,7 @@ def show_trakt_recommendations_movies(page: int = 1):
         xbmcplugin.endOfDirectory(HANDLE)
         return
 
+    _warm_images([(int(i.get("ids", {}).get("tmdb") or 0), "movie") for i in items])
     xbmcplugin.setContent(HANDLE, "movies")
     for item in items:
         _add_recommendation_movie(item)
@@ -222,6 +225,7 @@ def show_trakt_recommendations_shows(page: int = 1):
         xbmcplugin.endOfDirectory(HANDLE)
         return
 
+    _warm_images([(int(i.get("ids", {}).get("tmdb") or 0), "tv") for i in items])
     xbmcplugin.setContent(HANDLE, "tvshows")
     for item in items:
         _add_recommendation_show(item)
@@ -242,6 +246,16 @@ def _tmdb_images(tmdb_id: int, media: str) -> tuple[str, str]:
         return d.get("poster_path") or "", d.get("backdrop_path") or ""
     except Exception:
         return "", ""
+
+
+def _warm_images(pairs: list[tuple[int, str]]) -> None:
+    """Pre-fetch TMDB details for all items in parallel to warm the disk cache."""
+    def fetch(pair: tuple[int, str]) -> None:
+        tid, media = pair
+        if tid:
+            _tmdb_images(tid, media)
+    with ThreadPoolExecutor(max_workers=8) as ex:
+        list(ex.map(fetch, pairs))
 
 
 def _add_watchlist_movie(item: dict[str, Any]):
@@ -330,6 +344,8 @@ def show_calendar():
         xbmcplugin.endOfDirectory(HANDLE)
         return
 
+    all_items = [ep_item for eps in data.values() for ep_item in eps]
+    _warm_images([(int(i.get("show", {}).get("ids", {}).get("tmdb") or 0), "tv") for i in all_items])
     xbmcplugin.setContent(HANDLE, "episodes")
     for date_str in sorted(data.keys()):
         for ep_item in data[date_str]:

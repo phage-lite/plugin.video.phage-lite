@@ -22,11 +22,44 @@ def _test_torbox() -> None:
         _ = xbmcgui.Dialog().ok("TorBox", "Could not connect. Please check your API key.")
 
 
+def _test_tmdb() -> None:
+    import requests
+    from settings.settings import get_setting
+    from settings.ids import SettingID as SID
+    token = get_setting(SID.CLIENT_SECRET, "tmdb")
+    if not token:
+        _ = xbmcgui.Dialog().ok("TMDB", "No API Bearer token set.\n\nGo to Settings → TMDB and enter your Read Access Token.")
+        return
+    try:
+        resp = requests.get(
+            "https://api.themoviedb.org/3/authentication",
+            headers={"Authorization": f"Bearer {token}", "accept": "application/json"},
+            timeout=10,
+        )
+        if resp.ok and resp.json().get("success"):
+            xbmcgui.Dialog().notification("TMDB", "Connected successfully!", time=3000)
+        else:
+            _ = xbmcgui.Dialog().ok("TMDB", f"Authentication failed.\n\nCheck your Read Access Token in Settings → TMDB.\n\n{resp.status_code}")
+    except Exception as e:
+        _ = xbmcgui.Dialog().ok("TMDB", f"Could not connect to TMDB.\n\n{e}")
+
+
 def main():
     service_arg = sys.argv[1]
 
     if service_arg == "tor_box":
         _test_torbox()
+        return
+
+    if service_arg == "clear_cache":
+        from utils import cache
+        from utils.notifications import info
+        n = cache.clear()
+        info(f"Cache cleared ({n} files)")
+        return
+
+    if service_arg == "tmdb":
+        _test_tmdb()
         return
 
     service = get_service(service_arg)

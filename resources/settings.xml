@@ -35,6 +35,12 @@
                     </constraints>
                     <control type="button" format="file" />
                 </setting>
+                <setting id="cache.clear" label="30415" type="action" help="30416">
+                    <level>0</level>
+                    <control type="button" format="action">
+                        <data>RunScript(plugin.video.bacterio, clear_cache)</data>
+                    </control>
+                </setting>
             </group>
         </category>
 
@@ -78,6 +84,11 @@
         </category>
         <category id="tmdb" label="30405">
             <group id="1" label="30184">
+                <setting id="tmdb.include_adult" type="boolean" label="30414" help="30413">
+                    <level>0</level>
+                    <default>false</default>
+                    <control type="toggle" />
+                </setting>
                 <setting id="tmdb.language" type="string" label="30411" help="30412">
                     <default>en-US</default>
                     <control type="edit" format="string" />

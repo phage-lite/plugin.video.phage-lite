@@ -1,7 +1,9 @@
+import json
 import requests
 from typing import Any
 
 from utils.logger import log
+from utils import cache as _cache
 from settings.settings import get_setting, set_setting
 from services.types import AuthData, PollStatus, Service
 from settings.ids import SettingID as SID
@@ -118,13 +120,24 @@ class TraktAPI(Service):
             "trakt-api-key": self.client_id,
         }
 
-    def _api_get(self, endpoint: str, params: dict[str, Any] | None = None) -> list[Any] | dict[str, Any]:
+    def _api_get(self, endpoint: str, params: dict[str, Any] | None = None, ttl: int = 0) -> list[Any] | dict[str, Any]:
+        key = "trakt:" + endpoint + json.dumps(sorted((params or {}).items())) if ttl > 0 else ""
+        if ttl > 0:
+            hit: list[Any] | dict[str, Any] | None = _cache.get(key, ttl)
+            if hit is not None:
+                return hit
+
         url = f"{self.base_url}/{endpoint}"
         response = requests.get(url, headers=self._headers(), params=params or {}, timeout=20)
         if response.status_code == 401 and self._refresh_access_token():
             response = requests.get(url, headers=self._headers(), params=params or {}, timeout=20)
         response.raise_for_status()
-        return response.json()
+        result: list[Any] | dict[str, Any] = response.json()
+
+        if ttl > 0:
+            _cache.set(key, result)
+
+        return result
 
     def _api_post(self, endpoint: str, body: dict[str, Any]) -> dict[str, Any]:
         url = f"{self.base_url}/{endpoint}"
@@ -207,6 +220,7 @@ class TraktAPI(Service):
         result = self._api_get(
             "users/me/watchlist/movies",
             {"extended": "full", "limit": limit, "page": page},
+            ttl=300,
         )
         return result if isinstance(result, list) else []
 
@@ -214,6 +228,7 @@ class TraktAPI(Service):
         result = self._api_get(
             "users/me/watchlist/shows",
             {"extended": "full", "limit": limit, "page": page},
+            ttl=300,
         )
         return result if isinstance(result, list) else []
 
@@ -223,6 +238,7 @@ class TraktAPI(Service):
         result = self._api_get(
             "recommendations/movies",
             {"extended": "full", "limit": limit, "page": page},
+            ttl=900,
         )
         return result if isinstance(result, list) else []
 
@@ -230,6 +246,7 @@ class TraktAPI(Service):
         result = self._api_get(
             "recommendations/shows",
             {"extended": "full", "limit": limit, "page": page},
+            ttl=900,
         )
         return result if isinstance(result, list) else []
 

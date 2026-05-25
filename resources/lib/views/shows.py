@@ -28,23 +28,6 @@ _FETCHERS: dict[str, Callable[[int], dict[str, Any]]] = {
     "top_rated":    lambda page: Tmdb.top_rated_tv(page),
 }
 
-_genre_cache: dict[int, str] = {}
-
-
-def _ensure_genres() -> None:
-    global _genre_cache
-    if not _genre_cache:
-        try:
-            genres = Tmdb.tv_genres().get("genres", [])
-            _genre_cache = {int(g["id"]): str(g["name"]) for g in genres}
-        except Exception:
-            pass
-
-
-def _genre_str(ids: list[int]) -> str:
-    _ensure_genres()
-    return " / ".join(_genre_cache[g] for g in ids[:3] if g in _genre_cache)
-
 
 def _menus(media_type: str, tmdb_id: int, title: str, year: str, poster: str) -> list[tuple[str, str]]:
     fav = (
@@ -83,6 +66,14 @@ def show_tv_categories():
     xbmcplugin.endOfDirectory(HANDLE)
 
 
+def _genre_map() -> dict[int, str]:
+    try:
+        genres = Tmdb.tv_genres().get("genres", [])
+        return {int(g["id"]): str(g["name"]) for g in genres}
+    except Exception:
+        return {}
+
+
 def show_tv_list(subcategory: str, page: int = 1):
     fetch = _FETCHERS.get(subcategory)
     if fetch is None:
@@ -100,7 +91,7 @@ def show_tv_list(subcategory: str, page: int = 1):
         f"{_BASE}?category=shows&subcategory={subcategory}&page={page + 1}"
         if page < total_pages else ""
     )
-    _render_shows(results, next_url)
+    _render_shows(results, next_url, _genre_map())
 
 
 def show_tv_genres():
@@ -133,7 +124,7 @@ def show_shows_by_genre(genre_id: int, genre_name: str = "", page: int = 1):
         f"{_BASE}?category=shows&subcategory=genre&genre_id={genre_id}&genre_name={quote_plus(genre_name)}&page={page + 1}"
         if page < total_pages else ""
     )
-    _render_shows(results, next_url)
+    _render_shows(results, next_url, _genre_map())
 
 
 def show_seasons(show_id: int, show_title: str = ""):
@@ -238,7 +229,8 @@ def show_episodes(show_id: int, show_title: str, season_number: int):
     xbmcplugin.endOfDirectory(HANDLE)
 
 
-def _render_shows(results: list[dict[str, Any]], next_url: str = ""):
+def _render_shows(results: list[dict[str, Any]], next_url: str = "", genre_map: dict[int, str] | None = None):
+    gmap = genre_map or {}
     xbmcplugin.setContent(HANDLE, "tvshows")
     xbmcplugin.addSortMethod(HANDLE, xbmcplugin.SORT_METHOD_LABEL)
     xbmcplugin.addSortMethod(HANDLE, xbmcplugin.SORT_METHOD_VIDEO_RATING)
@@ -253,6 +245,7 @@ def _render_shows(results: list[dict[str, Any]], next_url: str = ""):
         year_str = (show.get("first_air_date") or "")[:4]
         tmdb_id = int(show.get("id") or 0)
         genre_ids = [int(g) for g in show.get("genre_ids", [])]
+        genre_str = " / ".join(gmap[g] for g in genre_ids[:3] if g in gmap)
 
         li = xbmcgui.ListItem(label=title)
         li.setInfo("video", {
@@ -260,7 +253,7 @@ def _render_shows(results: list[dict[str, Any]], next_url: str = ""):
             "plot": overview,
             "year": int(year_str) if year_str.isdigit() else 0,
             "rating": rating,
-            "genre": _genre_str(genre_ids),
+            "genre": genre_str,
             "mediatype": "tvshow",
         })
         li.setArt({

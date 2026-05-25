@@ -5,6 +5,7 @@ from typing import Any, Callable
 from urllib.parse import quote_plus
 
 from services.tmdb import Tmdb
+from settings.settings import get_setting
 from utils.notifications import error
 
 HANDLE = int(sys.argv[1])
@@ -29,22 +30,10 @@ _FETCHERS: dict[str, Callable[[int], dict[str, Any]]] = {
     "adult":       lambda page: Tmdb.adult_movies(page),
 }
 
-_genre_cache: dict[int, str] = {}
 
-
-def _ensure_genres() -> None:
-    global _genre_cache
-    if not _genre_cache:
-        try:
-            genres = Tmdb.movie_genres().get("genres", [])
-            _genre_cache = {int(g["id"]): str(g["name"]) for g in genres}
-        except Exception:
-            pass
-
-
-def _genre_str(ids: list[int]) -> str:
-    _ensure_genres()
-    return " / ".join(_genre_cache[g] for g in ids[:3] if g in _genre_cache)
+def _adult_enabled() -> bool:
+    import xbmcaddon
+    return xbmcaddon.Addon().getSetting("tmdb.include_adult") == "true"
 
 
 def _menus(media_type: str, tmdb_id: int, title: str, year: str, poster: str) -> list[tuple[str, str]]:
@@ -82,6 +71,14 @@ def show_movie_categories():
     xbmcplugin.endOfDirectory(HANDLE)
 
 
+def _genre_map() -> dict[int, str]:
+    try:
+        genres = Tmdb.movie_genres().get("genres", [])
+        return {int(g["id"]): str(g["name"]) for g in genres}
+    except Exception:
+        return {}
+
+
 def show_movie_list(subcategory: str, page: int = 1):
     fetch = _FETCHERS.get(subcategory)
     if fetch is None:
@@ -99,7 +96,7 @@ def show_movie_list(subcategory: str, page: int = 1):
         f"{_BASE}?category=movies&subcategory={subcategory}&page={page + 1}"
         if page < total_pages else ""
     )
-    _render_movies(results, next_url)
+    _render_movies(results, next_url, _genre_map())
 
 
 def show_movie_genres():
@@ -116,8 +113,9 @@ def show_movie_genres():
             f"&genre_id={genre['id']}&genre_name={quote_plus(genre['name'])}"
         )
         _ = xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
-    li = xbmcgui.ListItem(label="Adult")
-    _ = xbmcplugin.addDirectoryItem(HANDLE, f"{_BASE}?category=movies&subcategory=adult", li, isFolder=True)
+    if _adult_enabled():
+        li = xbmcgui.ListItem(label="Adult")
+        _ = xbmcplugin.addDirectoryItem(HANDLE, f"{_BASE}?category=movies&subcategory=adult", li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
 
 
@@ -134,10 +132,11 @@ def show_movies_by_genre(genre_id: int, genre_name: str = "", page: int = 1):
         f"{_BASE}?category=movies&subcategory=genre&genre_id={genre_id}&genre_name={quote_plus(genre_name)}&page={page + 1}"
         if page < total_pages else ""
     )
-    _render_movies(results, next_url)
+    _render_movies(results, next_url, _genre_map())
 
 
-def _render_movies(results: list[dict[str, Any]], next_url: str = ""):
+def _render_movies(results: list[dict[str, Any]], next_url: str = "", genre_map: dict[int, str] | None = None):
+    gmap = genre_map or {}
     xbmcplugin.setContent(HANDLE, "movies")
     xbmcplugin.addSortMethod(HANDLE, xbmcplugin.SORT_METHOD_LABEL)
     xbmcplugin.addSortMethod(HANDLE, xbmcplugin.SORT_METHOD_VIDEO_RATING)
@@ -152,6 +151,7 @@ def _render_movies(results: list[dict[str, Any]], next_url: str = ""):
         year_str = (movie.get("release_date") or "")[:4]
         tmdb_id = int(movie.get("id") or 0)
         genre_ids = [int(g) for g in movie.get("genre_ids", [])]
+        genre_str = " / ".join(gmap[g] for g in genre_ids[:3] if g in gmap)
 
         li = xbmcgui.ListItem(label=title)
         li.setProperty("IsPlayable", "true")
@@ -160,7 +160,7 @@ def _render_movies(results: list[dict[str, Any]], next_url: str = ""):
             "plot": overview,
             "year": int(year_str) if year_str.isdigit() else 0,
             "rating": rating,
-            "genre": _genre_str(genre_ids),
+            "genre": genre_str,
             "mediatype": "movie",
         })
         li.setArt({
