@@ -163,20 +163,8 @@ class RealDebridAPI(Service):
         return bool(self.access_token)
 
     def check_instant_availability(self, hashes: list[str]) -> set[str]:
-        if not hashes or not self.access_token:
-            return set()
-        cached: set[str] = set()
-        for i in range(0, len(hashes), 40):
-            chunk = hashes[i:i + 40]
-            endpoint = "torrents/instantAvailability/" + "/".join(chunk)
-            try:
-                result = self._api_get(endpoint)
-                for h, data in result.items():
-                    if isinstance(data, dict) and data.get("rd"):
-                        cached.add(h.lower())
-            except Exception as e:
-                log(str(e), "check_instant_availability")
-        return cached
+        # RealDebrid deprecated the instantAvailability endpoint in 2024.
+        return set()
 
 
 RealDebrid = RealDebridAPI()

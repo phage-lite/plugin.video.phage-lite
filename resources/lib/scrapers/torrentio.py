@@ -6,6 +6,7 @@ from utils.logger import log
 
 _BASE = "https://torrentio.strem.fun"
 _TIMEOUT = 10
+_HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"}
 
 _QUALITY_PATTERNS: list[tuple[str, str]] = [
     ("2160", "4K"), ("4K", "4K"), ("UHD", "4K"),
@@ -23,7 +24,7 @@ def scrape(imdb_id: str, season: int = 0, episode: int = 0) -> list[dict[str, An
     else:
         url = f"{_BASE}/stream/movie/{imdb_id}.json"
     try:
-        resp = requests.get(url, timeout=_TIMEOUT)
+        resp = requests.get(url, headers=_HEADERS, timeout=_TIMEOUT)
         resp.raise_for_status()
         streams: list[dict[str, Any]] = resp.json().get("streams") or []
     except Exception as e:
