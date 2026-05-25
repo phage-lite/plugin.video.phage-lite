@@ -1,292 +1,221 @@
-# -*- coding: utf-8 -*-
-from xbmc import Monitor
-import os
-import json
-import inspect
-from threading import Thread
-from caches.settings_cache import get_setting, set_setting, sync_settings
-from modules import kodi_utils
+import threading
+import xbmc
+import xbmcgui
 
-pause_services_prop = 'bacterio.pause_services'
-firstrun_update_prop = 'bacterio.firstrun_update'
-current_skin_prop = 'bacterio.current_skin'
-trakt_service_string = 'TraktMonitor Service Update %s - %s'
-trakt_success_line_dict = {'success': 'Trakt Update Performed',
-                           'no account': '(Unauthorized) Trakt Update Performed'}
-update_string = 'Next Update in %s minutes...'
+_WIN_ID = 10000
+_PROP_TYPE    = "bacterio.type"
+_PROP_TMDB    = "bacterio.tmdb_id"
+_PROP_SEASON  = "bacterio.season"
+_PROP_EPISODE = "bacterio.episode"
+
+_THRESHOLD_SECS = 80   # seconds before end to trigger (when no chapters)
+_COUNTDOWN_SECS = 20   # how long the widget stays visible
 
 
-class SetAddonConstants:
-    def run(self):
-        kodi_utils.logger('Bacterio', 'SetAddonConstants Service Starting')
-        import random
-        addon_items = [
-            ('bacterio.playback_key', str(random.randint(1000, 10000))),
-            ('bacterio.addon_version', kodi_utils.addon_info('version')),
-            ('bacterio.addon_path', kodi_utils.addon_info('path')),
-            ('bacterio.addon_profile', kodi_utils.translate_path(
-                kodi_utils.addon_info('profile'))),
-            ('bacterio.addon_icon', kodi_utils.translate_path(
-                kodi_utils.addon_info('icon'))),
-            ('bacterio.addon_icon_mini',
-             os.path.join(kodi_utils
-                          .addon_info('path'),
-                          'resources',
-                          'media',
-                          'addon_icons',
-                          'minis',
-                          os.path.basename(
-                              kodi_utils
-                              .translate_path(
-                                  kodi_utils
-                                  .addon_info('icon'))))),
-            ('bacterio.addon_fanart', kodi_utils.translate_path(
-                kodi_utils.addon_info('fanart')))
-        ]
-        for item in addon_items:
-            kodi_utils.set_property(*item)
-        return kodi_utils.logger('Bacterio', 'SetAddonConstants Service Finished')
+# ── Next-episode helpers ──────────────────────────────────────────────────────
 
-
-class DatabaseMaintenance:
-    def run(self):
-        kodi_utils.logger('Bacterio', 'DatabaseMaintenance Service Starting')
-        from caches.base_cache import check_databases_integrity
-        check_databases_integrity(silent=True)
-        return kodi_utils.logger('Bacterio', 'DatabaseMaintenance Service Finished')
-
-
-class SyncSettings:
-    def run(self):
-        kodi_utils.logger('Bacterio', 'SyncSettings Service Starting')
-        sync_settings()
-        return kodi_utils.logger('Bacterio', 'SyncSettings Service Finished')
-
-
-class OnUpdateChanges:
-    def run(self):
-        kodi_utils.logger('Bacterio', 'OnUpdateChanges Service Starting')
-        try:
-            for method in list(filter(lambda x: x[0] != 'run', inspect.getmembers(OnUpdateChanges, predicate=inspect.isfunction))):
-                if not get_setting('bacterio.updatechecks.%s' % method[0], 'false') == 'true':
-                    method[1](self)
-                    set_setting('updatechecks.%s' % method[0], 'true')
-        except:
-            pass
-        return kodi_utils.logger('Bacterio', 'OnUpdateChanges Service Finished')
-
-    def clear_context_menu_order_01(self):
-        # Active for 2.1.85.
-        from caches.settings_cache import restore_setting_default
-        restore_setting_default(
-            {'setting_id': 'context_menu.order', 'silent': 'true'})
-
-    def clear_extras_menu_order_01(self):
-        # Active for 2.1.85.
-        from caches.settings_cache import restore_setting_default
-        restore_setting_default(
-            {'setting_id': 'extras.enabled', 'silent': 'true'})
-
-
-class CustomFonts:
-    def run(self):
-        kodi_utils.logger('Bacterio', 'CustomFonts Service Starting')
-        from windows.base_window import FontUtils
-        monitor, player = kodi_utils.kodi_monitor(), kodi_utils.kodi_player()
-        wait_for_abort, is_playing = monitor.waitForAbort, player.isPlayingVideo
-        kodi_utils.clear_property(current_skin_prop)
-        font_utils = FontUtils()
-        while not monitor.abortRequested():
-            font_utils.execute_custom_fonts()
-            wait_for_abort(20)
-        try:
-            del monitor
-        except:
-            pass
-        try:
-            del player
-        except:
-            pass
-        return kodi_utils.logger('Bacterio', 'CustomFonts Service Finished')
-
-
-class TraktMonitor:
-    def run(self):
-        kodi_utils.logger('Bacterio', 'TraktMonitor Service Starting')
-        from apis.trakt_api import trakt_sync_activities
-        from modules.settings import trakt_sync_interval
-        monitor, player = kodi_utils.kodi_monitor(), kodi_utils.kodi_player()
-        wait_for_abort, is_playing = monitor.waitForAbort, player.isPlayingVideo
-        while not monitor.abortRequested():
-            while is_playing() or kodi_utils.get_property(pause_services_prop) == 'true':
-                wait_for_abort(10)
-            wait_time = 1800
-            try:
-                sync_interval, wait_time = trakt_sync_interval()
-                next_update_string = update_string % sync_interval
-                status = trakt_sync_activities()
-                if status == 'failed':
-                    kodi_utils.logger('Bacterio', trakt_service_string % (
-                        'Failed. Error from Trakt', next_update_string))
-                else:
-                    if status in ('success', 'no account'):
-                        kodi_utils.logger('Bacterio', trakt_service_string % (
-                            'Success. %s' % trakt_success_line_dict[status], next_update_string))
-                    else:
-                        kodi_utils.logger('Bacterio', trakt_service_string % (
-                            'Success. No Changes Needed', next_update_string))  # 'not needed'
-                    if status == 'success' and get_setting('bacterio.trakt.refresh_widgets', 'false') == 'true':
-                        kodi_utils.run_plugin({'mode': 'kodi_refresh'})
-            except Exception as e:
-                kodi_utils.logger('Bacterio', trakt_service_string % (
-                    'Failed', 'The following Error Occured: %s' % str(e)))
-            wait_for_abort(wait_time)
-        try:
-            del monitor
-        except:
-            pass
-        try:
-            del player
-        except:
-            pass
-        return kodi_utils.logger('Bacterio', 'TraktMonitor Service Finished')
-
-
-class WidgetRefresher:
-    def run(self):
-        kodi_utils.logger('Bacterio', 'WidgetRefresher Service Starting')
-        from time import time
-        monitor, player = kodi_utils.kodi_monitor(), kodi_utils.kodi_player()
-        wait_for_abort, self.is_playing = monitor.waitForAbort, player.isPlayingVideo
-        wait_for_abort(10)
-        self.set_next_refresh(time())
-        while not monitor.abortRequested():
-            try:
-                wait_for_abort(10)
-                offset = int(get_setting(
-                    'bacterio.widget_refresh_timer', '60'))
-                if offset != self.offset:
-                    self.set_next_refresh(time())
-                    continue
-                if self.condition_check():
-                    continue
-                if self.next_refresh < time():
-                    kodi_utils.logger(
-                        'Bacterio', 'WidgetRefresher Service - Widgets Refreshed')
-                    kodi_utils.refresh_widgets()
-                    self.set_next_refresh(time())
-            except:
-                pass
-        try:
-            del monitor
-        except:
-            pass
-        try:
-            del player
-        except:
-            pass
-        return kodi_utils.logger('Bacterio', 'WidgetRefresher Service Finished')
-
-    def condition_check(self):
-        if not self.external():
-            return True
-
-        if self.next_refresh == None or self.is_playing() or kodi_utils.get_property(pause_services_prop) == 'true':
-            return True
-        if kodi_utils.get_property('bacterio.window_loaded') == 'true':
-            return True
-        try:
-            window_stack = json.loads(
-                kodi_utils.get_property('bacterio.window_stack'))
-            if window_stack or window_stack == []:
-                return True
-        except:
-            pass
+def _near_end(player: xbmc.Player) -> bool:
+    try:
+        total = player.getTotalTime()
+        if total <= 0:
+            return False
+        chapters = player.getChapters()
+        if chapters >= 2:
+            return player.getCurrentChapter() >= chapters
+        return (total - player.getTime()) <= _THRESHOLD_SECS
+    except Exception:
         return False
 
-    def set_next_refresh(self, _time):
-        self.offset = int(get_setting('bacterio.widget_refresh_timer', '60'))
-        if self.offset:
-            self.next_refresh = _time + (self.offset*60)
+
+def _find_next(show_id: int, season: int, episode: int) -> tuple[int, int, str, str] | None:
+    """Return (next_season, next_ep, ep_title, show_title) or None."""
+    from services.tmdb import Tmdb
+    try:
+        season_data = Tmdb.tv_season(show_id, season)
+        ep_nums = {e["episode_number"] for e in season_data.get("episodes", [])}
+
+        next_ep, next_season = episode + 1, season
+        ep_info: dict = {}
+
+        if next_ep in ep_nums:
+            ep_info = next((e for e in season_data["episodes"] if e["episode_number"] == next_ep), {})
         else:
-            self.next_refresh = None
+            next_season, next_ep = season + 1, 1
+            next_data = Tmdb.tv_season(show_id, next_season)
+            next_eps = next_data.get("episodes", [])
+            if not next_eps:
+                return None
+            ep_info = next((e for e in next_eps if e["episode_number"] == 1), {})
 
-    def external(self):
-        return 'plugin' not in kodi_utils.get_infolabel('Container.PluginName')
+        ep_title = ep_info.get("name") or f"Episode {next_ep}"
+        show_title = Tmdb.tv_details(show_id).get("name", "")
+        return next_season, next_ep, ep_title, show_title
+    except Exception:
+        return None
 
 
-class AutoStart:
-    def run(self):
-        kodi_utils.logger('Bacterio', 'AutoStart Service Starting')
-        from modules.settings import auto_start_bacterio
-        if auto_start_bacterio():
-            kodi_utils.run_addon()
-        return kodi_utils.logger('Bacterio', 'AutoStart Service Finished')
+# ── Small overlay widget ──────────────────────────────────────────────────────
+
+class _NextUpWidget(xbmcgui.WindowDialog):
+    _W, _H, _PAD, _MARGIN = 600, 88, 14, 48
+
+    def __init__(self, show_title: str, season: int, episode: int, ep_title: str):
+        super().__init__()
+        self.cancelled = False
+        sw, sh = xbmcgui.getScreenWidth(), xbmcgui.getScreenHeight()
+        x = sw - self._W - self._MARGIN
+        y = sh - self._H - self._MARGIN
+
+        header = f"[B]Up Next  ·  S{season:02d}E{episode:02d}[/B]  {ep_title}"
+        self._lbl_header = xbmcgui.ControlLabel(
+            x + self._PAD, y + self._PAD, self._W - self._PAD, 30,
+            header, font="font13",
+            textColor="0xFFFFFFFF", shadowColor="0xDD000000",
+        )
+        self._lbl_show = xbmcgui.ControlLabel(
+            x + self._PAD, y + self._PAD + 30, self._W - self._PAD, 24,
+            f"[I]{show_title}[/I]", font="font12",
+            textColor="0xFFBBBBBB", shadowColor="0xDD000000",
+        )
+        self._bar = xbmcgui.ControlProgress(
+            x + self._PAD, y + self._H - 14, self._W - self._PAD * 2, 6,
+        )
+        for ctrl in (self._lbl_header, self._lbl_show, self._bar):
+            self.addControl(ctrl)
+        self._bar.setPercent(100)
+
+    def set_pct(self, pct: float) -> None:
+        self._bar.setPercent(pct)
+
+    def onAction(self, action: xbmcgui.Action) -> None:
+        if action.getId() in (9, 10, 92):  # Back / PreviousMenu / NavBack
+            self.cancelled = True
+            self.close()
 
 
-class AddonXMLCheck:
-    def run(self):
-        kodi_utils.logger('Bacterio', 'AddonXMLCheck Service Starting')
-        from xml.dom.minidom import parse as mdParse
-        self.addon_xml = kodi_utils.translate_path(
-            'special://home/addons/plugin.video.bacterio/addon.xml')
-        self.root = mdParse(self.addon_xml)
-        self.change_list = []
-        self.check_property('reuse_language_invoker', 'reuselanguageinvoker')
-        self.change_xml_file()
-        return kodi_utils.logger('Bacterio', 'AddonXMLCheck Service Finished')
+def _run_widget(meta: dict[str, str]) -> None:
+    show_id = int(meta["tmdb_id"])
+    season  = int(meta["season"])
+    episode = int(meta["episode"])
 
-    def check_property(self, setting, tag_name):
-        current_addon_setting = get_setting('bacterio.%s' % setting, None)
-        if current_addon_setting is None:
+    result = _find_next(show_id, season, episode)
+    if not result:
+        return
+    next_season, next_ep, ep_title, show_title = result
+
+    widget = _NextUpWidget(show_title, next_season, next_ep, ep_title)
+    widget.show()
+
+    steps = _COUNTDOWN_SECS * 5  # update every 200 ms
+    for i in range(steps, -1, -1):
+        if widget.cancelled:
             return
-        tag_instance = self.root.getElementsByTagName(tag_name)[0].firstChild
-        current_property = tag_instance.data
-        if current_property != current_addon_setting:
-            tag_instance.data = current_addon_setting
-            self.change_list.append(tag_name)
+        widget.set_pct(i / steps * 100)
+        xbmc.sleep(200)
 
-    def change_xml_file(self):
-        if not self.change_list:
-            return
-        kodi_utils.notification('Refreshing Addon XML. Restarting Addons')
-        new_xml = str(self.root.toxml()).replace('<?xml version="1.0" ?>', '')
-        with open(self.addon_xml, 'w') as f:
-            f.write(new_xml)
-        kodi_utils.logger(
-            'Bacterio', 'AddonXMLCheck Service - Change Detected. Restarting Addons')
-        kodi_utils.execute_builtin('ActivateWindow(Home)', True)
-        kodi_utils.update_local_addons()
-        kodi_utils.disable_enable_addon()
+    widget.close()
+
+    url = (
+        "plugin://plugin.video.bacterio"
+        f"?action=play&type=episode&id={show_id}"
+        f"&season={next_season}&episode={next_ep}"
+    )
+    xbmc.executebuiltin(f"RunPlugin({url})")
 
 
-class BacterioMonitor(Monitor):
+# ── Player ────────────────────────────────────────────────────────────────────
+
+class _Player(xbmc.Player):
     def __init__(self):
-        Monitor.__init__(self)
-        self.startServices()
+        super().__init__()
+        self._meta: dict[str, str] | None = None
+        self._next_shown = False
 
-    def startServices(self):
-        SetAddonConstants().run()
-        DatabaseMaintenance().run()
-        SyncSettings().run()
-        OnUpdateChanges().run()
-        AddonXMLCheck().run()
-        Thread(target=CustomFonts().run).start()
-        Thread(target=TraktMonitor().run).start()
-        Thread(target=WidgetRefresher().run).start()
-        AutoStart().run()
+    def _read_meta(self) -> dict[str, str] | None:
+        win = xbmcgui.Window(_WIN_ID)
+        tmdb_id = win.getProperty(_PROP_TMDB)
+        if not tmdb_id:
+            return None
+        return {
+            "type":    win.getProperty(_PROP_TYPE) or "movie",
+            "tmdb_id": tmdb_id,
+            "season":  win.getProperty(_PROP_SEASON) or "0",
+            "episode": win.getProperty(_PROP_EPISODE) or "0",
+        }
 
-    def onNotification(self, sender, method, data):
-        if method in ('GUI.OnScreensaverActivated', 'System.OnSleep'):
-            kodi_utils.set_property(pause_services_prop, 'true')
-            kodi_utils.logger('OnNotificationActions',
-                              'PAUSING Bacterio Services Due to Device Sleep')
-        elif method in ('GUI.OnScreensaverDeactivated', 'System.OnWake'):
-            kodi_utils.clear_property(pause_services_prop)
-            kodi_utils.logger('OnNotificationActions',
-                              'UNPAUSING Bacterio Services Due to Device Awake')
+    def _progress(self) -> float:
+        try:
+            total = self.getTotalTime()
+            if total > 0:
+                return min(self.getTime() / total * 100.0, 100.0)
+        except Exception:
+            pass
+        return 0.0
+
+    def _scrobble(self, action: str, progress: float) -> None:
+        if not self._meta:
+            return
+        try:
+            from services.trakt import Trakt
+            if not Trakt.is_authenticated():
+                return
+            m = self._meta
+            Trakt.scrobble(action, m["type"], int(m["tmdb_id"]), progress,
+                           int(m["season"]), int(m["episode"]))
+        except Exception:
+            pass
+
+    def _monitor(self) -> None:
+        """Polls position; fires next-up widget near episode end."""
+        while self.isPlaying() or self.isPaused():
+            if (not self._next_shown
+                    and self.isPlaying()
+                    and self._meta
+                    and self._meta.get("type") == "episode"
+                    and _near_end(self)):
+                self._next_shown = True
+                meta = self._meta
+                threading.Thread(target=_run_widget, args=(meta,), daemon=True).start()
+            xbmc.sleep(1000)
+
+    def onPlayBackStarted(self):
+        self._meta = self._read_meta()
+        self._next_shown = False
+        self._scrobble("start", 0.0)
+        threading.Thread(target=self._monitor, daemon=True).start()
+
+    def onPlayBackPaused(self):
+        self._scrobble("pause", self._progress())
+
+    def onPlayBackResumed(self):
+        self._scrobble("start", self._progress())
+
+    def onPlayBackEnded(self):
+        self._scrobble("stop", 100.0)
+        self._meta = None
+        self._next_shown = False
+
+    def onPlayBackStopped(self):
+        self._scrobble("stop", self._progress())
+        self._meta = None
+        self._next_shown = False
+
+    def onPlayBackError(self):
+        self._meta = None
+        self._next_shown = False
 
 
-kodi_utils.logger('Bacterio', 'Main Monitor Service Starting')
-BacterioMonitor().waitForAbort()
-kodi_utils.logger('Bacterio', 'Main Monitor Service Finished')
+# ── Monitor ───────────────────────────────────────────────────────────────────
+
+class _Monitor(xbmc.Monitor):
+    def __init__(self):
+        super().__init__()
+        self._player = _Player()
+
+    def run(self) -> None:
+        while not self.waitForAbort(60):
+            pass
+
+
+if __name__ == "__main__":
+    _Monitor().run()

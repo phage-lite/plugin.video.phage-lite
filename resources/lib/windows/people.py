@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
 from threading import Thread
-from windows.base_window import BaseDialog, window_manager, window_player
+from windows.base_window import BaseDialog, window_manager
 from apis.tmdb_api import tmdb_people_info, tmdb_people_full_info
 from apis.imdb_api import imdb_people_trivia
 from indexers import dialogs
 from indexers.images import Images
-from modules.kodi_utils import addon_fanart, execute_builtin, notification, show_busy_dialog, hide_busy_dialog, get_icon
-from modules.settings import extras_enable_scrollbars, tmdb_api_key, easynews_authorized, mpaa_region
+from modules.kodi_utils import addon_fanart, notification, show_busy_dialog, hide_busy_dialog, get_icon
+from modules.settings import extras_enable_scrollbars, tmdb_api_key, mpaa_region
 from modules.utils import calculate_age, get_datetime, remove_accents
-# from modules.kodi_utils import logger
 
 
 class People(BaseDialog):
@@ -54,8 +53,6 @@ class People(BaseDialog):
 				self.Images({'mode': 'tmdb_people_image_results', 'actor_name': self.person_name, 'actor_id': self.person_id, 'actor_image': self.person_image})
 			elif controlID == 11:
 				self.Images({'mode': 'tmdb_people_tagged_image_results', 'actor_name': self.person_name, 'actor_id': self.person_id})
-			elif controlID == 12:
-				self.Images({'mode': 'easynews_image_results', 'key_id': self.person_name, 'page_no': 1})
 			elif controlID == 13:
 				title = '%s|%s|%s' % (self.person_name, self.person_thumb, self.person_image)
 				dialogs.favorites_manager_choice({'media_type': 'people', 'tmdb_id': str(self.person_id), 'title': title, 'refresh': 'false'})
@@ -260,4 +257,3 @@ class People(BaseDialog):
 		self.setProperty('deathday', self.person_deathday)
 		self.setProperty('age', str(self.person_age))
 		self.setProperty('enable_scrollbars', self.enable_scrollbars)
-		self.setProperty('easynews_authorized', 'true' if easynews_authorized() else 'false')
