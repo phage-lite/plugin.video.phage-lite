@@ -427,3 +427,253 @@ def _add_recommendation_show(item: dict[str, Any]):
         li.addContextMenuItems(_menus_browse("show", tmdb_id, title, year_str, poster))
         url = f"{_BASE}?action=seasons&show_id={tmdb_id}&show_title={quote_plus(title)}"
         _ = xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+
+
+# ── In Progress Shows ─────────────────────────────────────────────────────────
+
+def show_in_progress_shows():
+    try:
+        watched = Trakt.watched_shows(limit=50)
+    except Exception as e:
+        error(f"Trakt error: {e}")
+        xbmcplugin.endOfDirectory(HANDLE)
+        return
+
+    def _check(item: dict[str, Any]) -> dict[str, Any] | None:
+        show = item.get("show", {})
+        trakt_id: int | None = show.get("ids", {}).get("trakt")
+        tmdb_id: int | None = show.get("ids", {}).get("tmdb")
+        if not trakt_id or not tmdb_id:
+            return None
+        try:
+            prog = Trakt.show_progress(trakt_id)
+            if not prog.get("next_episode"):
+                return None
+            return {
+                "tmdb_id": tmdb_id,
+                "title": show.get("title", "Unknown"),
+                "year": int(show.get("year") or 0),
+                "last_watched_at": item.get("last_watched_at", ""),
+            }
+        except Exception:
+            return None
+
+    results: list[dict[str, Any]] = []
+    with ThreadPoolExecutor(max_workers=5) as ex:
+        futures = [ex.submit(_check, item) for item in watched]
+        for future in as_completed(futures):
+            val = future.result()
+            if val:
+                results.append(val)
+
+    if not results:
+        _ = xbmcgui.Dialog().ok("In Progress", "No shows in progress.\n\nStart watching a show to see it here.")
+        xbmcplugin.endOfDirectory(HANDLE)
+        return
+
+    results.sort(key=lambda x: x.get("last_watched_at", ""), reverse=True)
+    _warm_images([(r["tmdb_id"], "tv") for r in results])
+    xbmcplugin.setContent(HANDLE, "tvshows")
+
+    for r in results:
+        tmdb_id = r["tmdb_id"]
+        title = r["title"]
+        year = r["year"]
+        poster, backdrop = _tmdb_images(tmdb_id, "tv")
+        label = f"{title} ({year})" if year else title
+        li = xbmcgui.ListItem(label=label)
+        li.setInfo("video", {"title": title, "year": year, "mediatype": "tvshow"})
+        li.setArt({
+            "thumb": f"{_IMG}{poster}" if poster else "",
+            "poster": f"{_IMG}{poster}" if poster else "",
+            "fanart": f"{_IMG}{backdrop}" if backdrop else "",
+        })
+        url = f"{_BASE}?action=seasons&show_id={tmdb_id}&show_title={quote_plus(title)}"
+        _ = xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+# ── Because You/Most Watched ──────────────────────────────────────────────────
+
+def _render_tmdb_shows(items: list[dict[str, Any]], next_url: str = "") -> None:
+    xbmcplugin.setContent(HANDLE, "tvshows")
+    for show in items:
+        title = show.get("name", "Unknown")
+        overview = show.get("overview", "")
+        poster = show.get("poster_path") or ""
+        backdrop = show.get("backdrop_path") or ""
+        rating = float(show.get("vote_average") or 0)
+        year_str = (show.get("first_air_date") or "")[:4]
+        tmdb_id = int(show.get("id") or 0)
+        li = xbmcgui.ListItem(label=title)
+        li.setInfo("video", {
+            "title": title, "plot": overview,
+            "year": int(year_str) if year_str.isdigit() else 0,
+            "rating": rating, "mediatype": "tvshow",
+        })
+        li.setArt({
+            "thumb": f"{_IMG}{poster}" if poster else "",
+            "poster": f"{_IMG}{poster}" if poster else "",
+            "fanart": f"{_IMG}{backdrop}" if backdrop else "",
+        })
+        li.addContextMenuItems(_menus_browse("show", tmdb_id, title, year_str, poster))
+        url = f"{_BASE}?action=seasons&show_id={tmdb_id}&show_title={quote_plus(title)}"
+        _ = xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+    if next_url:
+        li = xbmcgui.ListItem(label="Next Page →")
+        _ = xbmcplugin.addDirectoryItem(HANDLE, next_url, li, isFolder=True)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def _render_tmdb_movies(items: list[dict[str, Any]], next_url: str = "") -> None:
+    xbmcplugin.setContent(HANDLE, "movies")
+    for movie in items:
+        title = movie.get("title", "Unknown")
+        overview = movie.get("overview", "")
+        poster = movie.get("poster_path") or ""
+        backdrop = movie.get("backdrop_path") or ""
+        rating = float(movie.get("vote_average") or 0)
+        year_str = (movie.get("release_date") or "")[:4]
+        tmdb_id = int(movie.get("id") or 0)
+        li = xbmcgui.ListItem(label=title)
+        li.setProperty("IsPlayable", "true")
+        li.setInfo("video", {
+            "title": title, "plot": overview,
+            "year": int(year_str) if year_str.isdigit() else 0,
+            "rating": rating, "mediatype": "movie",
+        })
+        li.setArt({
+            "thumb": f"{_IMG}{poster}" if poster else "",
+            "poster": f"{_IMG}{poster}" if poster else "",
+            "fanart": f"{_IMG}{backdrop}" if backdrop else "",
+        })
+        li.addContextMenuItems(_menus_browse("movie", tmdb_id, title, year_str, poster))
+        _ = xbmcplugin.addDirectoryItem(
+            HANDLE, f"{_BASE}?action=play&type=movie&id={tmdb_id}", li, isFolder=False
+        )
+    if next_url:
+        li = xbmcgui.ListItem(label="Next Page →")
+        _ = xbmcplugin.addDirectoryItem(HANDLE, next_url, li, isFolder=True)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+_N_SEEDS = 3  # number of watch-history seeds to aggregate
+
+
+def _because_shows(page: int, seed_ids: list[int], seed_title: str, sort_key: str, subcategory: str) -> None:
+    if not seed_ids:
+        try:
+            watched = Trakt.watched_shows(limit=50)
+            if not watched:
+                _ = xbmcgui.Dialog().ok("Nothing found", "No watch history found on Trakt.")
+                xbmcplugin.endOfDirectory(HANDLE)
+                return
+            if sort_key == "plays":
+                watched.sort(key=lambda x: int(x.get("plays") or 0), reverse=True)
+            else:
+                watched.sort(key=lambda x: x.get("last_watched_at", "") or "", reverse=True)
+            seeds = watched[:_N_SEEDS]
+            seed_ids = [int(s.get("show", {}).get("ids", {}).get("tmdb") or 0) for s in seeds]
+            seed_ids = [sid for sid in seed_ids if sid]
+            seed_title = seeds[0].get("show", {}).get("title", "") if seeds else ""
+        except Exception as e:
+            error(f"Trakt error: {e}")
+            xbmcplugin.endOfDirectory(HANDLE)
+            return
+
+    if not seed_ids:
+        _ = xbmcgui.Dialog().ok("Nothing found", "Could not determine seeds from your history.")
+        xbmcplugin.endOfDirectory(HANDLE)
+        return
+
+    xbmcplugin.setPluginCategory(HANDLE, f"Because You Watched: {seed_title}")
+
+    seen: set[int] = set()
+    merged: list[dict[str, Any]] = []
+    try:
+        for sid in seed_ids:
+            data = Tmdb.recommended_tv(sid, page)
+            for item in data.get("results", []):
+                tid = int(item.get("id") or 0)
+                if tid and tid not in seen:
+                    seen.add(tid)
+                    merged.append(item)
+    except Exception as e:
+        error(f"TMDB error: {e}")
+        xbmcplugin.endOfDirectory(HANDLE)
+        return
+
+    seed_param = ",".join(str(s) for s in seed_ids)
+    next_url = (
+        f"{_BASE}?category=shows&subcategory={subcategory}&seed_ids={quote_plus(seed_param)}&seed_title={quote_plus(seed_title)}&page={page + 1}"
+        if len(merged) >= 20 else ""
+    )
+    _render_tmdb_shows(merged, next_url)
+
+
+def show_because_you_watched_shows(page: int = 1, seed_ids: list[int] | None = None, seed_title: str = "") -> None:
+    _because_shows(page, seed_ids or [], seed_title, "last_watched_at", "because_you_watched")
+
+
+def show_because_most_watched_shows(page: int = 1, seed_ids: list[int] | None = None, seed_title: str = "") -> None:
+    _because_shows(page, seed_ids or [], seed_title, "plays", "because_most_watched")
+
+
+def _because_movies(page: int, seed_ids: list[int], seed_title: str, sort_key: str, subcategory: str) -> None:
+    if not seed_ids:
+        try:
+            watched = Trakt.watched_movies(limit=50)
+            if not watched:
+                _ = xbmcgui.Dialog().ok("Nothing found", "No watch history found on Trakt.")
+                xbmcplugin.endOfDirectory(HANDLE)
+                return
+            if sort_key == "plays":
+                watched.sort(key=lambda x: int(x.get("plays") or 0), reverse=True)
+            else:
+                watched.sort(key=lambda x: x.get("last_watched_at", "") or "", reverse=True)
+            seeds = watched[:_N_SEEDS]
+            seed_ids = [int(s.get("movie", {}).get("ids", {}).get("tmdb") or 0) for s in seeds]
+            seed_ids = [sid for sid in seed_ids if sid]
+            seed_title = seeds[0].get("movie", {}).get("title", "") if seeds else ""
+        except Exception as e:
+            error(f"Trakt error: {e}")
+            xbmcplugin.endOfDirectory(HANDLE)
+            return
+
+    if not seed_ids:
+        _ = xbmcgui.Dialog().ok("Nothing found", "Could not determine seeds from your history.")
+        xbmcplugin.endOfDirectory(HANDLE)
+        return
+
+    xbmcplugin.setPluginCategory(HANDLE, f"Because You Watched: {seed_title}")
+
+    seen: set[int] = set()
+    merged: list[dict[str, Any]] = []
+    try:
+        for sid in seed_ids:
+            data = Tmdb.recommended_movies(sid, page)
+            for item in data.get("results", []):
+                tid = int(item.get("id") or 0)
+                if tid and tid not in seen:
+                    seen.add(tid)
+                    merged.append(item)
+    except Exception as e:
+        error(f"TMDB error: {e}")
+        xbmcplugin.endOfDirectory(HANDLE)
+        return
+
+    seed_param = ",".join(str(s) for s in seed_ids)
+    next_url = (
+        f"{_BASE}?category=movies&subcategory={subcategory}&seed_ids={quote_plus(seed_param)}&seed_title={quote_plus(seed_title)}&page={page + 1}"
+        if len(merged) >= 20 else ""
+    )
+    _render_tmdb_movies(merged, next_url)
+
+
+def show_because_you_watched_movies(page: int = 1, seed_ids: list[int] | None = None, seed_title: str = "") -> None:
+    _because_movies(page, seed_ids or [], seed_title, "last_watched_at", "because_you_watched")
+
+
+def show_because_most_watched_movies(page: int = 1, seed_ids: list[int] | None = None, seed_title: str = "") -> None:
+    _because_movies(page, seed_ids or [], seed_title, "plays", "because_most_watched")

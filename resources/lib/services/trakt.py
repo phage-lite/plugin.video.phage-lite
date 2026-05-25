@@ -216,6 +216,14 @@ class TraktAPI(Service):
         items = result if isinstance(result, list) else []
         return items[:limit]
 
+    def watched_movies(self, limit: int = 30) -> list[dict[str, Any]]:
+        result = self._api_get(
+            "users/me/watched/movies",
+            {"extended": "noseasons"},
+        )
+        items = result if isinstance(result, list) else []
+        return items[:limit]
+
     def watchlist_movies(self, page: int = 1, limit: int = PAGE_SIZE) -> list[dict[str, Any]]:
         result = self._api_get(
             "users/me/watchlist/movies",

@@ -131,6 +131,14 @@ def _route():
         elif subcategory == "favourites":
             from views.favourites import show_movie_favourites
             show_movie_favourites()
+        elif subcategory == "because_you_watched":
+            from views.trakt import show_because_you_watched_movies
+            _sids = [int(x) for x in unquote_plus(params.get("seed_ids", "")).split(",") if x.strip().isdigit()]
+            show_because_you_watched_movies(page, _sids or None, unquote_plus(params.get("seed_title", "")))
+        elif subcategory == "because_most_watched":
+            from views.trakt import show_because_most_watched_movies
+            _sids = [int(x) for x in unquote_plus(params.get("seed_ids", "")).split(",") if x.strip().isdigit()]
+            show_because_most_watched_movies(page, _sids or None, unquote_plus(params.get("seed_title", "")))
         elif subcategory == "trakt_watchlist":
             from views.trakt import show_trakt_watchlist_movies
             show_trakt_watchlist_movies(page=page)
@@ -160,6 +168,17 @@ def _route():
         elif subcategory == "upnext":
             from views.trakt import show_up_next
             show_up_next()
+        elif subcategory == "in_progress":
+            from views.trakt import show_in_progress_shows
+            show_in_progress_shows()
+        elif subcategory == "because_you_watched":
+            from views.trakt import show_because_you_watched_shows
+            _sids = [int(x) for x in unquote_plus(params.get("seed_ids", "")).split(",") if x.strip().isdigit()]
+            show_because_you_watched_shows(page, _sids or None, unquote_plus(params.get("seed_title", "")))
+        elif subcategory == "because_most_watched":
+            from views.trakt import show_because_most_watched_shows
+            _sids = [int(x) for x in unquote_plus(params.get("seed_ids", "")).split(",") if x.strip().isdigit()]
+            show_because_most_watched_shows(page, _sids or None, unquote_plus(params.get("seed_title", "")))
         elif subcategory == "trakt_watchlist":
             from views.trakt import show_trakt_watchlist_shows
             show_trakt_watchlist_shows(page=page)

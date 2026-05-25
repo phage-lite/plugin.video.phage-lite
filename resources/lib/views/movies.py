@@ -94,7 +94,9 @@ def show_movie_categories():
     try:
         from services.trakt import Trakt
         if Trakt.is_authenticated():
-            _dir_item("Trakt Watchlist", f"{_BASE}?category=movies&subcategory=trakt_watchlist", "trakt")
+            _dir_item("Because You Watched",   f"{_BASE}?category=movies&subcategory=because_you_watched",  "because_you_watched")
+            _dir_item("Because Most Watched",  f"{_BASE}?category=movies&subcategory=because_most_watched", "most_watched")
+            _dir_item("Trakt Watchlist",       f"{_BASE}?category=movies&subcategory=trakt_watchlist",      "trakt")
             _dir_item("Trakt Recommendations", f"{_BASE}?category=movies&subcategory=trakt_recommendations", "because_you_watched")
     except Exception:
         pass

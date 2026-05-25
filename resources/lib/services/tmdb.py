@@ -230,6 +230,20 @@ class TmdbAPI:
             ttl=1800,
         )
 
+    # ── Similar / Recommended ────────────────────────────────────────────────
+
+    def similar_movies(self, tmdb_id: int, page: int = 1) -> dict[str, Any]:
+        return self._get(f"movie/{tmdb_id}/similar", {"page": page}, ttl=900)
+
+    def recommended_movies(self, tmdb_id: int, page: int = 1) -> dict[str, Any]:
+        return self._get(f"movie/{tmdb_id}/recommendations", {"page": page}, ttl=900)
+
+    def similar_tv(self, tmdb_id: int, page: int = 1) -> dict[str, Any]:
+        return self._get(f"tv/{tmdb_id}/similar", {"page": page}, ttl=900)
+
+    def recommended_tv(self, tmdb_id: int, page: int = 1) -> dict[str, Any]:
+        return self._get(f"tv/{tmdb_id}/recommendations", {"page": page}, ttl=900)
+
     # ── Search ───────────────────────────────────────────────────────────────
 
     def search(self, query: str, page: int = 1) -> dict[str, Any]:

@@ -82,10 +82,13 @@ def show_tv_categories():
     try:
         from services.trakt import Trakt
         if Trakt.is_authenticated():
-            _dir_item("Up Next",             f"{_BASE}?category=shows&subcategory=upnext",               "next_episodes")
-            _dir_item("Trakt Watchlist",     f"{_BASE}?category=shows&subcategory=trakt_watchlist",       "trakt")
-            _dir_item("Trakt Recommendations", f"{_BASE}?category=shows&subcategory=trakt_recommendations", "because_you_watched")
-            _dir_item("My Calendar",         f"{_BASE}?category=shows&subcategory=calendar",              "calender")
+            _dir_item("Up Next",                f"{_BASE}?category=shows&subcategory=upnext",                "next_episodes")
+            _dir_item("In Progress",            f"{_BASE}?category=shows&subcategory=in_progress",           "in_progress_tvshow")
+            _dir_item("Because You Watched",    f"{_BASE}?category=shows&subcategory=because_you_watched",   "because_you_watched")
+            _dir_item("Because Most Watched",   f"{_BASE}?category=shows&subcategory=because_most_watched",  "most_watched")
+            _dir_item("Trakt Watchlist",        f"{_BASE}?category=shows&subcategory=trakt_watchlist",       "trakt")
+            _dir_item("Trakt Recommendations",  f"{_BASE}?category=shows&subcategory=trakt_recommendations", "because_you_watched")
+            _dir_item("My Calendar",            f"{_BASE}?category=shows&subcategory=calendar",              "calender")
     except Exception:
         pass
 

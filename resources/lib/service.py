@@ -98,12 +98,15 @@ class _NextUpWidget(xbmcgui.WindowDialog):
 
 
 def _run_widget(meta: dict[str, str]) -> None:
+    from utils.logger import log
     show_id = int(meta["tmdb_id"])
     season  = int(meta["season"])
     episode = int(meta["episode"])
 
+    log(f"_run_widget show={show_id} s={season} e={episode}", "service")
     result = _find_next(show_id, season, episode)
     if not result:
+        log("_find_next returned None — no widget", "service")
         return
     next_season, next_ep, ep_title, show_title = result
 
@@ -135,6 +138,8 @@ class _Player(xbmc.Player):
         super().__init__()
         self._meta: dict[str, str] | None = None
         self._next_shown: bool = False
+        self._last_progress: float = 0.0
+        self._monitor_alive: bool = False
 
     def _read_meta(self) -> dict[str, str] | None:
         win = xbmcgui.Window(_WIN_ID)
@@ -162,32 +167,64 @@ class _Player(xbmc.Player):
             return
         try:
             from services.trakt import Trakt
+            from utils.logger import log
             if not Trakt.is_authenticated():
                 return
             m = self._meta
+            log(f"scrobble {action} {m['type']} id={m['tmdb_id']} s={m['season']} e={m['episode']} p={progress:.1f}", "service")
             Trakt.scrobble(action, m["type"], int(m["tmdb_id"]), progress,
                            int(m["season"]), int(m["episode"]))
-        except Exception:
-            pass
+        except Exception as e:
+            from utils.logger import log
+            log(str(e), "service._scrobble")
+
+    def _start_monitor(self) -> None:
+        if not self._monitor_alive:
+            self._monitor_alive = True
+            threading.Thread(target=self._monitor, daemon=True).start()
 
     def _monitor(self) -> None:
         """Polls position; fires next-up widget near episode end."""
-        while self.isPlaying() or self.isPaused():
-            if (not self._next_shown
-                    and self.isPlaying()
-                    and self._meta
-                    and self._meta.get("type") == "episode"
-                    and _near_end(self)):
-                self._next_shown = True
-                meta = self._meta
-                threading.Thread(target=_run_widget, args=(meta,), daemon=True).start()
-            xbmc.sleep(1000)
+        from utils.logger import log
+        log("monitor started", "service")
+        try:
+            while self.isPlaying() or self.isPaused():
+                if self._meta is None:
+                    self._meta = self._read_meta()
+                    if self._meta:
+                        log(f"meta acquired: {self._meta}", "service")
+                if self.isPlaying():
+                    p = self._progress()
+                    if p > 0:
+                        self._last_progress = p
+                if (not self._next_shown
+                        and self.isPlaying()
+                        and self._meta
+                        and self._meta.get("type") == "episode"
+                        and _near_end(self)):
+                    log("near end — launching widget", "service")
+                    self._next_shown = True
+                    meta = self._meta
+                    threading.Thread(target=_run_widget, args=(meta,), daemon=True).start()
+                xbmc.sleep(1000)
+        finally:
+            self._monitor_alive = False
+            log("monitor stopped", "service")
 
     def onPlayBackStarted(self):
+        from utils.logger import log
+        log("onPlayBackStarted", "service")
         self._meta = self._read_meta()
         self._next_shown = False
         self._scrobble("start", 0.0)
-        threading.Thread(target=self._monitor, daemon=True).start()
+        self._start_monitor()
+
+    def onAVStarted(self):
+        from utils.logger import log
+        log("onAVStarted", "service")
+        if self._meta is None:
+            self._meta = self._read_meta()
+        self._start_monitor()
 
     def onPlayBackPaused(self):
         self._scrobble("pause", self._progress())
@@ -199,11 +236,13 @@ class _Player(xbmc.Player):
         self._scrobble("stop", 100.0)
         self._meta = None
         self._next_shown = False
+        self._last_progress = 0.0
 
     def onPlayBackStopped(self):
-        self._scrobble("stop", self._progress())
+        self._scrobble("stop", self._last_progress)
         self._meta = None
         self._next_shown = False
+        self._last_progress = 0.0
 
     def onPlayBackError(self):
         self._meta = None
