@@ -104,8 +104,11 @@ def do_search(query: str = "", page: int = 1):
             _add_show(item)
 
     if page < total_pages:
-        li = xbmcgui.ListItem(label=f"Next Page → ({page + 1} / {total_pages})")
         next_url = f"{_BASE}?action=search&query={quote_plus(query)}&page={page + 1}"
+        li = xbmcgui.ListItem(label=f"Next Page → ({page + 1} / {total_pages})")
+        li.setProperty("SpecialSort", "bottom")
+        p = os.path.join(xbmcaddon.Addon().getAddonInfo("path"), "resources", "media", "icons", "nextpage.png")
+        li.setArt({"icon": p, "thumb": p, "poster": p})
         _ = xbmcplugin.addDirectoryItem(HANDLE, next_url, li, isFolder=True)
 
     xbmcplugin.endOfDirectory(HANDLE)

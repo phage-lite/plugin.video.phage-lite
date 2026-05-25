@@ -1,4 +1,6 @@
+import os
 import sys
+import xbmcaddon
 import xbmcgui
 import xbmcplugin
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -12,6 +14,18 @@ from utils.notifications import error
 HANDLE = int(sys.argv[1])
 _BASE = sys.argv[0]
 _IMG = "https://image.tmdb.org/t/p/w500"
+
+
+def _icon(name: str) -> str:
+    return os.path.join(xbmcaddon.Addon().getAddonInfo("path"), "resources", "media", "icons", name + ".png")
+
+
+def _next_page_item(label: str) -> xbmcgui.ListItem:
+    li = xbmcgui.ListItem(label=label)
+    li.setProperty("SpecialSort", "bottom")
+    p = _icon("nextpage")
+    li.setArt({"icon": p, "thumb": p, "poster": p})
+    return li
 
 
 # ── Context menu helpers ──────────────────────────────────────────────────────
@@ -166,9 +180,9 @@ def show_trakt_watchlist_movies(page: int = 1):
         _add_watchlist_movie(item)
 
     if len(items) >= PAGE_SIZE:
-        li = xbmcgui.ListItem(label=f"Next Page → ({page + 1})")
         _ = xbmcplugin.addDirectoryItem(
-            HANDLE, f"{_BASE}?category=trakt&subcategory=watchlist_movies&page={page + 1}", li, isFolder=True
+            HANDLE, f"{_BASE}?category=trakt&subcategory=watchlist_movies&page={page + 1}",
+            _next_page_item(f"Next Page → ({page + 1})"), isFolder=True
         )
     xbmcplugin.endOfDirectory(HANDLE)
 
@@ -187,9 +201,9 @@ def show_trakt_watchlist_shows(page: int = 1):
         _add_watchlist_show(item)
 
     if len(items) >= PAGE_SIZE:
-        li = xbmcgui.ListItem(label=f"Next Page → ({page + 1})")
         _ = xbmcplugin.addDirectoryItem(
-            HANDLE, f"{_BASE}?category=trakt&subcategory=watchlist_shows&page={page + 1}", li, isFolder=True
+            HANDLE, f"{_BASE}?category=trakt&subcategory=watchlist_shows&page={page + 1}",
+            _next_page_item(f"Next Page → ({page + 1})"), isFolder=True
         )
     xbmcplugin.endOfDirectory(HANDLE)
 
@@ -210,9 +224,9 @@ def show_trakt_recommendations_movies(page: int = 1):
         _add_recommendation_movie(item)
 
     if len(items) >= PAGE_SIZE:
-        li = xbmcgui.ListItem(label=f"Next Page → ({page + 1})")
         _ = xbmcplugin.addDirectoryItem(
-            HANDLE, f"{_BASE}?category=trakt&subcategory=recommendations_movies&page={page + 1}", li, isFolder=True
+            HANDLE, f"{_BASE}?category=trakt&subcategory=recommendations_movies&page={page + 1}",
+            _next_page_item(f"Next Page → ({page + 1})"), isFolder=True
         )
     xbmcplugin.endOfDirectory(HANDLE)
 
@@ -231,9 +245,9 @@ def show_trakt_recommendations_shows(page: int = 1):
         _add_recommendation_show(item)
 
     if len(items) >= PAGE_SIZE:
-        li = xbmcgui.ListItem(label=f"Next Page → ({page + 1})")
         _ = xbmcplugin.addDirectoryItem(
-            HANDLE, f"{_BASE}?category=trakt&subcategory=recommendations_shows&page={page + 1}", li, isFolder=True
+            HANDLE, f"{_BASE}?category=trakt&subcategory=recommendations_shows&page={page + 1}",
+            _next_page_item(f"Next Page → ({page + 1})"), isFolder=True
         )
     xbmcplugin.endOfDirectory(HANDLE)
 

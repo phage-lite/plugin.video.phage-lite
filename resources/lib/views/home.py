@@ -1,3 +1,4 @@
+import os
 import sys
 import xbmcaddon
 import xbmcgui
@@ -7,13 +8,17 @@ HANDLE = int(sys.argv[1])
 _BASE = sys.argv[0]
 
 
+def _icon(name: str) -> str:
+    return os.path.join(xbmcaddon.Addon().getAddonInfo("path"), "resources", "media", "icons", name + ".png")
+
+
 def show_home():
     _first_run_check()
 
-    _item("Search", f"{_BASE}?action=search")
-    _item("Movies", f"{_BASE}?category=movies")
-    _item("TV Shows", f"{_BASE}?category=shows")
-    _item("Settings", f"{_BASE}?category=settings")
+    _item("Search", f"{_BASE}?action=search", icon="search")
+    _item("Movies", f"{_BASE}?category=movies", icon="movies")
+    _item("TV Shows", f"{_BASE}?category=shows", icon="tv")
+    _item("Settings", f"{_BASE}?category=settings", icon="settings")
     xbmcplugin.endOfDirectory(HANDLE)
 
 
@@ -43,6 +48,8 @@ def _first_run_check():
         pass
 
 
-def _item(label: str, url: str, is_folder: bool = True):
+def _item(label: str, url: str, is_folder: bool = True, icon: str = "folder"):
     li = xbmcgui.ListItem(label=label)
+    icon_path = _icon(icon)
+    li.setArt({"icon": icon_path, "thumb": icon_path, "poster": icon_path})
     _ = xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=is_folder)
