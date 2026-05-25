@@ -1,6 +1,5 @@
 import threading
 from typing import Any, final
-from typing_extensions import override
 import xbmc
 import xbmcgui
 
@@ -92,7 +91,6 @@ class _NextUpWidget(xbmcgui.WindowDialog):
     def set_pct(self, pct: float) -> None:
         self._bar.setPercent(pct)
 
-    @override
     def onAction(self, action: xbmcgui.Action) -> None:
         if action.getId() in (9, 10, 92):  # Back / PreviousMenu / NavBack
             self.cancelled = True
@@ -185,34 +183,28 @@ class _Player(xbmc.Player):
                 threading.Thread(target=_run_widget, args=(meta,), daemon=True).start()
             xbmc.sleep(1000)
 
-    @override
     def onPlayBackStarted(self):
         self._meta = self._read_meta()
         self._next_shown = False
         self._scrobble("start", 0.0)
         threading.Thread(target=self._monitor, daemon=True).start()
 
-    @override
     def onPlayBackPaused(self):
         self._scrobble("pause", self._progress())
 
-    @override
     def onPlayBackResumed(self):
         self._scrobble("start", self._progress())
 
-    @override
     def onPlayBackEnded(self):
         self._scrobble("stop", 100.0)
         self._meta = None
         self._next_shown = False
 
-    @override
     def onPlayBackStopped(self):
         self._scrobble("stop", self._progress())
         self._meta = None
         self._next_shown = False
 
-    @override
     def onPlayBackError(self):
         self._meta = None
         self._next_shown = False

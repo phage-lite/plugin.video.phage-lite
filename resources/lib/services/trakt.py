@@ -1,8 +1,6 @@
 import requests
 from typing import Any
 
-from typing_extensions import override
-
 from utils.logger import log
 from settings.settings import get_setting, set_setting
 from services.types import AuthData, PollStatus, Service
@@ -27,7 +25,6 @@ class TraktAPI(Service):
 
     # ── OAuth device flow ─────────────────────────────────────────────────────
 
-    @override
     def start_auth(self) -> AuthData:
         response = requests.post(
             f"{self.auth_url}/device/code",
@@ -49,7 +46,6 @@ class TraktAPI(Service):
             "interval": int(data["interval"]),
         }
 
-    @override
     def poll(self) -> PollStatus:
         response = requests.post(
             f"{self.auth_url}/device/token",
@@ -74,7 +70,6 @@ class TraktAPI(Service):
             case _:
                 return PollStatus.PENDING
 
-    @override
     def auth_complete(self) -> None:
         if self.access_token:
             set_setting(SID.ACCESS_TOKEN, self.access_token, prefix=PREFIX)

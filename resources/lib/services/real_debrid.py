@@ -1,5 +1,4 @@
 from typing import Any
-from typing_extensions import override
 import requests
 from services.types import Service, AuthData, PollStatus
 from utils.logger import log
@@ -42,7 +41,6 @@ class RealDebridAPI(Service):
         self.refresh_retries: int = 0
         self.break_auth_loop: bool = False
 
-    @override
     def start_auth(self) -> AuthData:
         device_code_url: str = (
             f"{self.auth_url}/device/code?client_id={self.app_id}&new_credentials=yes"
@@ -65,7 +63,6 @@ class RealDebridAPI(Service):
             "interval": int(response["interval"]),
         }
 
-    @override
     def poll(self) -> PollStatus:
         poll_status = PollStatus.PENDING
         poll_url: str = f"{self.auth_url}/device/credentials?client_id={self.app_id}&code={self.device_code}"
@@ -82,7 +79,6 @@ class RealDebridAPI(Service):
             poll_status = PollStatus.SUCCESS
         return poll_status
 
-    @override
     def auth_complete(self) -> None:
         if self.client_secret:
             data = {

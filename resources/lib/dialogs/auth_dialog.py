@@ -1,5 +1,4 @@
 from typing import Any, cast
-from typing_extensions import override
 import xbmcgui
 import xbmcaddon
 
@@ -16,13 +15,11 @@ class AuthDialog(xbmcgui.WindowXMLDialog):
         self.message: str = ""
         self.cancelled: bool = False
 
-    @override
     def onInit(self):
         cast(xbmcgui.ControlLabel, self.getControl(CONTROL_TITLE)).setLabel(self.title)
         cast(xbmcgui.ControlImage, self.getControl(CONTROL_QR)).setImage(self.qr_path)
         cast(xbmcgui.ControlLabel, self.getControl(CONTROL_LABEL)).setLabel(self.message)
 
-    @override
     def onClick(self, controlId: int):
         if controlId == CONTROL_CANCEL:
             self.cancelled = True
