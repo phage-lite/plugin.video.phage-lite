@@ -71,7 +71,8 @@ def _add_to_rd(magnet: str, title: str) -> str:
         while time.monotonic() < deadline:
             xbmc.sleep(_POLL_INTERVAL)
             if progress.iscanceled():
-                return ""
+                progress.close()
+                return "Cancel"
             info_data = RealDebrid.get_torrent_info(torrent_id)
             status = info_data.get("status", "")
             if status in _RD_ERROR_STATUSES:
@@ -90,7 +91,8 @@ def _add_to_rd(magnet: str, title: str) -> str:
         while time.monotonic() < deadline:
             xbmc.sleep(_POLL_INTERVAL)
             if progress.iscanceled():
-                return ""
+                progress.close()
+                return "Cancel"
             info_data = RealDebrid.get_torrent_info(torrent_id)
             status = info_data.get("status", "")
             pct = int(info_data.get("progress") or 0)
@@ -138,7 +140,8 @@ def _add_to_torbox(magnet: str, title: str) -> str:
         while time.monotonic() < deadline:
             xbmc.sleep(_POLL_INTERVAL)
             if progress.iscanceled():
-                return ""
+                progress.close()
+                return "Cancel"
             info_result = TorBox.get_torrent_info(torrent_id)
             raw_data = info_result.get("data") or {}
             info_data = raw_data[0] if isinstance(raw_data, list) and raw_data else raw_data if isinstance(raw_data, dict) else {}
@@ -360,8 +363,6 @@ def resolve_and_play(
     for i, src in enumerate(ordered):
         h = src.get("hash", "").lower()
         magnet = src.get("url") or f"magnet:?xt=urn:btih:{src['hash']}&dn={src.get('name', '')}"
-        if i > 0:
-            info(f"Source {i} failed — trying next ({i + 1}/{len(ordered)})…")
 
         # Prefer whichever provider has this hash cached; fall back to the other
         providers: list[str] = []
@@ -377,10 +378,15 @@ def resolve_and_play(
 
         for provider in providers:
             direct_url = _add_to_rd(magnet, title) if provider == "rd" else _add_to_torbox(magnet, title)
-            if direct_url:
+            if direct_url and direct_url != "Cancel":
                 _tag_playing(item_type, tmdb_id, season, episode)
                 _play_url(direct_url, handle)
                 return
+            elif direct_url == "Cancel":
+                _fail("Cancelled")
+                return
+            elif i < len(ordered):
+                info(f"Source {i+1} failed — trying next ({i + 2}/{len(ordered)})…")
 
     _fail(f"All {len(ordered)} sources failed for {title}.")
 
