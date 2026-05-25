@@ -2059,3 +2059,38 @@ msgstr ""
 msgctxt "#30405"
 msgid "TMDb"
 msgstr ""
+
+#: /resources/settings.xml
+msgctxt "#30406"
+msgid "Your TorBox API key. Find it at torbox.app in your account settings."
+msgstr ""
+
+#: /resources/settings.xml
+msgctxt "#30407"
+msgid "Quality preference"
+msgstr ""
+
+#: /resources/settings.xml
+msgctxt "#30408"
+msgid "When auto-playing, prefer cached (fastest) or highest quality."
+msgstr ""
+
+#: /resources/settings.xml
+msgctxt "#30409"
+msgid "Cached first (fastest)"
+msgstr ""
+
+#: /resources/settings.xml
+msgctxt "#30410"
+msgid "Best quality (4K → SD)"
+msgstr ""
+
+#: /resources/settings.xml
+msgctxt "#30411"
+msgid "Content language"
+msgstr ""
+
+#: /resources/settings.xml
+msgctxt "#30412"
+msgid "BCP 47 language code for titles and descriptions (e.g. en-US, fr-FR, de-DE, es-ES, ja-JP). TMDB returns your language when available, falling back to English."
+msgstr ""
