@@ -122,7 +122,7 @@ class TorBoxAPI(Service):
         result = self._post("torrents/createtorrent", {"magnet": magnet, "seed": "3"})
         if result.get("success"):
             return result
-        # Torrent already in user's list — look it up by hash so the caller can proceed
+        # Torrent already in user's list - look it up by hash so the caller can proceed
         hash_val = _extract_hash(magnet)
         if hash_val:
             existing = self.find_torrent_by_hash(hash_val)

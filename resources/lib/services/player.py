@@ -75,7 +75,7 @@ def _add_to_rd(magnet: str, title: str) -> str:
     timeout, cancellation). Never calls setResolvedUrl itself.
     """
     progress = xbmcgui.DialogProgress()
-    progress.create("Bacterio", f"Opening — {title}…" if title else "Opening…")
+    progress.create("Bacterio", f"Opening - {title}…" if title else "Opening…")
 
     try:
         torrent = RealDebrid.add_magnet(magnet)
@@ -139,7 +139,7 @@ def _add_to_rd(magnet: str, title: str) -> str:
 
 def _add_to_torbox(magnet: str, title: str) -> str:
     progress = xbmcgui.DialogProgress()
-    progress.create("Bacterio", f"Opening — {title}…" if title else "Opening…")
+    progress.create("Bacterio", f"Opening - {title}…" if title else "Opening…")
 
     try:
         result = TorBox.add_magnet(magnet)
@@ -271,7 +271,7 @@ def resolve_and_play(
     if item_type == "episode":
         scrape_data: dict[str, Any] = {
             "tvshowtitle": title,
-            "title": title,  # show title — scrapers use this as the primary search key
+            "title": title,  # show title - scrapers use this as the primary search key
             "year": year,
             "imdb": imdb_id,
             "season": int(season),
@@ -312,7 +312,7 @@ def resolve_and_play(
         scrape_thread = None
 
     progress = xbmcgui.DialogProgress()
-    progress.create("Bacterio", f"Searching — {title}…")
+    progress.create("Bacterio", f"Searching - {title}…")
     start = time.monotonic()
 
     active = scrape_thread
@@ -420,7 +420,7 @@ def resolve_and_play(
                 _fail("Cancelled")
                 return
             elif i < len(ordered):
-                info(f"Source {i + 1} failed — trying next ({i + 1}/{len(ordered)})…")
+                info(f"Source {i + 1} failed - trying next ({i + 1}/{len(ordered)})…")
 
     _fail(f"All {len(ordered)} sources failed for {title}.")
 
@@ -434,7 +434,7 @@ def resolve_magnet_and_play(
     season: str = "",
     episode: str = "",
 ) -> None:
-    """Resolve a single magnet directly — used when the caller already has a magnet URI."""
+    """Resolve a single magnet directly - used when the caller already has a magnet URI."""
     use_rd = _rd_ok()
     use_tb = _tb_ok()
     if not use_rd and not use_tb:
@@ -478,7 +478,7 @@ def _select_source(
         name = (s.get("name") or "")[:55]
         labels.append(f"{tag}{quality}{size_str}{seed_str}  {name}")
 
-    idx = xbmcgui.Dialog().select(f"Sources — {title}", list(labels))
+    idx = xbmcgui.Dialog().select(f"Sources - {title}", list(labels))
     if idx < 0:
         return None
     return sources[idx]

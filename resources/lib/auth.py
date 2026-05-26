@@ -13,7 +13,7 @@ from utils.utils import make_qrcode, make_tinyurl
 
 def _test_torbox() -> None:
     from services.torbox import TorBox
-    if not TorBox.api_key:
+    if not TorBox.access_token:
         _ = xbmcgui.Dialog().ok("TorBox", "No API key set.\n\nGo to Settings → TorBox and enter your API key.")
         return
     if TorBox.test_connection():

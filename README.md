@@ -7,13 +7,13 @@ A Kodi video plugin for browsing and streaming movies and TV shows.
 - **Browse** movies and TV shows by popularity, trending, genre, top rated, and more
 - **Search** with persistent history
 - **Stream** via [TorBox](https://torbox.app) (recommended) or [Real Debrid](https://real-debrid.com)
-- **Trakt integration** — watchlist, recommendations, calendar, scrobbling, mark as watched
-- **Up Next** — picks up your next unwatched episode from your watch history
-- **My Calendar** — upcoming episodes for the next 7 days
-- **Favourites** — local favourites list, separate movie and TV views
-- **Next-episode overlay** — appears near the end of each episode (before credits), auto-plays the next one
-- **Multi-language metadata** — set your preferred language for TMDB titles and descriptions
-- **Auto-play** — skip the source picker and stream the best available result instantly
+- **Trakt integration** - watchlist, recommendations, calendar, scrobbling, mark as watched
+- **Up Next** - picks up your next unwatched episode from your watch history
+- **My Calendar** - upcoming episodes for the next 7 days
+- **Favourites** - local favourites list, separate movie and TV views
+- **Next-episode overlay** - appears near the end of each episode (before credits), auto-plays the next one
+- **Multi-language metadata** - set your preferred language for TMDB titles and descriptions
+- **Auto-play** - skip the source picker and stream the best available result instantly
 
 ## Requirements
 
@@ -30,4 +30,4 @@ A Kodi video plugin for browsing and streaming movies and TV shows.
 
 ## License
 
-All Rights Reserved. Personal use only — not for redistribution.
+All Rights Reserved. Personal use only - not for redistribution.

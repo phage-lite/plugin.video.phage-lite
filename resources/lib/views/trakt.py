@@ -31,7 +31,7 @@ def _next_page_item(label: str) -> xbmcgui.ListItem:
 # ── Context menu helpers ──────────────────────────────────────────────────────
 
 def _menus_browse(media_type: str, tmdb_id: int, title: str, year: str, poster: str) -> list[tuple[str, str]]:
-    """Menus for items NOT in the watchlist — offer to add."""
+    """Menus for items NOT in the watchlist - offer to add."""
     fav = (
         f"{_BASE}?action=favourite_add&type={media_type}&id={tmdb_id}"
         f"&title={quote_plus(title)}&year={year}&poster={quote_plus(poster)}"
@@ -48,7 +48,7 @@ def _menus_browse(media_type: str, tmdb_id: int, title: str, year: str, poster: 
 
 
 def _menus_watchlist(media_type: str, tmdb_id: int, title: str, year: str, poster: str) -> list[tuple[str, str]]:
-    """Menus for items already in the Trakt watchlist — offer to remove."""
+    """Menus for items already in the Trakt watchlist - offer to remove."""
     fav = (
         f"{_BASE}?action=favourite_add&type={media_type}&id={tmdb_id}"
         f"&title={quote_plus(title)}&year={year}&poster={quote_plus(poster)}"

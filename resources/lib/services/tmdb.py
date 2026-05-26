@@ -90,7 +90,7 @@ class TmdbAPI:
         )
 
     def trending_movies(self, window: str = "week", page: int = 1) -> dict[str, Any]:
-        # /trending has no discover equivalent — inherently global
+        # /trending has no discover equivalent - inherently global
         return self._get(f"trending/movie/{window}", {"page": page}, ttl=1800)
 
     def now_playing_movies(self, page: int = 1) -> dict[str, Any]:
@@ -166,7 +166,7 @@ class TmdbAPI:
         )
 
     def trending_tv(self, window: str = "week", page: int = 1) -> dict[str, Any]:
-        # /trending has no discover equivalent — inherently global
+        # /trending has no discover equivalent - inherently global
         return self._get(f"trending/tv/{window}", {"page": page}, ttl=1800)
 
     def airing_today_tv(self, page: int = 1) -> dict[str, Any]:

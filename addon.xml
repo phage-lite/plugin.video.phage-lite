@@ -16,7 +16,7 @@
         <description lang="en">Bacterio lets you discover and watch movies and TV shows using TMDB for metadata and TorBox or Real Debrid for streaming. Browse by popularity, genre, and ratings; track what you watch with Trakt; manage favourites, watchlists, recommendations, and a personalised Up Next queue. Supports auto-play, next-episode overlay, scrobbling, and multi-language metadata.</description>
         <platform>all</platform>
         <disclaimer lang="en">Bacterio does not host or distribute any content. You are responsible for ensuring you have the right to access any media you stream through this addon.</disclaimer>
-        <license>All Rights Reserved. Personal use only — not for redistribution.</license>
+        <license>All Rights Reserved. Personal use only - not for redistribution.</license>
         <assets>
             <icon>resources/media/addon_icons/bacterio_icon.png</icon>
             <fanart>resources/media/bacterio_fanart_01.png</fanart>

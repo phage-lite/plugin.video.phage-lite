@@ -107,7 +107,7 @@ def _run_widget(meta: dict[str, str]) -> None:
     log(f"_run_widget show={show_id} s={season} e={episode}", "service")
     result = _find_next(show_id, season, episode)
     if not result:
-        log("_find_next returned None — no widget", "service")
+        log("_find_next returned None - no widget", "service")
         return
     next_season, next_ep, ep_title, show_title = result
 
