@@ -25,7 +25,7 @@ class TmdbAPI:
             "accept": "application/json",
             "Authorization": f"Bearer {self.api_key}",
         }
-        lang_code, region = self._lang_parts()
+        _, region = self._lang_parts()
         lang = get_setting("language", PREFIX) or "en-US"
         merged: dict[str, Any] = {"language": lang, "include_adult": "false"}
         if region:
@@ -39,11 +39,6 @@ class TmdbAPI:
                 return hit
 
         response = self.session.get(url, params=merged, headers=headers, timeout=20)
-        log(f"{response}", "response")
-        log(f"{response.json()}", "json")
-        log(f"{url}", "url")
-        log(f"{merged}", "params")
-        log(f"{headers}", "headers")
         response.raise_for_status()
         result: dict[str, Any] = response.json()
 

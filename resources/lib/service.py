@@ -3,6 +3,8 @@ from typing import Any, final
 import xbmc
 import xbmcgui
 
+from utils.logger import log
+
 _WIN_ID = 10000
 _PROP_TYPE    = "bacterio.type"
 _PROP_TMDB    = "bacterio.tmdb_id"
@@ -20,11 +22,9 @@ def _near_end(player: xbmc.Player) -> bool:
         total = player.getTotalTime()
         if total <= 0:
             return False
-        chapters = player.getChapters()
-        if chapters >= 2:
-            return player.getCurrentChapter() >= chapters
         return (total - player.getTime()) <= _THRESHOLD_SECS
-    except Exception:
+    except Exception as e:
+        log(f"near_end_error {e}")
         return False
 
 
@@ -53,7 +53,8 @@ def _find_next(show_id: int, season: int, episode: int) -> tuple[int, int, str, 
         ep_title = ep_info.get("name") or f"Episode {next_ep}"
         show_title = Tmdb.tv_details(show_id).get("name", "")
         return next_season, next_ep, ep_title, show_title
-    except Exception:
+    except Exception as e:
+        log(f"find_next_error {e}")
         return None
 
 
@@ -74,12 +75,12 @@ class _NextUpWidget(xbmcgui.WindowDialog):
         self._lbl_header = xbmcgui.ControlLabel(
             x + self._PAD, y + self._PAD, self._W - self._PAD, 30,
             header, font="font13",
-            textColor="0xFFFFFFFF", shadowColor="0xDD000000",
+            textColor="0xFFFFFFFF",
         )
         self._lbl_show = xbmcgui.ControlLabel(
             x + self._PAD, y + self._PAD + 30, self._W - self._PAD, 24,
             f"[I]{show_title}[/I]", font="font12",
-            textColor="0xFFBBBBBB", shadowColor="0xDD000000",
+            textColor="0xFFBBBBBB",
         )
         self._bar = xbmcgui.ControlProgress(
             x + self._PAD, y + self._H - 14, self._W - self._PAD * 2, 6,
@@ -188,21 +189,19 @@ class _Player(xbmc.Player):
         from utils.logger import log
         log("monitor started", "service")
         try:
-            while self.isPlaying() or self.isPaused():
+            while self.isPlayingVideo():
                 if self._meta is None:
                     self._meta = self._read_meta()
                     if self._meta:
                         log(f"meta acquired: {self._meta}", "service")
-                if self.isPlaying():
-                    p = self._progress()
-                    if p > 0:
-                        self._last_progress = p
+                p = self._progress()
+                if p > 0:
+                    self._last_progress = p
                 if (not self._next_shown
-                        and self.isPlaying()
                         and self._meta
                         and self._meta.get("type") == "episode"
                         and _near_end(self)):
-                    log("near end — launching widget", "service")
+                    log("near end - launching widget", "service")
                     self._next_shown = True
                     meta = self._meta
                     threading.Thread(target=_run_widget, args=(meta,), daemon=True).start()
@@ -258,8 +257,9 @@ class _Monitor(xbmc.Monitor):
         self._player = _Player()
 
     def run(self) -> None:
-        while not self.waitForAbort(60):
-            pass
+        while not self.abortRequested():
+            if self.waitForAbort(10):
+                break
 
 
 if __name__ == "__main__":

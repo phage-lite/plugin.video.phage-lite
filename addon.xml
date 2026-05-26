@@ -10,9 +10,7 @@
     </extension>
     <extension point="xbmc.python.module" library="resources/lib/"/>
     <extension point="xbmc.python.script" library="resources/lib/auth.py"/>
-    <extension point="xbmc.python.script" library="resources/lib/service.py">
-        <provides>service</provides>
-    </extension>
+    <extension point="xbmc.service" library="resources/lib/service.py"/>
     <extension point="xbmc.addon.metadata">
         <summary lang="en">Browse and stream movies and TV shows via TorBox or Real Debrid.</summary>
         <description lang="en">Bacterio lets you discover and watch movies and TV shows using TMDB for metadata and TorBox or Real Debrid for streaming. Browse by popularity, genre, and ratings; track what you watch with Trakt; manage favourites, watchlists, recommendations, and a personalised Up Next queue. Supports auto-play, next-episode overlay, scrobbling, and multi-language metadata.</description>
