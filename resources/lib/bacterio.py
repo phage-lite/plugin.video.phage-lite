@@ -58,7 +58,7 @@ def _route():
         tmdb_id_str = params.get("id", "")
         item_type = params.get("type", "movie")
         if tmdb_id_str:
-            if Trakt.is_authenticated():
+            if Trakt.is_authenticated:
                 Trakt.add_to_watchlist(item_type, int(tmdb_id_str))
                 info("Added to Trakt Watchlist")
             else:
@@ -70,7 +70,7 @@ def _route():
         from utils.notifications import info
         tmdb_id_str = params.get("id", "")
         item_type = params.get("type", "movie")
-        if tmdb_id_str and Trakt.is_authenticated():
+        if tmdb_id_str and Trakt.is_authenticated:
             Trakt.remove_from_watchlist(item_type, int(tmdb_id_str))
             info("Removed from Trakt Watchlist")
         return
@@ -84,7 +84,7 @@ def _route():
         episode_str = params.get("episode", "")
         if not tmdb_id_str:
             return
-        if not Trakt.is_authenticated():
+        if not Trakt.is_authenticated:
             error("Connect Trakt in Settings to mark as watched")
             return
         if item_type == "movie":

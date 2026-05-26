@@ -47,10 +47,6 @@ def _test_tmdb() -> None:
 def main():
     service_arg = sys.argv[1]
 
-    if service_arg == "tor_box":
-        _test_torbox()
-        return
-
     if service_arg == "clear_cache":
         from utils import cache
         from utils.notifications import info
@@ -69,8 +65,6 @@ def main():
     direct_verification_url = auth_data.get("direct_verification_url")
     user_code = auth_data.get("user_code")
     interval = auth_data.get("interval") or 5
-    log(user_code)
-    log(str(interval))
 
     result: list[PollStatus] = [PollStatus.PENDING]
     event = threading.Event()
@@ -87,8 +81,6 @@ def main():
 
     qr_code = make_qrcode(direct_verification_url) or ""
     tiny_url = make_tinyurl(direct_verification_url) or ""
-    log(direct_verification_url)
-    log(verification_url)
     dialog = create_auth_dialog(
         qr_code,
         f"Visit: [B]{verification_url}[/B] and enter: [B]{user_code}[/B] or go directly to: [B]{tiny_url}[/B]"

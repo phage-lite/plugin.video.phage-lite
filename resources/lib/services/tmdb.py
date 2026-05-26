@@ -1,7 +1,4 @@
-import gzip
-import io
 import json
-from concurrent.futures import ThreadPoolExecutor
 from datetime import date, timedelta
 from typing import Any
 from requests import Session
@@ -42,6 +39,11 @@ class TmdbAPI:
                 return hit
 
         response = self.session.get(url, params=merged, headers=headers, timeout=20)
+        log(f"{response}", "response")
+        log(f"{response.json()}", "json")
+        log(f"{url}", "url")
+        log(f"{merged}", "params")
+        log(f"{headers}", "headers")
         response.raise_for_status()
         result: dict[str, Any] = response.json()
 
@@ -275,59 +277,6 @@ class TmdbAPI:
 
     def tv_rich_details(self, tmdb_id: int) -> dict[str, Any]:
         return self._get(f"tv/{tmdb_id}", {"append_to_response": "credits"}, ttl=7200)
-
-    # ── Adult (daily export) ──────────────────────────────────────────────────
-
-    def _adult_movie_ids(self) -> list[int]:
-        for offset in (0, -1):
-            day = date.today() + timedelta(days=offset)
-            date_str = day.strftime("%m_%d_%Y")
-            cache_key = f"adult_movie_ids_{date_str}"
-
-            cached: list[int] | None = _cache.get(cache_key, 86400)
-            if cached is not None:
-                return cached
-
-            url = f"http://files.tmdb.org/p/exports/adult_movie_ids_{date_str}.json.gz"
-            try:
-                resp = self.session.get(url, timeout=30)
-                resp.raise_for_status()
-                with gzip.open(io.BytesIO(resp.content)) as f:
-                    lines = f.read().decode().strip().splitlines()
-                items = [json.loads(ln) for ln in lines if ln]
-                items.sort(key=lambda x: float(x.get("popularity") or 0), reverse=True)
-                ids = [int(item["id"]) for item in items]
-                _cache.set(cache_key, ids)
-                return ids
-            except Exception:
-                continue
-
-        return []
-
-    def adult_movies(self, page: int = 1, page_size: int = 20) -> dict[str, Any]:
-        ids = self._adult_movie_ids()
-        if not ids:
-            return {"results": [], "total_pages": 1, "page": page}
-        start = (page - 1) * page_size
-        page_ids = ids[start : start + page_size]
-        total_pages = max(1, (len(ids) + page_size - 1) // page_size)
-
-        def _fetch(mid: int) -> dict[str, Any] | None:
-            try:
-                d = self.movie_details(mid)
-                d["genre_ids"] = [g["id"] for g in d.get("genres", [])]
-                return d
-            except Exception:
-                return None
-
-        with ThreadPoolExecutor(max_workers=8) as ex:
-            details = list(ex.map(_fetch, page_ids))
-
-        return {
-            "results": [d for d in details if d],
-            "total_pages": total_pages,
-            "page": page,
-        }
 
 
 Tmdb = TmdbAPI()

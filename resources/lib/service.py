@@ -168,7 +168,7 @@ class _Player(xbmc.Player):
         try:
             from services.trakt import Trakt
             from utils.logger import log
-            if not Trakt.is_authenticated():
+            if not Trakt.is_authenticated:
                 return
             m = self._meta
             log(f"scrobble {action} {m['type']} id={m['tmdb_id']} s={m['season']} e={m['episode']} p={progress:.1f}", "service")

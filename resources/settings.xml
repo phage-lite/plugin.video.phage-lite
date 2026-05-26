@@ -84,11 +84,6 @@
         </category>
         <category id="tmdb" label="30405">
             <group id="1" label="30184">
-                <setting id="tmdb.include_adult" type="boolean" label="30414" help="30413">
-                    <level>0</level>
-                    <default>false</default>
-                    <control type="toggle" />
-                </setting>
                 <setting id="tmdb.language" type="string" label="30411" help="30412">
                     <default>en-US</default>
                     <control type="edit" format="string" />
@@ -127,26 +122,26 @@
             </group>
         </category>
 
-        <category id="torbox" label="30237">
+        <category id="tb" label="30237">
             <group id="1" label="30237">
-                <setting id="torbox.enabled" type="boolean" label="30238" help="30239">
+                <setting id="tb.enabled" type="boolean" label="30210" help="30211">
                     <level>0</level>
                     <default>true</default>
                     <control type="toggle" />
                 </setting>
-                <setting id="torbox.authenticate" label="30403" type="action" help="30404">
+                <setting id="tb.authenticate" label="30403" type="action" help="30404">
                     <level>0</level>
                     <control type="button" format="action">
                         <data>
-                            RunScript(plugin.video.bacterio, tor_box)</data>
+                            RunScript(plugin.video.bacterio, torbox)</data>
                     </control>
                     <dependencies>
-                        <dependency type="enable" setting="torbox.enabled">true</dependency>
+                        <dependency type="enable" setting="tb.enabled">true</dependency>
                     </dependencies>
                 </setting>
-                <setting id="torbox.api_key" type="string" label="30185" help="30406">
+                <setting id="tb.access_token" type="string" label="30185" help="30406">
                     <level>4</level>
-                    <default>e61e1aee-25a0-40cb-9e6a-7eea3689598b</default>
+                    <default></default>
                     <control type="edit" format="string" />
                     <constraints>
                         <allowempty>true</allowempty>

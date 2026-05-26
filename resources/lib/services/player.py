@@ -14,41 +14,58 @@ from utils.logger import log
 from settings.settings import get_setting
 
 _SCRAPE_TIMEOUT = 20
-_POLL_INTERVAL = 2000       # ms
-_RD_INITIAL_WAIT = 30       # seconds to wait for waiting_files_selection
-_RD_DOWNLOAD_WAIT = 120     # seconds to wait for downloaded
-_TB_DOWNLOAD_WAIT = 120     # seconds to wait for TorBox download
+_POLL_INTERVAL = 2000  # ms
+_RD_INITIAL_WAIT = 30  # seconds to wait for waiting_files_selection
+_RD_DOWNLOAD_WAIT = 120  # seconds to wait for downloaded
+_TB_DOWNLOAD_WAIT = 120  # seconds to wait for TorBox download
 _TB_ERROR_STATES = {"error", "failed", "dead"}
 
-_QUALITY_RANK = {"4K": 0, "1080p": 1, "720p": 2, "SD": 3, "CAM": 4, "TELE": 5, "SYNC": 5}
+_QUALITY_RANK = {
+    "4K": 0,
+    "1080p": 1,
+    "720p": 2,
+    "SD": 3,
+    "CAM": 4,
+    "TELE": 5,
+    "SYNC": 5,
+}
 _RD_ERROR_STATUSES = {"magnet_error", "error", "dead", "virus"}
 
 
 # ── Internal helpers ──────────────────────────────────────────────────────────
 
+
 def _rd_ok() -> bool:
-    return get_setting("rd.enabled") == "true" and RealDebrid.is_authenticated()
+    return RealDebrid.is_enabled and RealDebrid.is_authenticated
 
 
 def _tb_ok() -> bool:
-    return TorBox.is_authenticated()
+    return TorBox.is_authenticated
 
 
-def _sort_sources(sources: list[dict[str, Any]], cached: set[str]) -> list[dict[str, Any]]:
+def _sort_sources(
+    sources: list[dict[str, Any]], cached: set[str]
+) -> list[dict[str, Any]]:
     quality_pref = get_setting("playback.quality_pref")
     if quality_pref == "1":
         # best quality, ignore cache order
-        return sorted(sources, key=lambda s: (
-            _QUALITY_RANK.get(s.get("quality", "SD"), 9),
-            0 if s.get("hash", "").lower() in cached else 1,
-            -int(s.get("seeders") or 0),
-        ))
+        return sorted(
+            sources,
+            key=lambda s: (
+                _QUALITY_RANK.get(s.get("quality", "SD"), 9),
+                0 if s.get("hash", "").lower() in cached else 1,
+                -int(s.get("seeders") or 0),
+            ),
+        )
     # default: cached first, then quality
-    return sorted(sources, key=lambda s: (
-        0 if s.get("hash", "").lower() in cached else 1,
-        _QUALITY_RANK.get(s.get("quality", "SD"), 9),
-        -int(s.get("seeders") or 0),
-    ))
+    return sorted(
+        sources,
+        key=lambda s: (
+            0 if s.get("hash", "").lower() in cached else 1,
+            _QUALITY_RANK.get(s.get("quality", "SD"), 9),
+            -int(s.get("seeders") or 0),
+        ),
+    )
 
 
 def _add_to_rd(magnet: str, title: str) -> str:
@@ -130,8 +147,11 @@ def _add_to_torbox(magnet: str, title: str) -> str:
             log(f"TorBox add_magnet failed: {result}", "_add_to_torbox")
             return ""
 
-        data = result.get("data") or {}
-        torrent_id: int | None = data.get("torrent_id")
+        data = result.get("data")
+        if data is None:
+            return ""
+
+        torrent_id: int = data.get("torrent_id")
         if not torrent_id:
             return ""
 
@@ -143,8 +163,14 @@ def _add_to_torbox(magnet: str, title: str) -> str:
                 progress.close()
                 return "Cancel"
             info_result = TorBox.get_torrent_info(torrent_id)
-            raw_data = info_result.get("data") or {}
-            info_data = raw_data[0] if isinstance(raw_data, list) and raw_data else raw_data if isinstance(raw_data, dict) else {}
+            raw_data = info_result.get("data")
+            info_data = (
+                raw_data[0]
+                if isinstance(raw_data, list) and raw_data
+                else raw_data
+                if isinstance(raw_data, dict)
+                else {}
+            )
             state: str = info_data.get("download_state", "")
             pct = int(float(info_data.get("progress", 0)) * 100)
             progress.update(pct, f"TorBox: {state}")
@@ -195,6 +221,7 @@ def _play_url(direct_url: str, handle: int):
 
 # ── Public API ────────────────────────────────────────────────────────────────
 
+
 def resolve_and_play(
     item_type: str,
     tmdb_id: str,
@@ -209,7 +236,10 @@ def resolve_and_play(
 
     use_rd = _rd_ok()
     use_tb = _tb_ok()
-    log(f"use_tb={use_tb} use_rd={use_rd} type={item_type} id={tmdb_id} s={season} e={episode}", "resolve_and_play")
+    log(
+        f"use_tb={use_tb} use_rd={use_rd} type={item_type} id={tmdb_id} s={season} e={episode}",
+        "resolve_and_play",
+    )
     if not use_rd and not use_tb:
         _fail("No debrid service configured. Add Real Debrid or TorBox in Settings.")
         return
@@ -241,7 +271,7 @@ def resolve_and_play(
     if item_type == "episode":
         scrape_data: dict[str, Any] = {
             "tvshowtitle": title,
-            "title": title,   # show title — scrapers use this as the primary search key
+            "title": title,  # show title — scrapers use this as the primary search key
             "year": year,
             "imdb": imdb_id,
             "season": int(season),
@@ -264,7 +294,9 @@ def resolve_and_play(
 
     def _run_torrentio() -> None:
         if item_type == "episode":
-            torrentio_sources.extend(torrentio_scraper.scrape(imdb_id, int(season), int(episode)))
+            torrentio_sources.extend(
+                torrentio_scraper.scrape(imdb_id, int(season), int(episode))
+            )
         else:
             torrentio_sources.extend(torrentio_scraper.scrape(imdb_id))
 
@@ -294,7 +326,9 @@ def resolve_and_play(
             return
         xbmc.sleep(300)
 
-    torrentio_thread.join(timeout=max(0.0, _SCRAPE_TIMEOUT - (time.monotonic() - start)))
+    torrentio_thread.join(
+        timeout=max(0.0, _SCRAPE_TIMEOUT - (time.monotonic() - start))
+    )
 
     progress.update(100)
     progress.close()
@@ -312,14 +346,16 @@ def resolve_and_play(
     sources = [s for s in sources if len(s.get("hash", "")) == 40]
     # Also accept sources whose hash is embedded in the magnet URL
     if not sources:
+
         def _with_hash(s: dict[str, Any]) -> dict[str, Any] | None:
             url = s.get("url", "")
             lower = url.lower()
             if "btih:" in lower:
-                h = url[lower.index("btih:") + 5:].split("&")[0]
+                h = url[lower.index("btih:") + 5 :].split("&")[0]
                 if len(h) == 40:
                     return {**s, "hash": h}
             return None
+
         sources = [h for s in raw_sources if (h := _with_hash(s)) is not None]
 
     log(f"filtered sources={len(sources)}", "resolve_and_play")
@@ -329,14 +365,7 @@ def resolve_and_play(
 
     # 4. Check instant availability across enabled providers ─────────────────
     hashes = list({s["hash"].lower() for s in sources})
-    rd_cached: set[str] = set()
     tb_cached: set[str] = set()
-
-    if use_rd:
-        try:
-            rd_cached = RealDebrid.check_instant_availability(hashes)
-        except Exception as e:
-            log(str(e), "resolve_and_play/rd_cache")
 
     if use_tb:
         try:
@@ -344,7 +373,7 @@ def resolve_and_play(
         except Exception as e:
             log(str(e), "resolve_and_play/tb_cache")
 
-    all_cached = rd_cached | tb_cached
+    all_cached = tb_cached
     sorted_src = _sort_sources(sources, all_cached)
     auto_play = get_setting("playback.auto_play") == "true"
 
@@ -352,7 +381,7 @@ def resolve_and_play(
     if auto_play:
         ordered = sorted_src
     else:
-        source = _select_source(sorted_src, rd_cached, tb_cached, title)
+        source = _select_source(sorted_src, tb_cached, title)
         if source is None:
             xbmcplugin.setResolvedUrl(handle, False, xbmcgui.ListItem())
             return
@@ -362,14 +391,15 @@ def resolve_and_play(
     # 6. Try sources with automatic fallback ─────────────────────────────────
     for i, src in enumerate(ordered):
         h = src.get("hash", "").lower()
-        magnet = src.get("url") or f"magnet:?xt=urn:btih:{src['hash']}&dn={src.get('name', '')}"
+        magnet = (
+            src.get("url")
+            or f"magnet:?xt=urn:btih:{src['hash']}&dn={src.get('name', '')}"
+        )
 
         # Prefer whichever provider has this hash cached; fall back to the other
         providers: list[str] = []
         if use_tb and h in tb_cached:
             providers.append("torbox")
-        if use_rd and h in rd_cached:
-            providers.append("rd")
         if not providers:
             if use_tb:
                 providers.append("torbox")
@@ -377,7 +407,11 @@ def resolve_and_play(
                 providers.append("rd")
 
         for provider in providers:
-            direct_url = _add_to_rd(magnet, title) if provider == "rd" else _add_to_torbox(magnet, title)
+            direct_url = (
+                _add_to_rd(magnet, title)
+                if provider == "rd"
+                else _add_to_torbox(magnet, title)
+            )
             if direct_url and direct_url != "Cancel":
                 _tag_playing(item_type, tmdb_id, season, episode)
                 _play_url(direct_url, handle)
@@ -386,14 +420,20 @@ def resolve_and_play(
                 _fail("Cancelled")
                 return
             elif i < len(ordered):
-                info(f"Source {i+1} failed — trying next ({i + 2}/{len(ordered)})…")
+                info(f"Source {i + 1} failed — trying next ({i + 1}/{len(ordered)})…")
 
     _fail(f"All {len(ordered)} sources failed for {title}.")
 
 
-def resolve_magnet_and_play(magnet: str, handle: int, title: str = "",
-                            item_type: str = "movie", tmdb_id: str = "",
-                            season: str = "", episode: str = "") -> None:
+def resolve_magnet_and_play(
+    magnet: str,
+    handle: int,
+    title: str = "",
+    item_type: str = "movie",
+    tmdb_id: str = "",
+    season: str = "",
+    episode: str = "",
+) -> None:
     """Resolve a single magnet directly — used when the caller already has a magnet URI."""
     use_rd = _rd_ok()
     use_tb = _tb_ok()
@@ -417,20 +457,18 @@ def resolve_magnet_and_play(magnet: str, handle: int, title: str = "",
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
+
 def _select_source(
     sources: list[dict[str, Any]],
-    rd_cached: set[str],
-    tb_cached: set[str],
+    cached: set[str],
     title: str = "",
 ) -> dict[str, Any] | None:
     labels: list[str] = []
     for s in sources:
         h = s.get("hash", "").lower()
         tag = ""
-        if h in rd_cached:
-            tag += "[RD✓] "
-        if h in tb_cached:
-            tag += "[TB✓] "
+        if h in cached:
+            tag += "[Cached✓] "
         quality = s.get("quality", "?")
         size = s.get("size")
         size_str = f"  {size:.1f} GB" if isinstance(size, (int, float)) else ""
@@ -444,5 +482,3 @@ def _select_source(
     if idx < 0:
         return None
     return sources[idx]
-
-

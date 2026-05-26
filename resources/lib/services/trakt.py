@@ -4,20 +4,22 @@ from typing import Any
 
 from utils.logger import log
 from utils import cache as _cache
-from settings.settings import get_setting, set_setting
 from services.types import AuthData, PollStatus, Service
 from settings.ids import SettingID as SID
 
-PREFIX = "trakt"
 PAGE_SIZE = 20
 
 
 class TraktAPI(Service):
+    @property
+    def setting_prefix(self) -> str:
+        return "trakt"
+
     def __init__(self):
-        self.client_id: str = get_setting(SID.CLIENT_ID, PREFIX)
-        self.client_secret: str = get_setting(SID.CLIENT_SECRET, PREFIX)
-        self.access_token: str = get_setting(SID.ACCESS_TOKEN, PREFIX)
-        self.refresh_token: str = get_setting(SID.REFRESH_TOKEN, PREFIX)
+        self.client_id: str = self._get_setting(SID.CLIENT_ID)
+        self.client_secret: str = self._get_setting(SID.CLIENT_SECRET)
+        self.access_token: str = self._get_setting(SID.ACCESS_TOKEN)
+        self.refresh_token: str = self._get_setting(SID.REFRESH_TOKEN)
 
         self.device_code: str = ""
         self.user_code: str = ""
@@ -74,19 +76,20 @@ class TraktAPI(Service):
 
     def auth_complete(self) -> None:
         if self.access_token:
-            set_setting(SID.ACCESS_TOKEN, self.access_token, prefix=PREFIX)
-            set_setting(SID.REFRESH_TOKEN, self.refresh_token, prefix=PREFIX)
+            self._set_setting(SID.ACCESS_TOKEN, self.access_token)
+            self._set_setting(SID.REFRESH_TOKEN, self.refresh_token)
 
     # ── Token management ──────────────────────────────────────────────────────
 
+    @property
     def is_authenticated(self) -> bool:
         if not self.access_token:
-            self.access_token = get_setting(SID.ACCESS_TOKEN, PREFIX)
+            self.access_token = self._get_setting(SID.ACCESS_TOKEN)
         return bool(self.access_token)
 
     def _refresh_access_token(self) -> bool:
         if not self.refresh_token:
-            self.refresh_token = get_setting(SID.REFRESH_TOKEN, PREFIX)
+            self.refresh_token = self._get_setting(SID.REFRESH_TOKEN)
         if not self.refresh_token or not self.client_id or not self.client_secret:
             return False
         try:
@@ -105,13 +108,14 @@ class TraktAPI(Service):
             data = response.json()
             self.access_token = data["access_token"]
             self.refresh_token = data.get("refresh_token", self.refresh_token)
-            set_setting(SID.ACCESS_TOKEN, self.access_token, prefix=PREFIX)
-            set_setting(SID.REFRESH_TOKEN, self.refresh_token, prefix=PREFIX)
+            self._set_setting(SID.ACCESS_TOKEN, self.access_token)
+            self._set_setting(SID.REFRESH_TOKEN, self.refresh_token)
             return True
         except Exception as e:
             log(str(e), "_refresh_access_token")
             return False
 
+    @property
     def _headers(self) -> dict[str, str]:
         return {
             "Authorization": f"Bearer {self.access_token}",
@@ -120,17 +124,27 @@ class TraktAPI(Service):
             "trakt-api-key": self.client_id,
         }
 
-    def _api_get(self, endpoint: str, params: dict[str, Any] | None = None, ttl: int = 0) -> list[Any] | dict[str, Any]:
-        key = "trakt:" + endpoint + json.dumps(sorted((params or {}).items())) if ttl > 0 else ""
+    def _api_get(
+        self, endpoint: str, params: dict[str, Any] | None = None, ttl: int = 0
+    ) -> list[Any] | dict[str, Any]:
+        key = (
+            "trakt:" + endpoint + json.dumps(sorted((params or {}).items()))
+            if ttl > 0
+            else ""
+        )
         if ttl > 0:
             hit: list[Any] | dict[str, Any] | None = _cache.get(key, ttl)
             if hit is not None:
                 return hit
 
         url = f"{self.base_url}/{endpoint}"
-        response = requests.get(url, headers=self._headers(), params=params or {}, timeout=20)
+        response = requests.get(
+            url, headers=self._headers, params=params or {}, timeout=20
+        )
         if response.status_code == 401 and self._refresh_access_token():
-            response = requests.get(url, headers=self._headers(), params=params or {}, timeout=20)
+            response = requests.get(
+                url, headers=self._headers, params=params or {}, timeout=20
+            )
         response.raise_for_status()
         result: list[Any] | dict[str, Any] = response.json()
 
@@ -141,18 +155,25 @@ class TraktAPI(Service):
 
     def _api_post(self, endpoint: str, body: dict[str, Any]) -> dict[str, Any]:
         url = f"{self.base_url}/{endpoint}"
-        response = requests.post(url, headers=self._headers(), json=body, timeout=20)
+        response = requests.post(url, headers=self._headers, json=body, timeout=20)
         if response.status_code == 401 and self._refresh_access_token():
-            response = requests.post(url, headers=self._headers(), json=body, timeout=20)
+            response = requests.post(url, headers=self._headers, json=body, timeout=20)
         if response.ok and response.content:
             return response.json()
         return {}
 
     # ── Scrobble ──────────────────────────────────────────────────────────────
 
-    def scrobble(self, action: str, media_type: str, tmdb_id: int, progress: float,
-                 season: int = 0, episode: int = 0) -> None:
-        if not self.is_authenticated():
+    def scrobble(
+        self,
+        action: str,
+        media_type: str,
+        tmdb_id: int,
+        progress: float,
+        season: int = 0,
+        episode: int = 0,
+    ) -> None:
+        if not self.is_authenticated:
             return
         if media_type in ("episode", "tv", "show"):
             body: dict[str, Any] = {
@@ -188,6 +209,7 @@ class TraktAPI(Service):
 
     def my_calendar(self, days: int = 7) -> dict[str, list[dict[str, Any]]]:
         from datetime import date
+
         start = date.today().isoformat()
         result = self._api_get(
             f"calendars/my/shows/{start}/{days}",
@@ -199,12 +221,19 @@ class TraktAPI(Service):
         _ = self._api_post("sync/history", {"movies": [{"ids": {"tmdb": tmdb_id}}]})
 
     def mark_watched_episode(self, tmdb_id: int, season: int, episode: int) -> None:
-        _ = self._api_post("sync/history", {
-            "shows": [{
-                "ids": {"tmdb": tmdb_id},
-                "seasons": [{"number": season, "episodes": [{"number": episode}]}],
-            }]
-        })
+        _ = self._api_post(
+            "sync/history",
+            {
+                "shows": [
+                    {
+                        "ids": {"tmdb": tmdb_id},
+                        "seasons": [
+                            {"number": season, "episodes": [{"number": episode}]}
+                        ],
+                    }
+                ]
+            },
+        )
 
     # ── Watchlist ─────────────────────────────────────────────────────────────
 
@@ -224,7 +253,9 @@ class TraktAPI(Service):
         items = result if isinstance(result, list) else []
         return items[:limit]
 
-    def watchlist_movies(self, page: int = 1, limit: int = PAGE_SIZE) -> list[dict[str, Any]]:
+    def watchlist_movies(
+        self, page: int = 1, limit: int = PAGE_SIZE
+    ) -> list[dict[str, Any]]:
         result = self._api_get(
             "users/me/watchlist/movies",
             {"extended": "full", "limit": limit, "page": page},
@@ -232,7 +263,9 @@ class TraktAPI(Service):
         )
         return result if isinstance(result, list) else []
 
-    def watchlist_shows(self, page: int = 1, limit: int = PAGE_SIZE) -> list[dict[str, Any]]:
+    def watchlist_shows(
+        self, page: int = 1, limit: int = PAGE_SIZE
+    ) -> list[dict[str, Any]]:
         result = self._api_get(
             "users/me/watchlist/shows",
             {"extended": "full", "limit": limit, "page": page},
@@ -242,7 +275,9 @@ class TraktAPI(Service):
 
     # ── Recommendations ───────────────────────────────────────────────────────
 
-    def recommendations_movies(self, page: int = 1, limit: int = PAGE_SIZE) -> list[dict[str, Any]]:
+    def recommendations_movies(
+        self, page: int = 1, limit: int = PAGE_SIZE
+    ) -> list[dict[str, Any]]:
         result = self._api_get(
             "recommendations/movies",
             {"extended": "full", "limit": limit, "page": page},
@@ -250,7 +285,9 @@ class TraktAPI(Service):
         )
         return result if isinstance(result, list) else []
 
-    def recommendations_shows(self, page: int = 1, limit: int = PAGE_SIZE) -> list[dict[str, Any]]:
+    def recommendations_shows(
+        self, page: int = 1, limit: int = PAGE_SIZE
+    ) -> list[dict[str, Any]]:
         result = self._api_get(
             "recommendations/shows",
             {"extended": "full", "limit": limit, "page": page},

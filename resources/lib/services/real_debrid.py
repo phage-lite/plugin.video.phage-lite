@@ -3,36 +3,23 @@ import requests
 from services.types import Service, AuthData, PollStatus
 from utils.logger import log
 from settings.ids import SettingID as SID
-from settings.settings import get_setting, set_setting
-
-
-# "real_debrid": {
-#     "base_url": "https://api.real-debrid.com",
-#     "auth_endpoint": "/oauth/v2/auth/device/code?client_id=%s&new_credentials=yes",
-#     # ?client_id=ABCDEFGHIJKLM&redirect_uri=https%3A%2F%2Fexample.com&response_type=code&state=iloverd
-#     "auth_style": "bearer",
-#     "token_key": "rd.token",
-# },
-# {
-#         "base_url": "https://api.trakt.tv",
-#         "auth_style": "bearer",
-#         "token_key": "trakt.token",
-#         "headers": lambda: {
-#             "Content-Type": "application/json",
-#             "trakt-api-version": "2",
-#             "trakt-api-key": get_setting("trakt.client"),
-#         },
-#     }
-RD_PREFIX = "rd"
 
 
 class RealDebridAPI(Service):
+    @property
+    def setting_prefix(self) -> str:
+        return "rd"
+
+    @property
+    def _headers(self) -> dict[str, str]:
+        return {"Authorization": f"Bearer {self.access_token}"}
+
     def __init__(self):
-        self.app_id: str = get_setting(SID.APP_ID, RD_PREFIX)
-        self.client_id: str = get_setting(SID.CLIENT_ID, RD_PREFIX)
-        self.client_secret: str = get_setting(SID.CLIENT_SECRET, RD_PREFIX)
-        self.access_token: str = get_setting(SID.ACCESS_TOKEN, RD_PREFIX)
-        self.refresh_token: str = get_setting(SID.REFRESH_TOKEN, RD_PREFIX)
+        self.app_id: str = self._get_setting(SID.APP_ID)
+        self.client_id: str = self._get_setting(SID.CLIENT_ID)
+        self.client_secret: str = self._get_setting(SID.CLIENT_SECRET)
+        self.access_token: str = self._get_setting(SID.ACCESS_TOKEN)
+        self.refresh_token: str = self._get_setting(SID.REFRESH_TOKEN)
 
         self.device_code: str = ""
         self.user_code: str = ""
@@ -92,10 +79,10 @@ class RealDebridAPI(Service):
                 log(response)
                 self.access_token = response["access_token"]
                 self.refresh_token = response["refresh_token"]
-                set_setting(SID.ACCESS_TOKEN, self.access_token, RD_PREFIX)
-                set_setting(SID.REFRESH_TOKEN, self.refresh_token, RD_PREFIX)
-                set_setting(SID.CLIENT_SECRET, self.client_secret, RD_PREFIX)
-                set_setting(SID.CLIENT_ID, self.client_id, RD_PREFIX)
+                self._set_setting(SID.ACCESS_TOKEN, self.access_token)
+                self._set_setting(SID.REFRESH_TOKEN, self.refresh_token)
+                self._set_setting(SID.CLIENT_SECRET, self.client_secret)
+                self._set_setting(SID.CLIENT_ID, self.client_id)
             except Exception as e:
                 log(str(e))
 
@@ -114,24 +101,30 @@ class RealDebridAPI(Service):
             result: dict[str, Any] = response.json()
             self.access_token = result["access_token"]
             self.refresh_token = result.get("refresh_token", self.refresh_token)
-            set_setting(SID.ACCESS_TOKEN, self.access_token, RD_PREFIX)
-            set_setting(SID.REFRESH_TOKEN, self.refresh_token, RD_PREFIX)
+            self._set_setting(SID.ACCESS_TOKEN, self.access_token)
+            self._set_setting(SID.REFRESH_TOKEN, self.refresh_token)
             return True
         except Exception as e:
             log(str(e), "_refresh_token")
             return False
 
-    def _api_get(self, endpoint: str, params: dict[str, str] | None = None) -> dict[str, Any]:
+    def _api_get(
+        self, endpoint: str, params: dict[str, str] | None = None
+    ) -> dict[str, Any]:
         url = f"https://api.real-debrid.com/rest/1.0/{endpoint}"
         headers = {"Authorization": f"Bearer {self.access_token}"}
         response = requests.get(url, headers=headers, params=params or {}, timeout=20)
         if response.status_code in (401, 403) and self._refresh_token():
             headers["Authorization"] = f"Bearer {self.access_token}"
-            response = requests.get(url, headers=headers, params=params or {}, timeout=20)
+            response = requests.get(
+                url, headers=headers, params=params or {}, timeout=20
+            )
         response.raise_for_status()
         return response.json()
 
-    def _api_post(self, endpoint: str, data: dict[str, str] | None = None) -> dict[str, Any]:
+    def _api_post(
+        self, endpoint: str, data: dict[str, str] | None = None
+    ) -> dict[str, Any]:
         url = f"https://api.real-debrid.com/rest/1.0/{endpoint}"
         headers = {"Authorization": f"Bearer {self.access_token}"}
         response = requests.post(url, headers=headers, data=data or {}, timeout=20)
@@ -159,12 +152,11 @@ class RealDebridAPI(Service):
         result = self._api_get("downloads")
         return result if isinstance(result, list) else []
 
+    @property
     def is_authenticated(self) -> bool:
+        if not self.access_token:
+            self.access_token = self._get_setting(SID.ACCESS_TOKEN)
         return bool(self.access_token)
-
-    def check_instant_availability(self, hashes: list[str]) -> set[str]:
-        # RealDebrid deprecated the instantAvailability endpoint in 2024.
-        return set()
 
 
 RealDebrid = RealDebridAPI()

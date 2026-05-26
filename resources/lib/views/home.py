@@ -26,7 +26,7 @@ def _first_run_check():
     try:
         from services.real_debrid import RealDebrid
         from services.torbox import TorBox
-        if RealDebrid.is_authenticated() or TorBox.is_authenticated():
+        if RealDebrid.is_authenticated or TorBox.is_authenticated:
             return
         win = xbmcgui.Window(10000)
         if win.getProperty("bacterio.welcome_shown"):
