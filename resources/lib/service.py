@@ -3,6 +3,7 @@ from typing import Any, final
 import xbmc
 import xbmcgui
 
+from dialogs.next_ep import create_next_ep_widget
 from utils.logger import log
 
 _WIN_ID = 10000
@@ -60,44 +61,6 @@ def _find_next(show_id: int, season: int, episode: int) -> tuple[int, int, str, 
 
 # ── Small overlay widget ──────────────────────────────────────────────────────
 
-@final
-class _NextUpWidget(xbmcgui.WindowDialog):
-    _W, _H, _PAD, _MARGIN = 600, 88, 14, 48
-
-    def __init__(self, show_title: str, season: int, episode: int, ep_title: str):
-        super().__init__()
-        self.cancelled = False
-        sw, sh = xbmcgui.getScreenWidth(), xbmcgui.getScreenHeight()
-        x = sw - self._W - self._MARGIN
-        y = sh - self._H - self._MARGIN
-
-        header = f"[B]Up Next  ·  S{season:02d}E{episode:02d}[/B]  {ep_title}"
-        self._lbl_header = xbmcgui.ControlLabel(
-            x + self._PAD, y + self._PAD, self._W - self._PAD, 30,
-            header, font="font13",
-            textColor="0xFFFFFFFF",
-        )
-        self._lbl_show = xbmcgui.ControlLabel(
-            x + self._PAD, y + self._PAD + 30, self._W - self._PAD, 24,
-            f"[I]{show_title}[/I]", font="font12",
-            textColor="0xFFBBBBBB",
-        )
-        self._bar = xbmcgui.ControlProgress(
-            x + self._PAD, y + self._H - 14, self._W - self._PAD * 2, 6,
-        )
-        for ctrl in (self._lbl_header, self._lbl_show, self._bar):
-            self.addControl(ctrl)
-        self._bar.setPercent(100)
-
-    def set_pct(self, pct: float) -> None:
-        self._bar.setPercent(pct)
-
-    def onAction(self, action: xbmcgui.Action) -> None:
-        if action.getId() in (9, 10, 92):  # Back / PreviousMenu / NavBack
-            self.cancelled = True
-            self.close()
-
-
 def _run_widget(meta: dict[str, str]) -> None:
     from utils.logger import log
     show_id = int(meta["tmdb_id"])
@@ -111,14 +74,23 @@ def _run_widget(meta: dict[str, str]) -> None:
         return
     next_season, next_ep, ep_title, show_title = result
 
-    widget = _NextUpWidget(show_title, next_season, next_ep, ep_title)
-    widget.show()
+    widget = create_next_ep_widget(show_title, next_season, next_ep, ep_title)
+    widget.doModal()
 
     steps = _COUNTDOWN_SECS * 5  # update every 200 ms
     for i in range(steps, -1, -1):
         if widget.cancelled:
             return
-        widget.set_pct(i / steps * 100)
+        if widget.skip:
+            widget.close()
+
+            url = (
+                "plugin://plugin.video.bacterio"
+                f"?action=play&type=episode&id={show_id}"
+                f"&season={next_season}&episode={next_ep}"
+            )
+            xbmc.executebuiltin(f"RunPlugin({url})")
+            return
         xbmc.sleep(200)
 
     widget.close()

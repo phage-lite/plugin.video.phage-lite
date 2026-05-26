@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<window>
+    <onload>Dialog.Close(fullscreeninfo,true)</onload>
+    <onload>Dialog.Close(videoosd,true)</onload>
+    <animation effect="fade" end="100" time="600">WindowOpen</animation>
+    <controls>
+        <control type="group">
+            <left>20</left>
+            <bottom>5</bottom>
+            <height>100</height>
+            <control type="group">
+                <left>190</left>
+                <!-- Main Heading & Timer -->
+                <control type="group">
+                    <!-- Autoplay -->
+                    <control type="group">
+                        <control type="label" id="1">
+                            <left>60</left>
+		            <bottom>0</bottom>^M <aligny>center</aligny>
+                            <height>40</height>
+                            <font>font14</font> <!--
+                            FENLIGHT_33 -->
+                            <textcolor>
+                            FFB7B4BB</textcolor>
+                        </control>
+                    </control>
+                    <!-- Waiting For Input -->
+                </control>
+                <!-- Text Body -->
+                <control type="label" id="2">
+                    <bottom>45</bottom>
+                    <left>0</left>
+                    <height>35</height>
+                    <width>auto</width>
+                    <align>center</align>
+                    <aligny>center</aligny>
+                    <font>font10</font> <!-- FENLIGHT_21 -->
+                    <textcolor>FFB7B4BB</textcolor>
+                </control>
+                <!-- Buttons -->
+                <control type="grouplist">
+                    <right>0</right>
+                    <bottom>0</bottom>
+                    <width>530</width>
+                    <height>60</height>
+                    <orientation>horizontal</orientation>
+                    <itemgap>10</itemgap>
+                    <control type="button" id="10">
+                        <description>Close</description>
+                        <width>123</width>
+                        <height>46</height>
+                        <onleft>12</onleft>
+                        <onright>11</onright>
+                        <label>Close</label>
+                        <font>font10</font> <!-- FENLIGHT_21 -->
+                        <textcolor>FFCCCCCC</textcolor>
+                        <focusedcolor>FF1F2020</focusedcolor>
+                        <align>center</align>
+                        <aligny>center</aligny>
+                    </control>
+                    <control type="button" id="11">
+                        <description>Play</description>
+                        <width>160</width>
+                        <height>60</height>
+                        <onleft>10</onleft>
+                        <onright>12</onright>
+                        <label>Play</label>
+                        <font>font10</font> <!-- FENLIGHT_21 -->
+                        <textcolor>FFCCCCCC</textcolor>
+                        <focusedcolor>FF1F2020</focusedcolor>
+                        <align>center</align>
+                        <aligny>center</aligny>
+                    </control>
+                    <control type="button" id="12">
+                        <description>Cancel</description>
+                        <width>160</width>
+                        <height>60</height>
+                        <onleft>11</onleft>
+                        <onright>10</onright>
+                        <label>Cancel</label>
+                        <font>font10</font> <!-- FENLIGHT_21 -->
+                        <textcolor>FFCCCCCC</textcolor>
+                        <focusedcolor>FF1F2020</focusedcolor>
+                        <align>center</align>
+                        <aligny>center</aligny>
+                    </control>
+                </control>
+            </control>
+        </control>
+    </controls>
+</window>
