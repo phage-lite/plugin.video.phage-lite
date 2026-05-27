@@ -246,7 +246,14 @@ def show_episodes(show_id: int, show_title: str, season_number: int):
             f"{_BASE}?action=trakt_mark_watched&type=episode"
             f"&id={show_id}&season={season_number}&episode={ep_num}"
         )
-        li.addContextMenuItems([("Mark as Watched", f"RunPlugin({mw})")])
+        ss = (
+            f"{_BASE}?action=select_source&type=episode"
+            f"&id={show_id}&season={season_number}&episode={ep_num}"
+        )
+        li.addContextMenuItems([
+            ("Mark as Watched", f"RunPlugin({mw})"),
+            ("Select Source", f"PlayMedia({ss})"),
+        ])
         url = (
             f"{_BASE}?action=play&type=episode"
             f"&id={show_id}"

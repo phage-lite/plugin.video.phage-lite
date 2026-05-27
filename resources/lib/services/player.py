@@ -228,6 +228,7 @@ def resolve_and_play(
     handle: int,
     season: str = "",
     episode: str = "",
+    force_select: bool = False,
 ):
     def _fail(msg: str):
         log(msg, "resolve_and_play")
@@ -375,7 +376,7 @@ def resolve_and_play(
 
     all_cached = tb_cached
     sorted_src = _sort_sources(sources, all_cached)
-    auto_play = get_setting("playback.auto_play") == "true"
+    auto_play = not force_select and get_setting("playback.auto_play") == "true"
 
     # 5. Source selection ─────────────────────────────────────────────────────
     if auto_play:

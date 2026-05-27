@@ -31,6 +31,18 @@ def _route():
         )
         return
 
+    if action == "select_source":
+        from services.player import resolve_and_play
+        resolve_and_play(
+            item_type=params.get("type", "movie"),
+            tmdb_id=params.get("id", ""),
+            handle=HANDLE,
+            season=params.get("season", ""),
+            episode=params.get("episode", ""),
+            force_select=True,
+        )
+        return
+
     if action == "search":
         from views.search import do_search
         do_search(query=unquote_plus(params.get("query", "")), page=page)
