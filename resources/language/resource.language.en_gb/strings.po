@@ -2104,3 +2104,28 @@ msgstr ""
 msgctxt "#30416"
 msgid "Delete all locally cached TMDB data. The next browse will re-fetch from the network."
 msgstr ""
+
+#: /resources/settings.xml
+msgctxt "#30417"
+msgid "Scrapers"
+msgstr ""
+
+#: /resources/settings.xml
+msgctxt "#30418"
+msgid "Torrentio"
+msgstr ""
+
+#: /resources/settings.xml
+msgctxt "#30419"
+msgid "Enable Torrentio as a scrape source"
+msgstr ""
+
+#: /resources/settings.xml
+msgctxt "#30420"
+msgid "CocoScrapers"
+msgstr ""
+
+#: /resources/settings.xml
+msgctxt "#30421"
+msgid "Enable CocoScrapers (requires script.module.cocoscrapers)"
+msgstr ""

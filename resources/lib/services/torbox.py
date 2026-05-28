@@ -6,6 +6,8 @@ from services.types import AuthData, PollStatus, Service
 from settings.ids import SettingID as SID
 from utils.logger import log
 
+import re
+
 _VIDEO_EXTS = {".mkv", ".mp4", ".avi", ".mov", ".m4v", ".ts", ".wmv"}
 
 
@@ -182,7 +184,12 @@ class TorBoxAPI(Service):
                 log(str(e), "torbox.check_instant_availability")
         return cached
 
-    def pick_video_file(self, files: list[dict[str, Any]]) -> dict[str, Any] | None:
+    def pick_video_file(
+        self,
+        files: list[dict[str, Any]],
+        season: int | None = None,
+        episode: int | None = None,
+    ) -> dict[str, Any] | None:
         if not files:
             return None
         video = [
@@ -190,7 +197,28 @@ class TorBoxAPI(Service):
             for f in files
             if any(f.get("name", "").lower().endswith(ext) for ext in _VIDEO_EXTS)
         ]
-        return max(video or files, key=lambda f: f.get("size", 0))
+        candidates = video or files
+        if season is not None and episode is not None:
+            match = _match_episode_file(candidates, season, episode)
+            if match:
+                return match
+        return max(candidates, key=lambda f: f.get("size", 0))
+
+
+def _match_episode_file(
+    files: list[dict[str, Any]], season: int, episode: int
+) -> dict[str, Any] | None:
+    patterns = [
+        rf"[Ss]{season:02d}[Ee]{episode:02d}",
+        rf"[Ss]{season}[Ee]{episode:02d}",
+        rf"\b{season}[xX]{episode:02d}\b",
+    ]
+    for f in files:
+        name = f.get("name", "")
+        for pattern in patterns:
+            if re.search(pattern, name):
+                return f
+    return None
 
 
 def _extract_hash(magnet: str) -> str:

@@ -1,5 +1,6 @@
 import os
 import sys
+import xbmc
 import xbmcaddon
 import xbmcgui
 import xbmcplugin
@@ -76,11 +77,15 @@ def _menus(
     wl = f"{_BASE}?action=trakt_watchlist_add&type={media_type}&id={tmdb_id}"
     mw = f"{_BASE}?action=trakt_mark_watched&type={media_type}&id={tmdb_id}"
     ss = f"{_BASE}?action=select_source&type={media_type}&id={tmdb_id}"
+    sw_torrentio = f"{_BASE}?action=select_source&type={media_type}&id={tmdb_id}&scraper=torrentio"
+    sw_cocos = f"{_BASE}?action=select_source&type={media_type}&id={tmdb_id}&scraper=cocoscrapers"
     return [
         ("Add to Favourites", f"RunPlugin({fav})"),
         ("Add to Trakt Watchlist", f"RunPlugin({wl})"),
         ("Mark as Watched", f"RunPlugin({mw})"),
         ("Select Source", f"PlayMedia({ss})"),
+        ("Scrape with Torrentio", f"PlayMedia({sw_torrentio})"),
+        ("Scrape with CocoScrapers", f"PlayMedia({sw_cocos})"),
     ]
 
 

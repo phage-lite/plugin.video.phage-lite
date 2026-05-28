@@ -1,3 +1,4 @@
+import re
 import time
 import xbmc
 import xbmcgui
@@ -31,6 +32,32 @@ _QUALITY_RANK = {
 }
 _RD_ERROR_STATUSES = {"magnet_error", "error", "dead", "virus"}
 
+_FOREIGN_LANG_TOKENS = {
+    "french", "vostfr", "vff", "vfq", "truefrench",
+    "german", "deutsch", "italian", "spanish", "portuguese",
+    "dutch", "russian", "arabic", "turkish", "hindi", "multi",
+}
+
+
+def _is_foreign(name: str) -> bool:
+    tokens = re.split(r"[\W_]+", name.lower())
+    return bool(_FOREIGN_LANG_TOKENS.intersection(tokens))
+
+
+def _match_episode_file(files: list[dict[str, Any]], season: int, episode: int) -> int | None:
+    """Return the index into *files* that matches the requested season/episode, or None."""
+    patterns = [
+        rf"[Ss]{season:02d}[Ee]{episode:02d}",
+        rf"[Ss]{season}[Ee]{episode:02d}",
+        rf"\b{season}[xX]{episode:02d}\b",
+    ]
+    for i, f in enumerate(files):
+        name = f.get("path") or f.get("name") or ""
+        for pattern in patterns:
+            if re.search(pattern, name):
+                return i
+    return None
+
 
 # ── Internal helpers ──────────────────────────────────────────────────────────
 
@@ -52,6 +79,7 @@ def _sort_sources(
         return sorted(
             sources,
             key=lambda s: (
+                1 if _is_foreign(s.get("name", "")) else 0,
                 _QUALITY_RANK.get(s.get("quality", "SD"), 9),
                 0 if s.get("hash", "").lower() in cached else 1,
                 -int(s.get("seeders") or 0),
@@ -61,6 +89,7 @@ def _sort_sources(
     return sorted(
         sources,
         key=lambda s: (
+            1 if _is_foreign(s.get("name", "")) else 0,
             0 if s.get("hash", "").lower() in cached else 1,
             _QUALITY_RANK.get(s.get("quality", "SD"), 9),
             -int(s.get("seeders") or 0),
@@ -68,7 +97,12 @@ def _sort_sources(
     )
 
 
-def _add_to_rd(magnet: str, title: str) -> str:
+def _add_to_rd(
+    magnet: str,
+    title: str,
+    season: int | None = None,
+    episode: int | None = None,
+) -> str:
     """
     Add a magnet to RealDebrid and wait for a streamable URL.
     Returns the direct URL on success, or '' on any failure (error status,
@@ -101,8 +135,18 @@ def _add_to_rd(magnet: str, title: str) -> str:
             log("RD timed out waiting for file selection", "_add_to_rd")
             return ""
 
-        if info_data.get("status") != "downloaded":
-            RealDebrid.select_files(torrent_id)
+        if info_data.get("status") == "downloaded":
+            # Already cached — pick the right file from the existing links
+            links: list[str] = info_data.get("links", [])
+            if not links:
+                return ""
+            link = _pick_rd_link(info_data, links, season, episode)
+            result = RealDebrid.unrestrict_link(link)
+            return result.get("download") or result.get("url") or ""
+
+        # waiting_files_selection — select the specific episode file if possible
+        file_ids = _find_rd_file_id(info_data, season, episode)
+        RealDebrid.select_files(torrent_id, file_ids)
 
         deadline = time.monotonic() + _RD_DOWNLOAD_WAIT
         while time.monotonic() < deadline:
@@ -123,7 +167,7 @@ def _add_to_rd(magnet: str, title: str) -> str:
             log("RD timed out waiting for download", "_add_to_rd")
             return ""
 
-        links: list[str] = info_data.get("links", [])
+        links = info_data.get("links", [])
         if not links:
             return ""
 
@@ -137,7 +181,42 @@ def _add_to_rd(magnet: str, title: str) -> str:
         progress.close()
 
 
-def _add_to_torbox(magnet: str, title: str) -> str:
+def _find_rd_file_id(info_data: dict[str, Any], season: int | None, episode: int | None) -> str:
+    """Return a comma-separated file ID string to pass to select_files, or 'all'."""
+    if season is None or episode is None:
+        return "all"
+    files: list[dict[str, Any]] = info_data.get("files", [])
+    idx = _match_episode_file(files, season, episode)
+    if idx is not None:
+        file_id = files[idx].get("id")
+        if file_id:
+            return str(file_id)
+    return "all"
+
+
+def _pick_rd_link(
+    info_data: dict[str, Any],
+    links: list[str],
+    season: int | None,
+    episode: int | None,
+) -> str:
+    """Pick the correct download link from an already-downloaded RD torrent."""
+    if season is None or episode is None or len(links) <= 1:
+        return links[0]
+    files: list[dict[str, Any]] = info_data.get("files", [])
+    selected = [f for f in files if f.get("selected")]
+    idx = _match_episode_file(selected, season, episode)
+    if idx is not None and idx < len(links):
+        return links[idx]
+    return links[0]
+
+
+def _add_to_torbox(
+    magnet: str,
+    title: str,
+    season: int | None = None,
+    episode: int | None = None,
+) -> str:
     progress = xbmcgui.DialogProgress()
     progress.create("Bacterio", f"Opening - {title}…" if title else "Opening…")
 
@@ -184,7 +263,7 @@ def _add_to_torbox(magnet: str, title: str) -> str:
             return ""
 
         files: list[dict[str, Any]] = info_data.get("files") or []
-        target = TorBox.pick_video_file(files)
+        target = TorBox.pick_video_file(files, season=season, episode=episode)
         if not target:
             return ""
 
@@ -229,6 +308,7 @@ def resolve_and_play(
     season: str = "",
     episode: str = "",
     force_select: bool = False,
+    scraper_filter: str = "",
 ):
     def _fail(msg: str):
         log(msg, "resolve_and_play")
@@ -290,6 +370,14 @@ def resolve_and_play(
     # 3. Scrape ──────────────────────────────────────────────────────────────
     from services import cocoscrapers as cocos
 
+    use_torrentio = scraper_filter == "torrentio" or (
+        not scraper_filter and get_setting("scrapers.torrentio") != "false"
+    )
+    use_cocos = (
+        scraper_filter == "cocoscrapers"
+        or (not scraper_filter and get_setting("scrapers.cocoscrapers") != "false")
+    ) and cocos.is_available()
+
     sources: list[dict[str, Any]] = []
     torrentio_sources: list[dict[str, Any]] = []
 
@@ -301,10 +389,12 @@ def resolve_and_play(
         else:
             torrentio_sources.extend(torrentio_scraper.scrape(imdb_id))
 
-    torrentio_thread = Thread(target=_run_torrentio, daemon=True)
-    torrentio_thread.start()
+    torrentio_thread: Thread | None = None
+    if use_torrentio:
+        torrentio_thread = Thread(target=_run_torrentio, daemon=True)
+        torrentio_thread.start()
 
-    if cocos.is_available():
+    if use_cocos:
         scrape_thread: Thread | None = Thread(
             target=lambda: sources.extend(cocos.scrape(scrape_data)), daemon=True
         )
@@ -327,9 +417,10 @@ def resolve_and_play(
             return
         xbmc.sleep(300)
 
-    torrentio_thread.join(
-        timeout=max(0.0, _SCRAPE_TIMEOUT - (time.monotonic() - start))
-    )
+    if torrentio_thread:
+        torrentio_thread.join(
+            timeout=max(0.0, _SCRAPE_TIMEOUT - (time.monotonic() - start))
+        )
 
     progress.update(100)
     progress.close()
@@ -407,11 +498,13 @@ def resolve_and_play(
             if use_rd:
                 providers.append("rd")
 
+        ep_season = int(season) if season else None
+        ep_episode = int(episode) if episode else None
         for provider in providers:
             direct_url = (
-                _add_to_rd(magnet, title)
+                _add_to_rd(magnet, title, season=ep_season, episode=ep_episode)
                 if provider == "rd"
-                else _add_to_torbox(magnet, title)
+                else _add_to_torbox(magnet, title, season=ep_season, episode=ep_episode)
             )
             if direct_url and direct_url != "Cancel":
                 _tag_playing(item_type, tmdb_id, season, episode)

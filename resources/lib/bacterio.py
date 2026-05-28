@@ -28,6 +28,7 @@ def _route():
             handle=HANDLE,
             season=params.get("season", ""),
             episode=params.get("episode", ""),
+            scraper_filter=params.get("scraper", ""),
         )
         return
 
@@ -40,6 +41,7 @@ def _route():
             season=params.get("season", ""),
             episode=params.get("episode", ""),
             force_select=True,
+            scraper_filter=params.get("scraper", ""),
         )
         return
 

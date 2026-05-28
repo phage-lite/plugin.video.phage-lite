@@ -1,5 +1,6 @@
 import os
 import sys
+import xbmc
 import xbmcaddon
 import xbmcgui
 import xbmcplugin
@@ -250,9 +251,19 @@ def show_episodes(show_id: int, show_title: str, season_number: int):
             f"{_BASE}?action=select_source&type=episode"
             f"&id={show_id}&season={season_number}&episode={ep_num}"
         )
+        sw_torrentio = (
+            f"{_BASE}?action=select_source&type=episode"
+            f"&id={show_id}&season={season_number}&episode={ep_num}&scraper=torrentio"
+        )
+        sw_cocos = (
+            f"{_BASE}?action=select_source&type=episode"
+            f"&id={show_id}&season={season_number}&episode={ep_num}&scraper=cocoscrapers"
+        )
         li.addContextMenuItems([
             ("Mark as Watched", f"RunPlugin({mw})"),
             ("Select Source", f"PlayMedia({ss})"),
+            ("Scrape with Torrentio", f"PlayMedia({sw_torrentio})"),
+            ("Scrape with CocoScrapers", f"PlayMedia({sw_cocos})"),
         ])
         url = (
             f"{_BASE}?action=play&type=episode"
