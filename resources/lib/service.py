@@ -5,90 +5,94 @@ from typing import Any, final
 import xbmc
 import xbmcgui
 
+from services.tmdb import Tmdb
 from utils.logger import log
 
 _WIN_ID = 10000
-_PROP_TYPE    = "bacterio.type"
-_PROP_TMDB    = "bacterio.tmdb_id"
-_PROP_SEASON  = "bacterio.season"
+_PROP_TYPE = "bacterio.type"
+_PROP_TMDB = "bacterio.tmdb_id"
+_PROP_SEASON = "bacterio.season"
 _PROP_EPISODE = "bacterio.episode"
 
-_IMG = "https://image.tmdb.org/t/p/"
-
-
-# ── Next-episode helpers ──────────────────────────────────────────────────────
 
 def _find_next(
     show_id: int, season: int, episode: int
-) -> tuple[int, int, str, str, str, dict[str, str], dict[str, str]] | None:
-    """Return (next_season, next_ep, next_title, curr_title, show_title, curr_art, next_art) or None."""
+) -> dict[str, dict[str, Any] | str] | None:
     from services.tmdb import Tmdb
+
     try:
+        show_details = Tmdb.tv_details(show_id)
+
         season_data = Tmdb.tv_season(show_id, season)
         episodes: list[dict[str, Any]] = season_data.get("episodes") or []
         ep_nums = {e["episode_number"] for e in episodes}
 
         curr_info = next((e for e in episodes if e["episode_number"] == episode), {})
-        curr_title = curr_info.get("name") or f"Episode {episode}"
+
+        current_episode = _build_episode(curr_info, show_details)
 
         next_ep, next_season = episode + 1, season
-        ep_info: dict[str, Any] = {}
+        next_ep_info: dict[str, Any] = {}
 
         if next_ep in ep_nums:
-            ep_info = next((e for e in episodes if e["episode_number"] == next_ep), {})
+            next_ep_info = next(
+                (e for e in episodes if e["episode_number"] == next_ep), {}
+            )
         else:
             next_season, next_ep = season + 1, 1
             next_data = Tmdb.tv_season(show_id, next_season)
             next_eps: list[dict[str, Any]] = next_data.get("episodes") or []
             if not next_eps:
                 return None
-            ep_info = next((e for e in next_eps if e["episode_number"] == 1), {})
+            next_ep_info = next((e for e in next_eps if e["episode_number"] == 1), {})
 
-        show_details = Tmdb.tv_details(show_id)
-        show_title = show_details.get("name", "")
+        next_episode = _build_episode(next_ep_info, show_details)
 
-        show_art: dict[str, str] = {}
-        if poster := show_details.get("poster_path"):
-            show_art["tvshow.poster"] = f"{_IMG}w500{poster}"
-        if backdrop := show_details.get("backdrop_path"):
-            show_art["tvshow.fanart"] = f"{_IMG}w780{backdrop}"
-
-        curr_art = dict(show_art)
-        if curr_still := curr_info.get("still_path"):
-            curr_art["thumb"] = f"{_IMG}w500{curr_still}"
-
-        next_art = dict(show_art)
-        if next_still := ep_info.get("still_path"):
-            next_art["thumb"] = f"{_IMG}w500{next_still}"
-
-        next_title = ep_info.get("name") or f"Episode {next_ep}"
-        return next_season, next_ep, next_title, curr_title, show_title, curr_art, next_art
+        return {
+            "current_episode": current_episode,
+            "next_episode": next_episode,
+            "play_url": (
+                "plugin://plugin.video.bacterio"
+                f"?action=play&type=episode&id={show_id}"
+                f"&season={next_season}&episode={next_ep}"
+            ),
+        }
     except Exception as e:
         log(f"find_next_error {e}")
         return None
 
 
 def _build_episode(
-    show_id: int, season: int, episode: int, title: str,
-    show_title: str, art: dict[str, str]
+    ep_info: dict[str, Any], show_details: dict[str, Any]
 ) -> dict[str, Any]:
+    images = show_details.get("images", {})
+    clearlogo = next((i for i in images["logos"]), "",)
+
     return {
-        "episodeid": -1,
-        "tvshowid": str(show_id),
-        "title": title,
-        "season": str(season),
-        "episode": str(episode),
-        "showtitle": show_title,
-        "plot": "",
-        "playcount": 0,
-        "rating": 0,
-        "firstaired": "",
-        "runtime": 0,
-        "art": art,
+        "episodeid": str(ep_info.get("id", -1)),
+        "tvshowid": str(show_details.get("show_id", -1)),
+        "title": str(ep_info.get("name", "Episode")),
+        "season": str(ep_info.get("season_number", -1)),
+        "episode": str(ep_info.get("episode_number", -1)),
+        "showtitle": str(show_details.get("title", "")),
+        "plot": str(ep_info.get("overview", "")),
+        "playcount": int(ep_info.get("vote_count", 0)),
+        "rating": int(ep_info.get("vote_average", 0)),
+        "firstaired": str(ep_info.get("air_date", "1999-12-31")),
+        "runtime": int(ep_info.get("runtime", 0)) * 3600,
+        "art": {
+            "thumb": Tmdb.get_image_url(str(ep_info.get("still_path")), "w500"),
+            "tvshow.clearart": Tmdb.get_image_url(str(show_details.get("backdrop_path")), "w500"),
+            "tvshow.clearlogo": Tmdb.get_image_url(str(clearlogo)),
+            "tvshow.fanart": Tmdb.get_image_url(str(show_details.get("backdrop_path")), "w780"),
+            "tvshow.landscape": Tmdb.get_image_url(str(show_details.get("landscape")), "w500"),
+            "tvshow.poster": Tmdb.get_image_url(str(show_details.get("poster_path")), "w500"),
+        },
     }
 
 
 # ── Player ────────────────────────────────────────────────────────────────────
+
 
 @final
 class _Player(xbmc.Player):
@@ -104,9 +108,9 @@ class _Player(xbmc.Player):
         if not tmdb_id:
             return None
         return {
-            "type":    win.getProperty(_PROP_TYPE) or "movie",
+            "type": win.getProperty(_PROP_TYPE) or "movie",
             "tmdb_id": tmdb_id,
-            "season":  win.getProperty(_PROP_SEASON) or "0",
+            "season": win.getProperty(_PROP_SEASON) or "0",
             "episode": win.getProperty(_PROP_EPISODE) or "0",
         }
 
@@ -124,12 +128,22 @@ class _Player(xbmc.Player):
             return
         try:
             from services.trakt import Trakt
+
             if not Trakt.is_authenticated:
                 return
             m = self._meta
-            log(f"scrobble {action} {m['type']} id={m['tmdb_id']} s={m['season']} e={m['episode']} p={progress:.1f}", "service")
-            Trakt.scrobble(action, m["type"], int(m["tmdb_id"]), progress,
-                           int(m["season"]), int(m["episode"]))
+            log(
+                f"scrobble {action} {m['type']} id={m['tmdb_id']} s={m['season']} e={m['episode']} p={progress:.1f}",
+                "service",
+            )
+            Trakt.scrobble(
+                action,
+                m["type"],
+                int(m["tmdb_id"]),
+                progress,
+                int(m["season"]),
+                int(m["episode"]),
+            )
         except Exception as e:
             log(str(e), "service._scrobble")
 
@@ -159,37 +173,30 @@ class _Player(xbmc.Player):
             return
 
         show_id = int(meta["tmdb_id"])
-        season  = int(meta["season"])
+        season = int(meta["season"])
         episode = int(meta["episode"])
 
         result = _find_next(show_id, season, episode)
         if not result:
             log("upnext: no next episode found", "service")
             return
-        next_season, next_ep, next_title, curr_title, show_title, curr_art, next_art = result
 
-        next_info = {
-            "current_episode": _build_episode(show_id, season, episode, curr_title, show_title, curr_art),
-            "next_episode":    _build_episode(show_id, next_season, next_ep, next_title, show_title, next_art),
-            "play_url": (
-                "plugin://plugin.video.bacterio"
-                f"?action=play&type=episode&id={show_id}"
-                f"&season={next_season}&episode={next_ep}"
-            ),
-        }
-
-        data = str(b64encode(dumps(next_info).encode()), "utf-8")
-        xbmc.executeJSONRPC(dumps({
-            "jsonrpc": "2.0",
-            "id": 0,
-            "method": "JSONRPC.NotifyAll",
-            "params": {
-                "sender": "plugin.video.bacterio.SIGNAL",
-                "message": "upnext_data",
-                "data": [data],
-            },
-        }))
-        log(f"upnext signal sent: s{next_season}e{next_ep} '{next_title}'", "service")
+        data = str(b64encode(dumps(result).encode()), "utf-8")
+        _ = xbmc.executeJSONRPC(
+            dumps(
+                {
+                    "jsonrpc": "2.0",
+                    "id": 0,
+                    "method": "JSONRPC.NotifyAll",
+                    "params": {
+                        "sender": "plugin.video.bacterio.SIGNAL",
+                        "message": "upnext_data",
+                        "data": [data],
+                    },
+                }
+            )
+        )
+        log(f"upnext signal sent: s{season}e{episode} '{show_id}'", "service")
 
     def onPlayBackStarted(self):
         log("onPlayBackStarted", "service")
@@ -203,7 +210,9 @@ class _Player(xbmc.Player):
             self._meta = self._read_meta()
         self._start_monitor()
         if self._meta and self._meta.get("type") == "episode":
-            threading.Thread(target=self._send_upnext_signal, args=(self._meta,), daemon=True).start()
+            threading.Thread(
+                target=self._send_upnext_signal, args=(self._meta,), daemon=True
+            ).start()
 
     def onPlayBackPaused(self):
         self._scrobble("pause", self._progress())
@@ -226,6 +235,7 @@ class _Player(xbmc.Player):
 
 
 # ── Monitor ───────────────────────────────────────────────────────────────────
+
 
 @final
 class _Monitor(xbmc.Monitor):

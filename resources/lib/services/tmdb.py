@@ -260,7 +260,13 @@ class TmdbAPI:
         return self._get(f"movie/{tmdb_id}", ttl=7200)
 
     def tv_details(self, tmdb_id: int) -> dict[str, Any]:
-        return self._get(f"tv/{tmdb_id}", ttl=7200)
+        return self._get(
+            f"tv/{tmdb_id}",
+            {
+                "append_to_response": "external_ids,videos,credits,content_ratings,alternative_titles,translations,images,keywords&include_image_language=en,null"
+            },
+            ttl=7200,
+        )
 
     def tv_season(self, show_id: int, season_number: int) -> dict[str, Any]:
         return self._get(f"tv/{show_id}/season/{season_number}", ttl=7200)
@@ -272,6 +278,9 @@ class TmdbAPI:
 
     def tv_rich_details(self, tmdb_id: int) -> dict[str, Any]:
         return self._get(f"tv/{tmdb_id}", {"append_to_response": "credits"}, ttl=7200)
+
+    def get_image_url(self, path: str, size: str = "original") -> str:
+        return f"https://image.tmdb.org/t/p/{size}/{path}"
 
 
 Tmdb = TmdbAPI()
