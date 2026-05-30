@@ -7,7 +7,6 @@ import xbmcgui
 from services.config import get_service
 from services.types import PollStatus
 from dialogs.auth_dialog import create_auth_dialog
-from utils.logger import log
 from utils.utils import make_qrcode, make_tinyurl
 
 

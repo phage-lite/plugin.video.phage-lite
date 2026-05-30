@@ -5,7 +5,6 @@ from requests import Session
 from settings.settings import get_setting
 from settings.ids import SettingID as SID
 from utils import cache as _cache
-from utils.logger import log
 
 BASE_URL = "https://api.themoviedb.org/3"
 PREFIX = "tmdb"
@@ -280,7 +279,7 @@ class TmdbAPI:
         return self._get(f"tv/{tmdb_id}", {"append_to_response": "credits"}, ttl=7200)
 
     def get_image_url(self, path: str, size: str = "original") -> str:
-        return f"https://image.tmdb.org/t/p/{size}/{path}"
+        return f"https://image.tmdb.org/t/p/{size}{path}"
 
 
 Tmdb = TmdbAPI()

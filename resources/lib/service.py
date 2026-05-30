@@ -6,6 +6,7 @@ import xbmc
 import xbmcgui
 
 from services.tmdb import Tmdb
+from utils.router import url
 from utils.logger import log
 
 _WIN_ID = 10000
@@ -51,11 +52,7 @@ def _find_next(
         return {
             "current_episode": current_episode,
             "next_episode": next_episode,
-            "play_url": (
-                "plugin://plugin.video.bacterio"
-                f"?action=play&type=episode&id={show_id}"
-                f"&season={next_season}&episode={next_ep}"
-            ),
+            "play_url": url("/play/", type="episode", id=show_id, season=next_season, episode=next_ep)
         }
     except Exception as e:
         log(f"find_next_error {e}")
@@ -66,7 +63,8 @@ def _build_episode(
     ep_info: dict[str, Any], show_details: dict[str, Any]
 ) -> dict[str, Any]:
     images = show_details.get("images", {})
-    clearlogo = next((i for i in images["logos"]), "",)
+    clearlogodata: dict[str, Any] = next((i for i in images["logos"]), { "file_path": "" },)
+    clearlogo = clearlogodata.get("file_path")
 
     return {
         "episodeid": str(ep_info.get("id", -1)),

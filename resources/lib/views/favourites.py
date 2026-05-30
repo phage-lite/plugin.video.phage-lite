@@ -6,10 +6,10 @@ import xbmcgui
 import xbmcplugin
 import xbmcvfs
 from typing import Any
-from urllib.parse import quote_plus
+
+from utils.router import url
 
 HANDLE = int(sys.argv[1])
-_BASE = sys.argv[0]
 _IMG = "https://image.tmdb.org/t/p/w500"
 
 
@@ -108,10 +108,10 @@ def _render_favourites(favs: list[dict[str, Any]]) -> None:
             "poster": f"{_IMG}{poster}" if poster else "",
         })
 
-        remove_url = f"{_BASE}?action=favourite_remove&key={quote_plus(key)}"
+        remove_url = url("/favourite/remove/", key=key)
         wl_type = "movie" if item_type == "movie" else "show"
-        wl_url = f"{_BASE}?action=trakt_watchlist_add&type={wl_type}&id={tmdb_id}"
-        mw_url = f"{_BASE}?action=trakt_mark_watched&type={wl_type}&id={tmdb_id}"
+        wl_url = url("/trakt/watchlist/add/", type=wl_type, id=tmdb_id)
+        mw_url = url("/trakt/watched/", type=wl_type, id=tmdb_id)
         li.addContextMenuItems([
             ("Remove from Favourites", f"RunPlugin({remove_url})"),
             ("Add to Trakt Watchlist", f"RunPlugin({wl_url})"),
@@ -125,16 +125,14 @@ def _render_favourites(favs: list[dict[str, Any]]) -> None:
                 "year": int(year) if year.isdigit() else 0,
                 "mediatype": "movie",
             })
-            _ = xbmcplugin.addDirectoryItem(
-                HANDLE, f"{_BASE}?action=play&type=movie&id={tmdb_id}", li, isFolder=False
-            )
+            _ = xbmcplugin.addDirectoryItem(HANDLE, url("/play/", type="movie", id=tmdb_id), li, isFolder=False)
         else:
             li.setInfo("video", {
                 "title": title,
                 "year": int(year) if year.isdigit() else 0,
                 "mediatype": "tvshow",
             })
-            url = f"{_BASE}?action=seasons&show_id={tmdb_id}&show_title={quote_plus(title)}"
-            _ = xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+            show_url = url("/show/:show_id/seasons/", show_id=tmdb_id, show_title=title)
+            _ = xbmcplugin.addDirectoryItem(HANDLE, show_url, li, isFolder=True)
 
     xbmcplugin.endOfDirectory(HANDLE)

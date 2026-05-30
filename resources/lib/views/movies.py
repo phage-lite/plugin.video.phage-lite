@@ -1,19 +1,15 @@
 import os
 import sys
-import xbmc
 import xbmcaddon
 import xbmcgui
 import xbmcplugin
 from typing import Any, Callable
-from urllib.parse import quote_plus
 
 from services.tmdb import Tmdb
-from settings.settings import get_setting
-from utils.logger import log
 from utils.notifications import error
+from utils.router import url
 
 HANDLE = int(sys.argv[1])
-_BASE = sys.argv[0]
 _IMG = "https://image.tmdb.org/t/p/w500"
 
 _SUBCATEGORIES = [
@@ -70,15 +66,12 @@ _FETCHERS: dict[str, Callable[[int], dict[str, Any]]] = {
 def _menus(
     media_type: str, tmdb_id: int, title: str, year: str, poster: str
 ) -> list[tuple[str, str]]:
-    fav = (
-        f"{_BASE}?action=favourite_add&type={media_type}&id={tmdb_id}"
-        f"&title={quote_plus(title)}&year={year}&poster={quote_plus(poster)}"
-    )
-    wl = f"{_BASE}?action=trakt_watchlist_add&type={media_type}&id={tmdb_id}"
-    mw = f"{_BASE}?action=trakt_mark_watched&type={media_type}&id={tmdb_id}"
-    ss = f"{_BASE}?action=select_source&type={media_type}&id={tmdb_id}"
-    sw_torrentio = f"{_BASE}?action=select_source&type={media_type}&id={tmdb_id}&scraper=torrentio"
-    sw_cocos = f"{_BASE}?action=select_source&type={media_type}&id={tmdb_id}&scraper=cocoscrapers"
+    fav = url("/favourite/add/", type=media_type, id=tmdb_id, title=title, year=year, poster=poster)
+    wl = url("/trakt/watchlist/add/", type=media_type, id=tmdb_id)
+    mw = url("/trakt/watched/", type=media_type, id=tmdb_id)
+    ss = url("/play/select/", type=media_type, id=tmdb_id)
+    sw_torrentio = url("/play/select/", type=media_type, id=tmdb_id, scraper="torrentio")
+    sw_cocos = url("/play/select/", type=media_type, id=tmdb_id, scraper="cocoscrapers")
     return [
         ("Add to Favourites", f"RunPlugin({fav})"),
         ("Add to Trakt Watchlist", f"RunPlugin({wl})"),
@@ -98,36 +91,18 @@ def _dir_item(label: str, url: str, icon: str) -> None:
 
 def show_movie_categories():
     for label, key, icon in _SUBCATEGORIES:
-        _dir_item(label, f"{_BASE}?category=movies&subcategory={key}", icon)
+        _dir_item(label, url(f"/movies/{key}/"), icon)
 
-    _dir_item(
-        "My Favourites", f"{_BASE}?category=movies&subcategory=favourites", "favorites"
-    )
+    _dir_item("My Favourites", url("/movies/favourites/"), "favorites")
 
     try:
         from services.trakt import Trakt
 
         if Trakt.is_authenticated:
-            _dir_item(
-                "Because You Watched",
-                f"{_BASE}?category=movies&subcategory=because_you_watched",
-                "because_you_watched",
-            )
-            _dir_item(
-                "Because Most Watched",
-                f"{_BASE}?category=movies&subcategory=because_most_watched",
-                "most_watched",
-            )
-            _dir_item(
-                "Trakt Watchlist",
-                f"{_BASE}?category=movies&subcategory=trakt_watchlist",
-                "trakt",
-            )
-            _dir_item(
-                "Trakt Recommendations",
-                f"{_BASE}?category=movies&subcategory=trakt_recommendations",
-                "because_you_watched",
-            )
+            _dir_item("Because You Watched",   url("/movies/because_you_watched/"),   "because_you_watched")
+            _dir_item("Because Most Watched",  url("/movies/because_most_watched/"),  "most_watched")
+            _dir_item("Trakt Watchlist",       url("/movies/trakt_watchlist/"),       "trakt")
+            _dir_item("Trakt Recommendations", url("/movies/trakt_recommendations/"), "because_you_watched")
     except Exception:
         pass
 
@@ -155,11 +130,7 @@ def show_movie_list(subcategory: str, page: int = 1):
         return
     results: list[dict[str, Any]] = data.get("results", [])
     total_pages: int = data.get("total_pages", 1)
-    next_url = (
-        f"{_BASE}?category=movies&subcategory={subcategory}&page={page + 1}"
-        if page < total_pages
-        else ""
-    )
+    next_url = url(f"/movies/{subcategory}/", page=page + 1) if page < total_pages else ""
     _render_movies(results, next_url, _genre_map())
 
 
@@ -172,11 +143,8 @@ def show_movie_genres():
         return
     for genre in genres:
         name = genre["name"]
-        url = (
-            f"{_BASE}?category=movies&subcategory=genre"
-            f"&genre_id={genre['id']}&genre_name={quote_plus(name)}"
-        )
-        _dir_item(name, url, _GENRE_ICONS.get(name, "genres"))
+        genre_url = url("/movies/genre/:genre_id/", genre_id=genre["id"], genre_name=name)
+        _dir_item(name, genre_url, _GENRE_ICONS.get(name, "genres"))
     xbmcplugin.endOfDirectory(HANDLE)
 
 
@@ -190,9 +158,8 @@ def show_movies_by_genre(genre_id: int, genre_name: str = "", page: int = 1):
     results: list[dict[str, Any]] = data.get("results", [])
     total_pages: int = data.get("total_pages", 1)
     next_url = (
-        f"{_BASE}?category=movies&subcategory=genre&genre_id={genre_id}&genre_name={quote_plus(genre_name)}&page={page + 1}"
-        if page < total_pages
-        else ""
+        url("/movies/genre/:genre_id/", genre_id=genre_id, genre_name=genre_name, page=page + 1)
+        if page < total_pages else ""
     )
     _render_movies(results, next_url, _genre_map())
 
@@ -240,9 +207,7 @@ def _render_movies(
             }
         )
         li.addContextMenuItems(_menus("movie", tmdb_id, title, year_str, poster))
-        _ = xbmcplugin.addDirectoryItem(
-            HANDLE, f"{_BASE}?action=play&type=movie&id={tmdb_id}", li, isFolder=False
-        )
+        _ = xbmcplugin.addDirectoryItem(HANDLE, url("/play/", type="movie", id=tmdb_id), li, isFolder=False)
 
     if next_url:
         li = xbmcgui.ListItem(label="Next Page →")

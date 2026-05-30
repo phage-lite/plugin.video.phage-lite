@@ -1,224 +1,254 @@
 import sys
 import xbmcaddon
-from urllib.parse import parse_qsl, unquote_plus
 
-from utils.notifications import error
+from utils.router import route, dispatch
 
 HANDLE = int(sys.argv[1])
 
 
-def _params() -> dict[str, str]:
-    return dict(parse_qsl(sys.argv[2].lstrip("?")))
+# ── Playback ──────────────────────────────────────────────────────────────────
+
+@route("/play/")
+def _play(type: str = "movie", id: str = "", season: str = "", episode: str = "", scraper: str = "") -> None:
+    from services.player import resolve_and_play
+    resolve_and_play(item_type=type, tmdb_id=id, handle=HANDLE, season=season, episode=episode, scraper_filter=scraper)
 
 
-def _route():
-    params = _params()
-    action = params.get("action")
-    category = params.get("category")
-    subcategory = params.get("subcategory")
-    genre_id = params.get("genre_id")
-    genre_name = unquote_plus(params.get("genre_name", ""))
-    page = int(params.get("page", "1"))
+@route("/play/select/")
+def _play_select(type: str = "movie", id: str = "", season: str = "", episode: str = "", scraper: str = "") -> None:
+    from services.player import resolve_and_play
+    resolve_and_play(item_type=type, tmdb_id=id, handle=HANDLE, season=season, episode=episode, force_select=True, scraper_filter=scraper)
 
-    if action == "play":
-        from services.player import resolve_and_play
-        resolve_and_play(
-            item_type=params.get("type", "movie"),
-            tmdb_id=params.get("id", ""),
-            handle=HANDLE,
-            season=params.get("season", ""),
-            episode=params.get("episode", ""),
-            scraper_filter=params.get("scraper", ""),
-        )
+
+# ── Search ────────────────────────────────────────────────────────────────────
+
+@route("/search/")
+def _search(query: str = "", page: int = 1) -> None:
+    from views.search import do_search
+    do_search(query=query, page=page)
+
+
+# ── Favourites ────────────────────────────────────────────────────────────────
+
+@route("/favourite/add/")
+def _favourite_add(type: str = "movie", id: str = "", title: str = "", year: str = "", poster: str = "") -> None:
+    from views.favourites import add_favourite
+    add_favourite(item_type=type, tmdb_id=id, title=title, year=year, poster=poster)
+
+
+@route("/favourite/remove/")
+def _favourite_remove(key: str = "") -> None:
+    from views.favourites import remove_favourite
+    remove_favourite(key=key)
+
+
+# ── Trakt ─────────────────────────────────────────────────────────────────────
+
+@route("/trakt/watchlist/add/")
+def _trakt_wl_add(type: str = "movie", id: str = "") -> None:
+    from services.trakt import Trakt
+    from utils.notifications import error, info
+    if not id:
         return
+    if Trakt.is_authenticated:
+        Trakt.add_to_watchlist(type, int(id))
+        info("Added to Trakt Watchlist")
+    else:
+        error("Connect Trakt in Settings to use watchlist")
 
-    if action == "select_source":
-        from services.player import resolve_and_play
-        resolve_and_play(
-            item_type=params.get("type", "movie"),
-            tmdb_id=params.get("id", ""),
-            handle=HANDLE,
-            season=params.get("season", ""),
-            episode=params.get("episode", ""),
-            force_select=True,
-            scraper_filter=params.get("scraper", ""),
-        )
+
+@route("/trakt/watchlist/remove/")
+def _trakt_wl_remove(type: str = "movie", id: str = "") -> None:
+    from services.trakt import Trakt
+    from utils.notifications import info
+    if id and Trakt.is_authenticated:
+        Trakt.remove_from_watchlist(type, int(id))
+        info("Removed from Trakt Watchlist")
+
+
+@route("/trakt/watched/")
+def _trakt_watched(type: str = "movie", id: str = "", season: int = 0, episode: int = 0) -> None:
+    from services.trakt import Trakt
+    from utils.notifications import error, info
+    if not id:
         return
-
-    if action == "search":
-        from views.search import do_search
-        do_search(query=unquote_plus(params.get("query", "")), page=page)
+    if not Trakt.is_authenticated:
+        error("Connect Trakt in Settings to mark as watched")
         return
+    if type == "movie":
+        Trakt.mark_watched_movie(int(id))
+        info("Marked as Watched")
+    elif type in ("episode", "tv", "show") and season and episode:
+        Trakt.mark_watched_episode(int(id), season, episode)
+        info("Marked as Watched")
 
-    if action == "favourite_add":
-        from views.favourites import add_favourite
-        add_favourite(
-            item_type=params.get("type", "movie"),
-            tmdb_id=params.get("id", ""),
-            title=unquote_plus(params.get("title", "")),
-            year=params.get("year", ""),
-            poster=unquote_plus(params.get("poster", "")),
-        )
-        return
 
-    if action == "favourite_remove":
-        from views.favourites import remove_favourite
-        remove_favourite(key=unquote_plus(params.get("key", "")))
-        return
+# ── Shows: seasons / episodes ─────────────────────────────────────────────────
 
-    if action == "trakt_watchlist_add":
-        from services.trakt import Trakt
-        from utils.notifications import info
-        tmdb_id_str = params.get("id", "")
-        item_type = params.get("type", "movie")
-        if tmdb_id_str:
-            if Trakt.is_authenticated:
-                Trakt.add_to_watchlist(item_type, int(tmdb_id_str))
-                info("Added to Trakt Watchlist")
-            else:
-                error("Connect Trakt in Settings to use watchlist")
-        return
+@route("/show/:show_id/seasons/")
+def _show_seasons(show_id: int = 0, show_title: str = "") -> None:
+    from views.shows import show_seasons
+    show_seasons(show_id, show_title)
 
-    if action == "trakt_watchlist_remove":
-        from services.trakt import Trakt
-        from utils.notifications import info
-        tmdb_id_str = params.get("id", "")
-        item_type = params.get("type", "movie")
-        if tmdb_id_str and Trakt.is_authenticated:
-            Trakt.remove_from_watchlist(item_type, int(tmdb_id_str))
-            info("Removed from Trakt Watchlist")
-        return
 
-    if action == "trakt_mark_watched":
-        from services.trakt import Trakt
-        from utils.notifications import info
-        tmdb_id_str = params.get("id", "")
-        item_type = params.get("type", "movie")
-        season_str = params.get("season", "")
-        episode_str = params.get("episode", "")
-        if not tmdb_id_str:
-            return
-        if not Trakt.is_authenticated:
-            error("Connect Trakt in Settings to mark as watched")
-            return
-        if item_type == "movie":
-            Trakt.mark_watched_movie(int(tmdb_id_str))
-            info("Marked as Watched")
-        elif item_type in ("episode", "tv", "show") and season_str and episode_str:
-            Trakt.mark_watched_episode(int(tmdb_id_str), int(season_str), int(episode_str))
-            info("Marked as Watched")
-        return
+@route("/show/:show_id/season/:season_number/episodes/")
+def _show_episodes(show_id: int = 0, season_number: int = 0, show_title: str = "") -> None:
+    from views.shows import show_episodes
+    show_episodes(show_id, show_title, season_number)
 
-    if action == "seasons":
-        show_id = params.get("show_id")
-        show_title = unquote_plus(params.get("show_title", ""))
-        if show_id:
-            from views.shows import show_seasons
-            show_seasons(int(show_id), show_title)
-        return
 
-    if action == "episodes":
-        show_id = params.get("show_id")
-        show_title = unquote_plus(params.get("show_title", ""))
-        season_number = params.get("season_number")
-        if show_id and season_number:
-            from views.shows import show_episodes
-            show_episodes(int(show_id), show_title, int(season_number))
-        return
+# ── Home ──────────────────────────────────────────────────────────────────────
 
-    if not category:
-        from views.home import show_home
-        show_home()
-        return
+@route("/")
+def _home() -> None:
+    from views.home import show_home
+    show_home()
 
-    if category == "movies":
-        from views.movies import (
-            show_movie_categories,
-            show_movie_list,
-            show_movie_genres,
-            show_movies_by_genre,
-        )
-        if subcategory == "genres":
-            show_movie_genres()
-        elif subcategory == "genre" and genre_id:
-            show_movies_by_genre(int(genre_id), genre_name, page=page)
-        elif subcategory == "favourites":
-            from views.favourites import show_movie_favourites
-            show_movie_favourites()
-        elif subcategory == "because_you_watched":
-            from views.trakt import show_because_you_watched_movies
-            _sids = [int(x) for x in unquote_plus(params.get("seed_ids", "")).split(",") if x.strip().isdigit()]
-            show_because_you_watched_movies(page, _sids or None, unquote_plus(params.get("seed_title", "")))
-        elif subcategory == "because_most_watched":
-            from views.trakt import show_because_most_watched_movies
-            _sids = [int(x) for x in unquote_plus(params.get("seed_ids", "")).split(",") if x.strip().isdigit()]
-            show_because_most_watched_movies(page, _sids or None, unquote_plus(params.get("seed_title", "")))
-        elif subcategory == "trakt_watchlist":
-            from views.trakt import show_trakt_watchlist_movies
-            show_trakt_watchlist_movies(page=page)
-        elif subcategory == "trakt_recommendations":
-            from views.trakt import show_trakt_recommendations_movies
-            show_trakt_recommendations_movies(page=page)
-        elif subcategory:
-            show_movie_list(subcategory, page=page)
-        else:
-            show_movie_categories()
-        return
 
-    if category == "shows":
-        from views.shows import (
-            show_tv_categories,
-            show_tv_list,
-            show_tv_genres,
-            show_shows_by_genre,
-        )
-        if subcategory == "genres":
-            show_tv_genres()
-        elif subcategory == "genre" and genre_id:
-            show_shows_by_genre(int(genre_id), genre_name, page=page)
-        elif subcategory == "favourites":
-            from views.favourites import show_show_favourites
-            show_show_favourites()
-        elif subcategory == "upnext":
-            from views.trakt import show_up_next
-            show_up_next()
-        elif subcategory == "in_progress":
-            from views.trakt import show_in_progress_shows
-            show_in_progress_shows()
-        elif subcategory == "because_you_watched":
-            from views.trakt import show_because_you_watched_shows
-            _sids = [int(x) for x in unquote_plus(params.get("seed_ids", "")).split(",") if x.strip().isdigit()]
-            show_because_you_watched_shows(page, _sids or None, unquote_plus(params.get("seed_title", "")))
-        elif subcategory == "because_most_watched":
-            from views.trakt import show_because_most_watched_shows
-            _sids = [int(x) for x in unquote_plus(params.get("seed_ids", "")).split(",") if x.strip().isdigit()]
-            show_because_most_watched_shows(page, _sids or None, unquote_plus(params.get("seed_title", "")))
-        elif subcategory == "trakt_watchlist":
-            from views.trakt import show_trakt_watchlist_shows
-            show_trakt_watchlist_shows(page=page)
-        elif subcategory == "trakt_recommendations":
-            from views.trakt import show_trakt_recommendations_shows
-            show_trakt_recommendations_shows(page=page)
-        elif subcategory == "calendar":
-            from views.trakt import show_calendar
-            show_calendar()
-        elif subcategory:
-            show_tv_list(subcategory, page=page)
-        else:
-            show_tv_categories()
-        return
+# ── Movies — specific routes before wildcard ──────────────────────────────────
 
-    if category == "favourites":
-        from views.favourites import show_favourites
-        show_favourites()
-        return
+@route("/movies/")
+def _movies() -> None:
+    from views.movies import show_movie_categories
+    show_movie_categories()
 
-    if category == "settings":
-        xbmcaddon.Addon().openSettings()
-        return
 
-    error(f"Unknown route: category={category} action={action}")
+@route("/movies/genres/")
+def _movie_genres() -> None:
+    from views.movies import show_movie_genres
+    show_movie_genres()
 
+
+@route("/movies/genre/:genre_id/")
+def _movies_by_genre(genre_id: int = 0, genre_name: str = "", page: int = 1) -> None:
+    from views.movies import show_movies_by_genre
+    show_movies_by_genre(genre_id, genre_name, page=page)
+
+
+@route("/movies/favourites/")
+def _movie_favourites() -> None:
+    from views.favourites import show_movie_favourites
+    show_movie_favourites()
+
+
+@route("/movies/because_you_watched/")
+def _movies_byw(page: int = 1, seed_ids: list[int] = [], seed_title: str = "") -> None:
+    from views.trakt import show_because_you_watched_movies
+    show_because_you_watched_movies(page, seed_ids or None, seed_title)
+
+
+@route("/movies/because_most_watched/")
+def _movies_bmw(page: int = 1, seed_ids: list[int] = [], seed_title: str = "") -> None:
+    from views.trakt import show_because_most_watched_movies
+    show_because_most_watched_movies(page, seed_ids or None, seed_title)
+
+
+@route("/movies/trakt_watchlist/")
+def _movies_trakt_wl(page: int = 1) -> None:
+    from views.trakt import show_trakt_watchlist_movies
+    show_trakt_watchlist_movies(page=page)
+
+
+@route("/movies/trakt_recommendations/")
+def _movies_trakt_rec(page: int = 1) -> None:
+    from views.trakt import show_trakt_recommendations_movies
+    show_trakt_recommendations_movies(page=page)
+
+
+@route("/movies/:subcategory/")
+def _movie_list(subcategory: str = "", page: int = 1) -> None:
+    from views.movies import show_movie_list
+    show_movie_list(subcategory, page=page)
+
+
+# ── Shows — specific routes before wildcard ───────────────────────────────────
+
+@route("/shows/")
+def _shows() -> None:
+    from views.shows import show_tv_categories
+    show_tv_categories()
+
+
+@route("/shows/genres/")
+def _show_genres() -> None:
+    from views.shows import show_tv_genres
+    show_tv_genres()
+
+
+@route("/shows/genre/:genre_id/")
+def _shows_by_genre(genre_id: int = 0, genre_name: str = "", page: int = 1) -> None:
+    from views.shows import show_shows_by_genre
+    show_shows_by_genre(genre_id, genre_name, page=page)
+
+
+@route("/shows/favourites/")
+def _show_favourites() -> None:
+    from views.favourites import show_show_favourites
+    show_show_favourites()
+
+
+@route("/shows/upnext/")
+def _show_upnext() -> None:
+    from views.trakt import show_up_next
+    show_up_next()
+
+
+@route("/shows/in_progress/")
+def _show_in_progress() -> None:
+    from views.trakt import show_in_progress_shows
+    show_in_progress_shows()
+
+
+@route("/shows/because_you_watched/")
+def _shows_byw(page: int = 1, seed_ids: list[int] = [], seed_title: str = "") -> None:
+    from views.trakt import show_because_you_watched_shows
+    show_because_you_watched_shows(page, seed_ids or None, seed_title)
+
+
+@route("/shows/because_most_watched/")
+def _shows_bmw(page: int = 1, seed_ids: list[int] = [], seed_title: str = "") -> None:
+    from views.trakt import show_because_most_watched_shows
+    show_because_most_watched_shows(page, seed_ids or None, seed_title)
+
+
+@route("/shows/trakt_watchlist/")
+def _shows_trakt_wl(page: int = 1) -> None:
+    from views.trakt import show_trakt_watchlist_shows
+    show_trakt_watchlist_shows(page=page)
+
+
+@route("/shows/trakt_recommendations/")
+def _shows_trakt_rec(page: int = 1) -> None:
+    from views.trakt import show_trakt_recommendations_shows
+    show_trakt_recommendations_shows(page=page)
+
+
+@route("/shows/calendar/")
+def _show_calendar() -> None:
+    from views.trakt import show_calendar
+    show_calendar()
+
+
+@route("/shows/:subcategory/")
+def _show_list(subcategory: str = "", page: int = 1) -> None:
+    from views.shows import show_tv_list
+    show_tv_list(subcategory, page=page)
+
+
+# ── Top-level ─────────────────────────────────────────────────────────────────
+
+@route("/favourites/")
+def _favourites() -> None:
+    from views.favourites import show_favourites
+    show_favourites()
+
+
+@route("/settings/")
+def _settings() -> None:
+    xbmcaddon.Addon().openSettings()
+
+
+# ── Entry point ───────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    _route()
+    dispatch()

@@ -212,11 +212,16 @@ def _match_episode_file(
         rf"[Ss]{season:02d}[Ee]{episode:02d}",
         rf"[Ss]{season}[Ee]{episode:02d}",
         rf"\b{season}[xX]{episode:02d}\b",
+        rf"\b{season}[xX]{episode}\b"
     ]
     for f in files:
         name = f.get("name", "")
+        short_name = f.get("short_name", "")
         for pattern in patterns:
-            if re.search(pattern, name):
+            if not short_name == "":
+                if re.search(pattern, short_name):
+                    return f
+            elif re.search(pattern, name):
                 return f
     return None
 

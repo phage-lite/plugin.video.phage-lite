@@ -6,13 +6,12 @@ import xbmcgui
 import xbmcplugin
 import xbmcvfs
 from typing import Any
-from urllib.parse import quote_plus
 
 from services.tmdb import Tmdb
 from utils.notifications import error
+from utils.router import url
 
 HANDLE = int(sys.argv[1])
-_BASE = sys.argv[0]
 _IMG = "https://image.tmdb.org/t/p/w500"
 _HISTORY_LIMIT = 25
 
@@ -58,11 +57,8 @@ def _clear_history() -> None:
 # ── Context menus ─────────────────────────────────────────────────────────────
 
 def _menus(media_type: str, tmdb_id: int, title: str, year: str, poster: str) -> list[tuple[str, str]]:
-    fav = (
-        f"{_BASE}?action=favourite_add&type={media_type}&id={tmdb_id}"
-        f"&title={quote_plus(title)}&year={year}&poster={quote_plus(poster)}"
-    )
-    wl = f"{_BASE}?action=trakt_watchlist_add&type={media_type}&id={tmdb_id}"
+    fav = url("/favourite/add/", type=media_type, id=tmdb_id, title=title, year=year, poster=poster)
+    wl = url("/trakt/watchlist/add/", type=media_type, id=tmdb_id)
     return [
         ("Add to Favourites", f"RunPlugin({fav})"),
         ("Add to Trakt Watchlist", f"RunPlugin({wl})"),
@@ -104,7 +100,7 @@ def do_search(query: str = "", page: int = 1):
             _add_show(item)
 
     if page < total_pages:
-        next_url = f"{_BASE}?action=search&query={quote_plus(query)}&page={page + 1}"
+        next_url = url("/search/", query=query, page=page + 1)
         li = xbmcgui.ListItem(label=f"Next Page → ({page + 1} / {total_pages})")
         li.setProperty("SpecialSort", "bottom")
         p = os.path.join(xbmcaddon.Addon().getAddonInfo("path"), "resources", "media", "icons", "nextpage.png")
@@ -165,9 +161,7 @@ def _add_movie(movie: dict[str, Any]):
         "fanart": f"{_IMG}{backdrop}" if backdrop else "",
     })
     li.addContextMenuItems(_menus("movie", tmdb_id, title, year_str, poster))
-    _ = xbmcplugin.addDirectoryItem(
-        HANDLE, f"{_BASE}?action=play&type=movie&id={tmdb_id}", li, isFolder=False
-    )
+    _ = xbmcplugin.addDirectoryItem(HANDLE, url("/play/", type="movie", id=tmdb_id), li, isFolder=False)
 
 
 def _add_show(show: dict[str, Any]):
@@ -193,5 +187,5 @@ def _add_show(show: dict[str, Any]):
         "fanart": f"{_IMG}{backdrop}" if backdrop else "",
     })
     li.addContextMenuItems(_menus("show", tmdb_id, title, year_str, poster))
-    url = f"{_BASE}?action=seasons&show_id={tmdb_id}&show_title={quote_plus(title)}"
-    _ = xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+    show_url = url("/show/:show_id/seasons/", show_id=tmdb_id, show_title=title)
+    _ = xbmcplugin.addDirectoryItem(HANDLE, show_url, li, isFolder=True)

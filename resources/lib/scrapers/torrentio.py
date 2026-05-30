@@ -23,6 +23,7 @@ def scrape(imdb_id: str, season: int = 0, episode: int = 0) -> list[dict[str, An
         url = f"{_BASE}/stream/series/{imdb_id}:{season}:{episode}.json"
     else:
         url = f"{_BASE}/stream/movie/{imdb_id}.json"
+    log(url, "scrape")
     try:
         resp = requests.get(url, headers=_HEADERS, timeout=_TIMEOUT)
         resp.raise_for_status()
@@ -34,14 +35,15 @@ def scrape(imdb_id: str, season: int = 0, episode: int = 0) -> list[dict[str, An
     results: list[dict[str, Any]] = []
     for st in streams:
         parsed = _parse_stream(st)
+        log(str(parsed), "scrape results")
         if parsed:
             results.append(parsed)
     return results
 
 
 def _parse_stream(st: dict[str, Any]) -> dict[str, Any] | None:
-    h = (st.get("infoHash") or "").lower()
-    if len(h) != 40:
+    hash = (st.get("infoHash") or "").lower()
+    if len(hash) != 40:
         return None
 
     title_block = st.get("title") or ""
@@ -54,8 +56,8 @@ def _parse_stream(st: dict[str, Any]) -> dict[str, Any] | None:
     return {
         "provider": "Torrentio",
         "source": "torrent",
-        "hash": h,
-        "url": f"magnet:?xt=urn:btih:{h}&dn={requests.utils.quote(name)}",
+        "hash": hash,
+        "url": f"magnet:?xt=urn:btih:{hash}&dn={requests.utils.quote(name)}",
         "name": name,
         "quality": quality,
         "seeders": seeders,

@@ -1,17 +1,15 @@
 import os
 import sys
-import xbmc
 import xbmcaddon
 import xbmcgui
 import xbmcplugin
 from typing import Any, Callable
-from urllib.parse import quote_plus
 
 from services.tmdb import Tmdb
 from utils.notifications import error
+from utils.router import url
 
 HANDLE = int(sys.argv[1])
-_BASE = sys.argv[0]
 _IMG = "https://image.tmdb.org/t/p/w500"
 
 _SUBCATEGORIES = [
@@ -56,11 +54,8 @@ _FETCHERS: dict[str, Callable[[int], dict[str, Any]]] = {
 
 
 def _menus(media_type: str, tmdb_id: int, title: str, year: str, poster: str) -> list[tuple[str, str]]:
-    fav = (
-        f"{_BASE}?action=favourite_add&type={media_type}&id={tmdb_id}"
-        f"&title={quote_plus(title)}&year={year}&poster={quote_plus(poster)}"
-    )
-    wl = f"{_BASE}?action=trakt_watchlist_add&type={media_type}&id={tmdb_id}"
+    fav = url("/favourite/add/", type=media_type, id=tmdb_id, title=title, year=year, poster=poster)
+    wl = url("/trakt/watchlist/add/", type=media_type, id=tmdb_id)
     return [
         ("Add to Favourites", f"RunPlugin({fav})"),
         ("Add to Trakt Watchlist", f"RunPlugin({wl})"),
@@ -76,20 +71,20 @@ def _dir_item(label: str, url: str, icon: str) -> None:
 
 def show_tv_categories():
     for label, key, icon in _SUBCATEGORIES:
-        _dir_item(label, f"{_BASE}?category=shows&subcategory={key}", icon)
+        _dir_item(label, url(f"/shows/{key}/"), icon)
 
-    _dir_item("My Favourites", f"{_BASE}?category=shows&subcategory=favourites", "favorites")
+    _dir_item("My Favourites", url("/shows/favourites/"), "favorites")
 
     try:
         from services.trakt import Trakt
         if Trakt.is_authenticated:
-            _dir_item("Up Next",                f"{_BASE}?category=shows&subcategory=upnext",                "next_episodes")
-            _dir_item("In Progress",            f"{_BASE}?category=shows&subcategory=in_progress",           "in_progress_tvshow")
-            _dir_item("Because You Watched",    f"{_BASE}?category=shows&subcategory=because_you_watched",   "because_you_watched")
-            _dir_item("Because Most Watched",   f"{_BASE}?category=shows&subcategory=because_most_watched",  "most_watched")
-            _dir_item("Trakt Watchlist",        f"{_BASE}?category=shows&subcategory=trakt_watchlist",       "trakt")
-            _dir_item("Trakt Recommendations",  f"{_BASE}?category=shows&subcategory=trakt_recommendations", "because_you_watched")
-            _dir_item("My Calendar",            f"{_BASE}?category=shows&subcategory=calendar",              "calender")
+            _dir_item("Up Next",               url("/shows/upnext/"),               "next_episodes")
+            _dir_item("In Progress",           url("/shows/in_progress/"),           "in_progress_tvshow")
+            _dir_item("Because You Watched",   url("/shows/because_you_watched/"),   "because_you_watched")
+            _dir_item("Because Most Watched",  url("/shows/because_most_watched/"),  "most_watched")
+            _dir_item("Trakt Watchlist",       url("/shows/trakt_watchlist/"),       "trakt")
+            _dir_item("Trakt Recommendations", url("/shows/trakt_recommendations/"), "because_you_watched")
+            _dir_item("My Calendar",           url("/shows/calendar/"),              "calender")
     except Exception:
         pass
 
@@ -117,10 +112,7 @@ def show_tv_list(subcategory: str, page: int = 1):
         return
     results: list[dict[str, Any]] = data.get("results", [])
     total_pages: int = data.get("total_pages", 1)
-    next_url = (
-        f"{_BASE}?category=shows&subcategory={subcategory}&page={page + 1}"
-        if page < total_pages else ""
-    )
+    next_url = url(f"/shows/{subcategory}/", page=page + 1) if page < total_pages else ""
     _render_shows(results, next_url, _genre_map())
 
 
@@ -133,11 +125,8 @@ def show_tv_genres():
         return
     for genre in genres:
         name = genre["name"]
-        url = (
-            f"{_BASE}?category=shows&subcategory=genre"
-            f"&genre_id={genre['id']}&genre_name={quote_plus(name)}"
-        )
-        _dir_item(name, url, _GENRE_ICONS.get(name, "genres"))
+        genre_url = url("/shows/genre/:genre_id/", genre_id=genre["id"], genre_name=name)
+        _dir_item(name, genre_url, _GENRE_ICONS.get(name, "genres"))
     xbmcplugin.endOfDirectory(HANDLE)
 
 
@@ -151,7 +140,7 @@ def show_shows_by_genre(genre_id: int, genre_name: str = "", page: int = 1):
     results: list[dict[str, Any]] = data.get("results", [])
     total_pages: int = data.get("total_pages", 1)
     next_url = (
-        f"{_BASE}?category=shows&subcategory=genre&genre_id={genre_id}&genre_name={quote_plus(genre_name)}&page={page + 1}"
+        url("/shows/genre/:genre_id/", genre_id=genre_id, genre_name=genre_name, page=page + 1)
         if page < total_pages else ""
     )
     _render_shows(results, next_url, _genre_map())
@@ -192,13 +181,11 @@ def show_seasons(show_id: int, show_title: str = ""):
             "poster": f"{_IMG}{poster}" if poster else "",
             "fanart": fanart,
         })
-        url = (
-            f"{_BASE}?action=episodes"
-            f"&show_id={show_id}"
-            f"&show_title={quote_plus(show_title)}"
-            f"&season_number={season_num}"
+        ep_url = url(
+            "/show/:show_id/season/:season_number/episodes/",
+            show_id=show_id, season_number=season_num, show_title=show_title,
         )
-        _ = xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+        _ = xbmcplugin.addDirectoryItem(HANDLE, ep_url, li, isFolder=True)
 
     xbmcplugin.endOfDirectory(HANDLE)
 
@@ -243,35 +230,18 @@ def show_episodes(show_id: int, show_title: str, season_number: int):
             "thumb": f"{_IMG}{still}" if still else f"{_IMG}{season_poster}" if season_poster else "",
             "poster": f"{_IMG}{season_poster}" if season_poster else "",
         })
-        mw = (
-            f"{_BASE}?action=trakt_mark_watched&type=episode"
-            f"&id={show_id}&season={season_number}&episode={ep_num}"
-        )
-        ss = (
-            f"{_BASE}?action=select_source&type=episode"
-            f"&id={show_id}&season={season_number}&episode={ep_num}"
-        )
-        sw_torrentio = (
-            f"{_BASE}?action=select_source&type=episode"
-            f"&id={show_id}&season={season_number}&episode={ep_num}&scraper=torrentio"
-        )
-        sw_cocos = (
-            f"{_BASE}?action=select_source&type=episode"
-            f"&id={show_id}&season={season_number}&episode={ep_num}&scraper=cocoscrapers"
-        )
+        mw = url("/trakt/watched/", type="episode", id=show_id, season=season_number, episode=ep_num)
+        ss = url("/play/select/", type="episode", id=show_id, season=season_number, episode=ep_num)
+        sw_torrentio = url("/play/select/", type="episode", id=show_id, season=season_number, episode=ep_num, scraper="torrentio")
+        sw_cocos = url("/play/select/", type="episode", id=show_id, season=season_number, episode=ep_num, scraper="cocoscrapers")
         li.addContextMenuItems([
             ("Mark as Watched", f"RunPlugin({mw})"),
             ("Select Source", f"PlayMedia({ss})"),
             ("Scrape with Torrentio", f"PlayMedia({sw_torrentio})"),
             ("Scrape with CocoScrapers", f"PlayMedia({sw_cocos})"),
         ])
-        url = (
-            f"{_BASE}?action=play&type=episode"
-            f"&id={show_id}"
-            f"&season={season_number}"
-            f"&episode={ep_num}"
-        )
-        _ = xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
+        play_url = url("/play/", type="episode", id=show_id, season=season_number, episode=ep_num)
+        _ = xbmcplugin.addDirectoryItem(HANDLE, play_url, li, isFolder=False)
 
     xbmcplugin.endOfDirectory(HANDLE)
 
@@ -309,8 +279,8 @@ def _render_shows(results: list[dict[str, Any]], next_url: str = "", genre_map: 
             "fanart": f"{_IMG}{backdrop}" if backdrop else "",
         })
         li.addContextMenuItems(_menus("show", tmdb_id, title, year_str, poster))
-        url = f"{_BASE}?action=seasons&show_id={tmdb_id}&show_title={quote_plus(title)}"
-        _ = xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+        show_url = url("/show/:show_id/seasons/", show_id=tmdb_id, show_title=title)
+        _ = xbmcplugin.addDirectoryItem(HANDLE, show_url, li, isFolder=True)
 
     if next_url:
         li = xbmcgui.ListItem(label="Next Page →")

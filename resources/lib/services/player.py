@@ -219,6 +219,7 @@ def _add_to_torbox(
 ) -> str:
     progress = xbmcgui.DialogProgress()
     progress.create("Bacterio", f"Opening - {title}…" if title else "Opening…")
+    log(f"{title}, {season}x{episode}", "_add_to_torbox")
 
     try:
         result = TorBox.add_magnet(magnet)
@@ -263,7 +264,9 @@ def _add_to_torbox(
             return ""
 
         files: list[dict[str, Any]] = info_data.get("files") or []
+        log(str(files), "files")
         target = TorBox.pick_video_file(files, season=season, episode=episode)
+        log(str(target), "target")
         if not target:
             return ""
 
@@ -294,6 +297,7 @@ def _tag_playing(item_type: str, tmdb_id: str, season: str, episode: str) -> Non
 
 def _play_url(direct_url: str, handle: int):
     li = xbmcgui.ListItem(path=direct_url)
+    log(direct_url, "play_url")
     li.setContentLookup(False)
     xbmcplugin.setResolvedUrl(handle, True, li)
 

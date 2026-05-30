@@ -5,14 +5,13 @@ import xbmcgui
 import xbmcplugin
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any
-from urllib.parse import quote_plus
 
 from services.trakt import Trakt, PAGE_SIZE
 from services.tmdb import Tmdb
 from utils.notifications import error
+from utils.router import url
 
 HANDLE = int(sys.argv[1])
-_BASE = sys.argv[0]
 _IMG = "https://image.tmdb.org/t/p/w500"
 
 
@@ -32,12 +31,9 @@ def _next_page_item(label: str) -> xbmcgui.ListItem:
 
 def _menus_browse(media_type: str, tmdb_id: int, title: str, year: str, poster: str) -> list[tuple[str, str]]:
     """Menus for items NOT in the watchlist - offer to add."""
-    fav = (
-        f"{_BASE}?action=favourite_add&type={media_type}&id={tmdb_id}"
-        f"&title={quote_plus(title)}&year={year}&poster={quote_plus(poster)}"
-    )
-    wl = f"{_BASE}?action=trakt_watchlist_add&type={media_type}&id={tmdb_id}"
-    mw = f"{_BASE}?action=trakt_mark_watched&type={media_type}&id={tmdb_id}"
+    fav = url("/favourite/add/", type=media_type, id=tmdb_id, title=title, year=year, poster=poster)
+    wl = url("/trakt/watchlist/add/", type=media_type, id=tmdb_id)
+    mw = url("/trakt/watched/", type=media_type, id=tmdb_id)
     menus = [
         ("Add to Favourites", f"RunPlugin({fav})"),
         ("Add to Trakt Watchlist", f"RunPlugin({wl})"),
@@ -49,12 +45,9 @@ def _menus_browse(media_type: str, tmdb_id: int, title: str, year: str, poster: 
 
 def _menus_watchlist(media_type: str, tmdb_id: int, title: str, year: str, poster: str) -> list[tuple[str, str]]:
     """Menus for items already in the Trakt watchlist - offer to remove."""
-    fav = (
-        f"{_BASE}?action=favourite_add&type={media_type}&id={tmdb_id}"
-        f"&title={quote_plus(title)}&year={year}&poster={quote_plus(poster)}"
-    )
-    rem = f"{_BASE}?action=trakt_watchlist_remove&type={media_type}&id={tmdb_id}"
-    mw = f"{_BASE}?action=trakt_mark_watched&type={media_type}&id={tmdb_id}"
+    fav = url("/favourite/add/", type=media_type, id=tmdb_id, title=title, year=year, poster=poster)
+    rem = url("/trakt/watchlist/remove/", type=media_type, id=tmdb_id)
+    mw = url("/trakt/watched/", type=media_type, id=tmdb_id)
     menus = [
         ("Add to Favourites", f"RunPlugin({fav})"),
         ("Remove from Trakt Watchlist", f"RunPlugin({rem})"),
@@ -155,13 +148,10 @@ def _add_up_next_item(item: dict[str, Any]):
         "poster": f"{_IMG}{poster}" if poster else "",
         "fanart": f"{_IMG}{backdrop}" if backdrop else "",
     })
-    mw = f"{_BASE}?action=trakt_mark_watched&type=episode&id={tmdb_id}&season={season}&episode={episode}"
+    mw = url("/trakt/watched/", type="episode", id=tmdb_id, season=season, episode=episode)
     li.addContextMenuItems([("Mark as Watched", f"RunPlugin({mw})")])
-    url = (
-        f"{_BASE}?action=play&type=episode"
-        f"&id={tmdb_id}&season={season}&episode={episode}"
-    )
-    _ = xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
+    play_url = url("/play/", type="episode", id=tmdb_id, season=season, episode=episode)
+    _ = xbmcplugin.addDirectoryItem(HANDLE, play_url, li, isFolder=False)
 
 
 # ── Watchlist ─────────────────────────────────────────────────────────────────
@@ -181,7 +171,7 @@ def show_trakt_watchlist_movies(page: int = 1):
 
     if len(items) >= PAGE_SIZE:
         _ = xbmcplugin.addDirectoryItem(
-            HANDLE, f"{_BASE}?category=trakt&subcategory=watchlist_movies&page={page + 1}",
+            HANDLE, url("/movies/trakt_watchlist/", page=page + 1),
             _next_page_item(f"Next Page → ({page + 1})"), isFolder=True
         )
     xbmcplugin.endOfDirectory(HANDLE)
@@ -202,7 +192,7 @@ def show_trakt_watchlist_shows(page: int = 1):
 
     if len(items) >= PAGE_SIZE:
         _ = xbmcplugin.addDirectoryItem(
-            HANDLE, f"{_BASE}?category=trakt&subcategory=watchlist_shows&page={page + 1}",
+            HANDLE, url("/shows/trakt_watchlist/", page=page + 1),
             _next_page_item(f"Next Page → ({page + 1})"), isFolder=True
         )
     xbmcplugin.endOfDirectory(HANDLE)
@@ -225,7 +215,7 @@ def show_trakt_recommendations_movies(page: int = 1):
 
     if len(items) >= PAGE_SIZE:
         _ = xbmcplugin.addDirectoryItem(
-            HANDLE, f"{_BASE}?category=trakt&subcategory=recommendations_movies&page={page + 1}",
+            HANDLE, url("/movies/trakt_recommendations/", page=page + 1),
             _next_page_item(f"Next Page → ({page + 1})"), isFolder=True
         )
     xbmcplugin.endOfDirectory(HANDLE)
@@ -246,7 +236,7 @@ def show_trakt_recommendations_shows(page: int = 1):
 
     if len(items) >= PAGE_SIZE:
         _ = xbmcplugin.addDirectoryItem(
-            HANDLE, f"{_BASE}?category=trakt&subcategory=recommendations_shows&page={page + 1}",
+            HANDLE, url("/shows/trakt_recommendations/", page=page + 1),
             _next_page_item(f"Next Page → ({page + 1})"), isFolder=True
         )
     xbmcplugin.endOfDirectory(HANDLE)
@@ -292,7 +282,7 @@ def _add_watchlist_movie(item: dict[str, Any]):
     })
     if tmdb_id:
         li.addContextMenuItems(_menus_watchlist("movie", tmdb_id, title, year_str, poster))
-        _ = xbmcplugin.addDirectoryItem(HANDLE, f"{_BASE}?action=play&type=movie&id={tmdb_id}", li, isFolder=False)
+        _ = xbmcplugin.addDirectoryItem(HANDLE, url("/play/", type="movie", id=tmdb_id), li, isFolder=False)
 
 
 def _add_watchlist_show(item: dict[str, Any]):
@@ -314,8 +304,8 @@ def _add_watchlist_show(item: dict[str, Any]):
     })
     if tmdb_id:
         li.addContextMenuItems(_menus_watchlist("show", tmdb_id, title, year_str, poster))
-        url = f"{_BASE}?action=seasons&show_id={tmdb_id}&show_title={quote_plus(title)}"
-        _ = xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+        show_url = url("/show/:show_id/seasons/", show_id=tmdb_id, show_title=title)
+        _ = xbmcplugin.addDirectoryItem(HANDLE, show_url, li, isFolder=True)
 
 
 def _add_recommendation_movie(item: dict[str, Any]):
@@ -337,7 +327,7 @@ def _add_recommendation_movie(item: dict[str, Any]):
     })
     if tmdb_id:
         li.addContextMenuItems(_menus_browse("movie", tmdb_id, title, year_str, poster))
-        _ = xbmcplugin.addDirectoryItem(HANDLE, f"{_BASE}?action=play&type=movie&id={tmdb_id}", li, isFolder=False)
+        _ = xbmcplugin.addDirectoryItem(HANDLE, url("/play/", type="movie", id=tmdb_id), li, isFolder=False)
 
 
 # ── Calendar ──────────────────────────────────────────────────────────────────
@@ -399,10 +389,10 @@ def _add_calendar_item(date_str: str, item: dict[str, Any]):
         "fanart": f"{_IMG}{backdrop}" if backdrop else "",
     })
     if tmdb_id:
-        mw = f"{_BASE}?action=trakt_mark_watched&type=episode&id={tmdb_id}&season={season}&episode={episode}"
+        mw = url("/trakt/watched/", type="episode", id=tmdb_id, season=season, episode=episode)
         li.addContextMenuItems([("Mark as Watched", f"RunPlugin({mw})")])
-        url = f"{_BASE}?action=play&type=episode&id={tmdb_id}&season={season}&episode={episode}"
-        _ = xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
+        play_url = url("/play/", type="episode", id=tmdb_id, season=season, episode=episode)
+        _ = xbmcplugin.addDirectoryItem(HANDLE, play_url, li, isFolder=False)
 
 
 # ── Item renderers ────────────────────────────────────────────────────────────
@@ -425,8 +415,8 @@ def _add_recommendation_show(item: dict[str, Any]):
     })
     if tmdb_id:
         li.addContextMenuItems(_menus_browse("show", tmdb_id, title, year_str, poster))
-        url = f"{_BASE}?action=seasons&show_id={tmdb_id}&show_title={quote_plus(title)}"
-        _ = xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+        show_url = url("/show/:show_id/seasons/", show_id=tmdb_id, show_title=title)
+        _ = xbmcplugin.addDirectoryItem(HANDLE, show_url, li, isFolder=True)
 
 
 # ── In Progress Shows ─────────────────────────────────────────────────────────
@@ -488,8 +478,8 @@ def show_in_progress_shows():
             "poster": f"{_IMG}{poster}" if poster else "",
             "fanart": f"{_IMG}{backdrop}" if backdrop else "",
         })
-        url = f"{_BASE}?action=seasons&show_id={tmdb_id}&show_title={quote_plus(title)}"
-        _ = xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+        show_url = url("/show/:show_id/seasons/", show_id=tmdb_id, show_title=title)
+        _ = xbmcplugin.addDirectoryItem(HANDLE, show_url, li, isFolder=True)
 
     xbmcplugin.endOfDirectory(HANDLE)
 
@@ -518,8 +508,8 @@ def _render_tmdb_shows(items: list[dict[str, Any]], next_url: str = "") -> None:
             "fanart": f"{_IMG}{backdrop}" if backdrop else "",
         })
         li.addContextMenuItems(_menus_browse("show", tmdb_id, title, year_str, poster))
-        url = f"{_BASE}?action=seasons&show_id={tmdb_id}&show_title={quote_plus(title)}"
-        _ = xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+        show_url = url("/show/:show_id/seasons/", show_id=tmdb_id, show_title=title)
+        _ = xbmcplugin.addDirectoryItem(HANDLE, show_url, li, isFolder=True)
     if next_url:
         li = xbmcgui.ListItem(label="Next Page →")
         _ = xbmcplugin.addDirectoryItem(HANDLE, next_url, li, isFolder=True)
@@ -549,9 +539,7 @@ def _render_tmdb_movies(items: list[dict[str, Any]], next_url: str = "") -> None
             "fanart": f"{_IMG}{backdrop}" if backdrop else "",
         })
         li.addContextMenuItems(_menus_browse("movie", tmdb_id, title, year_str, poster))
-        _ = xbmcplugin.addDirectoryItem(
-            HANDLE, f"{_BASE}?action=play&type=movie&id={tmdb_id}", li, isFolder=False
-        )
+        _ = xbmcplugin.addDirectoryItem(HANDLE, url("/play/", type="movie", id=tmdb_id), li, isFolder=False)
     if next_url:
         li = xbmcgui.ListItem(label="Next Page →")
         _ = xbmcplugin.addDirectoryItem(HANDLE, next_url, li, isFolder=True)
@@ -606,7 +594,7 @@ def _because_shows(page: int, seed_ids: list[int], seed_title: str, sort_key: st
 
     seed_param = ",".join(str(s) for s in seed_ids)
     next_url = (
-        f"{_BASE}?category=shows&subcategory={subcategory}&seed_ids={quote_plus(seed_param)}&seed_title={quote_plus(seed_title)}&page={page + 1}"
+        url(f"/shows/{subcategory}/", seed_ids=seed_param, seed_title=seed_title, page=page + 1)
         if len(merged) >= 20 else ""
     )
     _render_tmdb_shows(merged, next_url)
@@ -665,7 +653,7 @@ def _because_movies(page: int, seed_ids: list[int], seed_title: str, sort_key: s
 
     seed_param = ",".join(str(s) for s in seed_ids)
     next_url = (
-        f"{_BASE}?category=movies&subcategory={subcategory}&seed_ids={quote_plus(seed_param)}&seed_title={quote_plus(seed_title)}&page={page + 1}"
+        url(f"/movies/{subcategory}/", seed_ids=seed_param, seed_title=seed_title, page=page + 1)
         if len(merged) >= 20 else ""
     )
     _render_tmdb_movies(merged, next_url)

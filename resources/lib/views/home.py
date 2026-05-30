@@ -4,8 +4,9 @@ import xbmcaddon
 import xbmcgui
 import xbmcplugin
 
+from utils.router import url
+
 HANDLE = int(sys.argv[1])
-_BASE = sys.argv[0]
 
 
 def _icon(name: str) -> str:
@@ -15,10 +16,10 @@ def _icon(name: str) -> str:
 def show_home():
     _first_run_check()
 
-    _item("Search", f"{_BASE}?action=search", icon="search")
-    _item("Movies", f"{_BASE}?category=movies", icon="movies")
-    _item("TV Shows", f"{_BASE}?category=shows", icon="tv")
-    _item("Settings", f"{_BASE}?category=settings", icon="settings")
+    _item("Search", url("/search/"), icon="search")
+    _item("Movies", url("/movies/"), icon="movies")
+    _item("TV Shows", url("/shows/"), icon="tv")
+    _item("Settings", url("/settings/"), icon="settings")
     xbmcplugin.endOfDirectory(HANDLE)
 
 
