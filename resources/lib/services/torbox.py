@@ -78,7 +78,6 @@ class TorBoxAPI(Service):
 
         return PollStatus.ERROR
 
-
     def auth_complete(self) -> None:
         if self.access_token:
             self._set_setting(SID.ACCESS_TOKEN, self.access_token)
@@ -102,12 +101,16 @@ class TorBoxAPI(Service):
         return response.json()
 
     def _post(
-        self, endpoint: str, data: dict[str, Any] | None = None
+        self,
+        endpoint: str,
+        data: dict[str, Any] | None = None,
+        json: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         response = requests.post(
             f"{self.base_url}/{endpoint}",
             headers=self._headers,
-            data=data or {},
+            data=data,
+            json=json,
             timeout=20,
         )
         response.raise_for_status()
@@ -120,11 +123,19 @@ class TorBoxAPI(Service):
         except Exception:
             return False
 
-    def add_magnet(self, magnet: str) -> dict[str, Any]:
-        result = self._post("torrents/createtorrent", {"magnet": magnet, "seed": "3"})
+    def add_magnet(self, magnet: str, skip_cached: bool = False) -> dict[str, Any]:
+        result = self._post(
+            "torrents/createtorrent",
+            {
+                "magnet": magnet,
+                "seed": "3",
+                "add_only_if_cached": not skip_cached,
+            },
+        )
+
         if result.get("success"):
             return result
-        # Torrent already in user's list - look it up by hash so the caller can proceed
+
         hash_val = _extract_hash(magnet)
         if hash_val:
             existing = self.find_torrent_by_hash(hash_val)
@@ -133,10 +144,39 @@ class TorBoxAPI(Service):
                 return {"success": True, "data": {"torrent_id": torrent_id}}
         return result
 
-    def get_torrent_info(self, torrent_id: int) -> dict[str, Any]:
-        return self._get(
-            "torrents/mylist", {"id": str(torrent_id), "bypass_cache": "true"}
+    def get_torrent_info(self, magnet: str) -> dict[str, Any]:
+        return self._post(
+            "torrents/torrentinfo",
+            data={
+                "magnet": magnet,
+                "use_cache_lookup": True,
+                "peers_only": False,
+            },
         )
+
+    def get_torrent_status(self, torrent_id: int) -> dict[str, Any]:
+        return self._get(
+            "torrents/mylist",
+            params={
+                "id": torrent_id,
+                "bypass_cache": True,
+            },
+        )
+
+    def add(self, magnet: str, is_cached: bool = False) -> dict[str, Any]:
+        if not is_cached:
+            info = self.get_torrent_info(magnet)
+            if info.get("success"):
+                data: dict[str, Any] = info.get("data", {})
+                seeds: int = data.get("seeds", 0)
+                if seeds <= 0:
+                    log("seeds are too low", "tb.add")
+                    return {"success": False}
+            else:
+                log("couldn't get info", "tb.add")
+                return {"success": False}
+
+        return self.add_magnet(magnet, not is_cached)
 
     def request_download(self, torrent_id: int, file_id: int) -> dict[str, Any]:
         return self._get(
@@ -145,7 +185,7 @@ class TorBoxAPI(Service):
                 "token": self.access_token,
                 "torrent_id": str(torrent_id),
                 "file_id": str(file_id),
-                "zip_link": "false",
+                "zip_link": False,
             },
         )
 
@@ -168,20 +208,20 @@ class TorBoxAPI(Service):
         if not hashes:
             return set()
         cached: set[str] = set()
-        for i in range(0, len(hashes), 100):
-            chunk = hashes[i : i + 100]
-            try:
-                # TorBox requires repeated `hash` params, not comma-joined
-                params: list[tuple[str, str]] = [("hash", h) for h in chunk]
-                params += [("format", "list"), ("list_files", "false")]
-                result = self._get("torrents/checkcached", params)
-                data = result.get("data") or []
-                if isinstance(data, list):
-                    for h in data:
-                        if isinstance(h, str):
-                            cached.add(h.lower())
-            except Exception as e:
-                log(str(e), "torbox.check_instant_availability")
+
+        result = self._post(
+            "torrents/checkcached?format=list",
+            json={
+                "hashes": hashes,
+                "format": "list",
+            },
+        )
+
+        data: list[dict[str, Any]] = result.get("data") or []
+        for h in data:
+            hash = h.get("hash")
+            if hash:
+                cached.add(hash)
         return cached
 
     def pick_video_file(
@@ -212,7 +252,7 @@ def _match_episode_file(
         rf"[Ss]{season:02d}[Ee]{episode:02d}",
         rf"[Ss]{season}[Ee]{episode:02d}",
         rf"\b{season}[xX]{episode:02d}\b",
-        rf"\b{season}[xX]{episode}\b"
+        rf"\b{season}[xX]{episode}\b",
     ]
     for f in files:
         name = f.get("name", "")

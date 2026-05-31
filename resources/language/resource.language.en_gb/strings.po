@@ -1273,12 +1273,12 @@ msgstr ""
 
 #: /resources/settings.xml
 msgctxt "#30249"
-msgid "Filter Languages"
+msgid "Preferred Language"
 msgstr ""
 
 #: /resources/settings.xml
 msgctxt "#30250"
-msgid "Enable this and Bacterio will perform extra language filtering on your Easynews results"
+msgid "The preferred language you would like the content to be in, falls back to EN if not found"
 msgstr ""
 
 #: /resources/settings.xml
@@ -2128,4 +2128,14 @@ msgstr ""
 #: /resources/settings.xml
 msgctxt "#30421"
 msgid "Enable CocoScrapers (requires script.module.cocoscrapers)"
+msgstr ""
+
+#: /resources/settings.xml
+msgctxt "#30422"
+msgid "Prefer cached results"
+msgstr ""
+
+#: /resources/settings.xml
+msgctxt "#30423"
+msgid "Select preferred quality for your content. Will fall back to best available if not found."
 msgstr ""

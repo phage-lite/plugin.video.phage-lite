@@ -10,14 +10,44 @@
                     <default>false</default>
                     <control type="toggle" />
                 </setting>
-                <setting id="playback.quality_pref" type="integer" label="30407" help="30408">
+                <setting id="playback.prefer_cached" label="30422" type="boolean" help="30408">
                     <level>0</level>
-                    <default>0</default>
-                    <control type="spinner" format="integer">
-                        <values>
-                            <value label="30409" />
-                            <value label="30410" />
-                        </values>
+                    <default>true</default>
+                    <control type="toggle" />
+                </setting>
+                <setting id="playback.preferred_quality" label="30407" type="string" help="30423">
+                    <level>0</level>
+                    <default>4K</default>
+                    <constraints>
+                        <options>
+                            <option>4K</option>
+                            <option>1080p</option>
+                            <option>720p</option>
+                        </options>
+                    </constraints>
+                    <control type="list" format="string">
+                        <heading>30407</heading>
+                    </control>
+                </setting>
+                <setting id="playback.preferred_lang" label="30249" type="string" help="30250">
+                    <level>0</level>
+                    <default>EN</default>
+                    <constraints>
+                        <options>
+                            <option label="English">EN</option>
+                            <option label="Français">FR</option>
+                            <option label="Español">ES</option>
+                            <option label="Italiano">IT</option>
+                            <option label="Português">PT</option>
+                            <option label="Polski">PL</option>
+                            <option label="Türkçe">TR</option>
+                            <option label="Русский">RU</option>
+                            <option label="Nederlands">NL</option>
+                            <option label="Deutsch">DE</option>
+                        </options>
+                    </constraints>
+                    <control type="list" format="string">
+                        <heading>30249</heading>
                     </control>
                 </setting>
             </group>
@@ -98,6 +128,7 @@
                 </setting>
             </group>
         </category>
+
         <category id="tmdb" label="30405">
             <group id="1" label="30184">
                 <setting id="tmdb.language" type="string" label="30411" help="30412">
@@ -112,7 +143,7 @@
                         </data>
                     </control>
                 </setting>
-                <setting id="tmdb.client_id" type="string" label="30185" help="30186">
+                <setting id="tmdb.app_id" type="string" label="30185" help="30186">
                     <level>4</level>
                     <default>b3d88b28234743b4d18c84c6dbd3ac81</default>
                     <control type="edit" format="string" />
@@ -122,17 +153,37 @@
                     <default>eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiM2Q4OGIyODIzNDc0M2I0ZDE4Yzg0YzZkYmQzYWM4MSIsIm5iZiI6MTcwMjM1MjEzNC4wNjIsInN1YiI6IjY1NzdkNTA2N2EzYzUyMDBhZDE5NmY1MSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.xP3IHOVqYbDkoiluKUdgdocIobrsDoPpHymgp7sTVCU</default>
                     <control type="edit" format="string" />
                 </setting>
+                <setting id="tmdb.client_id" label="30403" type="string" help="30186">
+                    <level>4</level>
+                    <default></default>
+                    <control type="edit" format="string" />
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                </setting>
+                <setting id="tmdb.access_token" label="30403" type="string" help="30186">
+                    <level>4</level>
+                    <default></default>
+                    <control type="edit" format="string" />
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                </setting>
             </group>
             <group id="2" label="30118">
-                <setting id="tmdblist.list_sort" type="integer" label="30119" help="30120">
+                <setting id="tmdb.list_sort" type="integer" label="30119" help="30120">
+                    <level>0</level>
                     <default>0</default>
-                    <control type="spinner" format="integer">
-                        <values>
-                            <value label="Popularity" />
-                            <value label="Highest rated" />
-                            <value label="Newest first" />
-                            <value label="Title A-Z" />
-                        </values>
+                    <constraints>
+                        <options>
+                            <option label="Popularity">0</option>
+                            <option label="Highest rated">1</option>
+                            <option label="Newest">2</option>
+                            <option label="Title (A-Z)">3</option>
+                        </options>
+                    </constraints>
+                    <control type="list" format="integer">
+                        <heading>30249</heading>
                     </control>
                 </setting>
             </group>

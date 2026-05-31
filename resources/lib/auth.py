@@ -53,10 +53,6 @@ def main():
         info(f"Cache cleared ({n} files)")
         return
 
-    if service_arg == "tmdb":
-        _test_tmdb()
-        return
-
     service = get_service(service_arg)
     auth_data = service.start_auth()
 

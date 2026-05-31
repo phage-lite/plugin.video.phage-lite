@@ -1,3 +1,4 @@
+from services.tmdb import Tmdb
 from services.torbox import TorBox
 from services.trakt import Trakt
 from services.real_debrid import RealDebrid
@@ -7,7 +8,8 @@ from services.types import Service
 services: dict[str, Service] = {
     "real_debrid": RealDebrid,
     "trakt": Trakt,
-    "torbox": TorBox
+    "torbox": TorBox,
+    "tmdb": Tmdb,
 }
 
 

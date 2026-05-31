@@ -15,36 +15,32 @@ from utils.logger import log
 from settings.settings import get_setting
 
 _SCRAPE_TIMEOUT = 20
-_POLL_INTERVAL = 2000  # ms
+_POLL_INTERVAL = 500  # ms
 _RD_INITIAL_WAIT = 30  # seconds to wait for waiting_files_selection
-_RD_DOWNLOAD_WAIT = 120  # seconds to wait for downloaded
-_TB_DOWNLOAD_WAIT = 120  # seconds to wait for TorBox download
+_RD_DOWNLOAD_WAIT = 60  # seconds to wait for downloaded
+_TB_DOWNLOAD_WAIT = 60  # seconds to wait for TorBox download
 _TB_ERROR_STATES = {"error", "failed", "dead"}
 
 _QUALITY_RANK = {
-    "4K": 0,
-    "1080p": 1,
-    "720p": 2,
-    "SD": 3,
-    "CAM": 4,
+    "PREFERRED": 0,
+    "4K": 1,
+    "1080p": 2,
+    "720p": 3,
+    "SD": 4,
+    "CAM": 5,
     "TELE": 5,
     "SYNC": 5,
 }
+_LANG_RANK = {
+    "PREFERRED": 0,
+    "EN": 1,
+}
 _RD_ERROR_STATUSES = {"magnet_error", "error", "dead", "virus"}
 
-_FOREIGN_LANG_TOKENS = {
-    "french", "vostfr", "vff", "vfq", "truefrench",
-    "german", "deutsch", "italian", "spanish", "portuguese",
-    "dutch", "russian", "arabic", "turkish", "hindi", "multi",
-}
 
-
-def _is_foreign(name: str) -> bool:
-    tokens = re.split(r"[\W_]+", name.lower())
-    return bool(_FOREIGN_LANG_TOKENS.intersection(tokens))
-
-
-def _match_episode_file(files: list[dict[str, Any]], season: int, episode: int) -> int | None:
+def _match_episode_file(
+    files: list[dict[str, Any]], season: int, episode: int
+) -> int | None:
     """Return the index into *files* that matches the requested season/episode, or None."""
     patterns = [
         rf"[Ss]{season:02d}[Ee]{episode:02d}",
@@ -67,20 +63,22 @@ def _rd_ok() -> bool:
 
 
 def _tb_ok() -> bool:
-    return TorBox.is_authenticated
+    return TorBox.is_enabled and TorBox.is_authenticated
 
 
 def _sort_sources(
     sources: list[dict[str, Any]], cached: set[str]
 ) -> list[dict[str, Any]]:
-    quality_pref = get_setting("playback.quality_pref")
-    if quality_pref == "1":
+    prefer_cached = get_setting("playback.prefer_cached")
+    quality_pref = get_setting("playback.preferred_quality")
+    lang_pref = get_setting("playback.preferred_lang")
+    if prefer_cached == "0":
         # best quality, ignore cache order
         return sorted(
             sources,
             key=lambda s: (
-                1 if _is_foreign(s.get("name", "")) else 0,
-                _QUALITY_RANK.get(s.get("quality", "SD"), 9),
+                _LANG_RANK.get("PREFERRED" if s.get("language", "EN") == lang_pref else s.get("language", "EN"), 2),
+                _QUALITY_RANK.get("PREFERRED" if s.get("quality", "SD") == quality_pref else s.get("quality", "SD"), 9),
                 0 if s.get("hash", "").lower() in cached else 1,
                 -int(s.get("seeders") or 0),
             ),
@@ -89,9 +87,9 @@ def _sort_sources(
     return sorted(
         sources,
         key=lambda s: (
-            1 if _is_foreign(s.get("name", "")) else 0,
+            _LANG_RANK.get("PREFERRED" if s.get("language", "EN") == lang_pref else s.get("language", "EN"), 2),
             0 if s.get("hash", "").lower() in cached else 1,
-            _QUALITY_RANK.get(s.get("quality", "SD"), 9),
+            _QUALITY_RANK.get("PREFERRED" if s.get("quality", "SD") == quality_pref else s.get("quality", "SD"), 9),
             -int(s.get("seeders") or 0),
         ),
     )
@@ -181,7 +179,9 @@ def _add_to_rd(
         progress.close()
 
 
-def _find_rd_file_id(info_data: dict[str, Any], season: int | None, episode: int | None) -> str:
+def _find_rd_file_id(
+    info_data: dict[str, Any], season: int | None, episode: int | None
+) -> str:
     """Return a comma-separated file ID string to pass to select_files, or 'all'."""
     if season is None or episode is None:
         return "all"
@@ -216,13 +216,15 @@ def _add_to_torbox(
     title: str,
     season: int | None = None,
     episode: int | None = None,
+    is_cached: bool = False,
 ) -> str:
     progress = xbmcgui.DialogProgress()
     progress.create("Bacterio", f"Opening - {title}…" if title else "Opening…")
-    log(f"{title}, {season}x{episode}", "_add_to_torbox")
+    log(f"{title}, {season}x{episode} cached:{is_cached}", "_add_to_torbox")
 
     try:
-        result = TorBox.add_magnet(magnet)
+        result = TorBox.add(magnet, is_cached)
+        log(f"{result}", "add_magnet")
         if not result.get("success"):
             log(f"TorBox add_magnet failed: {result}", "_add_to_torbox")
             return ""
@@ -235,24 +237,18 @@ def _add_to_torbox(
         if not torrent_id:
             return ""
 
-        info_data: dict[str, Any] = {}
+        status_data: dict[str, Any] = {}
         deadline = time.monotonic() + _TB_DOWNLOAD_WAIT
         while time.monotonic() < deadline:
             xbmc.sleep(_POLL_INTERVAL)
             if progress.iscanceled():
                 progress.close()
                 return "Cancel"
-            info_result = TorBox.get_torrent_info(torrent_id)
-            raw_data = info_result.get("data")
-            info_data = (
-                raw_data[0]
-                if isinstance(raw_data, list) and raw_data
-                else raw_data
-                if isinstance(raw_data, dict)
-                else {}
-            )
-            state: str = info_data.get("download_state", "")
-            pct = int(float(info_data.get("progress", 0)) * 100)
+            torrent_status = TorBox.get_torrent_status(torrent_id)
+            log(f"{torrent_status}", "wait_for_download")
+            status_data = torrent_status.get("data", {})
+            state: str = status_data.get("download_state", "")
+            pct = int(float(status_data.get("progress", 0)) * 100)
             progress.update(pct, f"TorBox: {state}")
             if state in _TB_ERROR_STATES:
                 log(f"TorBox error state: {state}", "_add_to_torbox")
@@ -263,10 +259,8 @@ def _add_to_torbox(
             log("TorBox timed out", "_add_to_torbox")
             return ""
 
-        files: list[dict[str, Any]] = info_data.get("files") or []
-        log(str(files), "files")
+        files: list[dict[str, Any]] = status_data.get("files") or []
         target = TorBox.pick_video_file(files, season=season, episode=episode)
-        log(str(target), "target")
         if not target:
             return ""
 
@@ -491,9 +485,11 @@ def resolve_and_play(
             src.get("url")
             or f"magnet:?xt=urn:btih:{src['hash']}&dn={src.get('name', '')}"
         )
+        log(str(src), "try_source")
 
         # Prefer whichever provider has this hash cached; fall back to the other
         providers: list[str] = []
+        is_cached = h in all_cached
         if use_tb and h in tb_cached:
             providers.append("torbox")
         if not providers:
@@ -508,7 +504,13 @@ def resolve_and_play(
             direct_url = (
                 _add_to_rd(magnet, title, season=ep_season, episode=ep_episode)
                 if provider == "rd"
-                else _add_to_torbox(magnet, title, season=ep_season, episode=ep_episode)
+                else _add_to_torbox(
+                    magnet,
+                    title,
+                    season=ep_season,
+                    episode=ep_episode,
+                    is_cached=is_cached,
+                )
             )
             if direct_url and direct_url != "Cancel":
                 _tag_playing(item_type, tmdb_id, season, episode)

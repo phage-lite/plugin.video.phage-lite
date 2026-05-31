@@ -83,7 +83,7 @@ def _build_episode(
             "tvshow.clearart": Tmdb.get_image_url(str(show_details.get("backdrop_path")), "w500"),
             "tvshow.clearlogo": Tmdb.get_image_url(str(clearlogo)),
             "tvshow.fanart": Tmdb.get_image_url(str(show_details.get("backdrop_path")), "w780"),
-            "tvshow.landscape": Tmdb.get_image_url(str(show_details.get("landscape")), "w500"),
+            "tvshow.landscape": Tmdb.get_image_url(str(ep_info.get("still_path")), "w500"),
             "tvshow.poster": Tmdb.get_image_url(str(show_details.get("poster_path")), "w500"),
         },
     }
