@@ -7,6 +7,8 @@ import xbmcplugin
 import xbmcvfs
 from typing import Any
 
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from items import MovieItem, ShowItem
 from services.tmdb import Tmdb
 from utils.notifications import error
 from utils.router import url
@@ -138,54 +140,31 @@ def _prompt_with_history() -> str:
 # ── Item renderers ────────────────────────────────────────────────────────────
 
 def _add_movie(movie: dict[str, Any]):
-    title = movie.get("title", "Unknown")
-    overview = movie.get("overview", "")
-    poster = movie.get("poster_path") or ""
-    backdrop = movie.get("backdrop_path") or ""
-    rating = float(movie.get("vote_average") or 0)
-    year_str = (movie.get("release_date") or "")[:4]
     tmdb_id = int(movie.get("id") or 0)
-
-    li = xbmcgui.ListItem(label=f"[MOVIE] {title}")
-    li.setProperty("IsPlayable", "true")
-    li.setInfo("video", {
-        "title": title,
-        "plot": overview,
-        "year": int(year_str) if year_str.isdigit() else 0,
-        "rating": rating,
-        "mediatype": "movie",
-    })
-    li.setArt({
-        "thumb": f"{_IMG}{poster}" if poster else "",
-        "poster": f"{_IMG}{poster}" if poster else "",
-        "fanart": f"{_IMG}{backdrop}" if backdrop else "",
-    })
+    title = movie.get("title", "Unknown")
+    year_str = (movie.get("release_date") or "")[:4]
+    poster = movie.get("poster_path") or ""
+    try:
+        details = Tmdb.movie_rich_details(tmdb_id)
+    except Exception:
+        return
+    li = MovieItem(details).build()
+    li.setLabel(f"[MOVIE] {title}")
     li.addContextMenuItems(_menus("movie", tmdb_id, title, year_str, poster))
     _ = xbmcplugin.addDirectoryItem(HANDLE, url("/play/", type="movie", id=tmdb_id), li, isFolder=False)
 
 
 def _add_show(show: dict[str, Any]):
-    title = show.get("name", "Unknown")
-    overview = show.get("overview", "")
-    poster = show.get("poster_path") or ""
-    backdrop = show.get("backdrop_path") or ""
-    rating = float(show.get("vote_average") or 0)
-    year_str = (show.get("first_air_date") or "")[:4]
     tmdb_id = int(show.get("id") or 0)
-
-    li = xbmcgui.ListItem(label=f"[TV] {title}")
-    li.setInfo("video", {
-        "title": title,
-        "plot": overview,
-        "year": int(year_str) if year_str.isdigit() else 0,
-        "rating": rating,
-        "mediatype": "tvshow",
-    })
-    li.setArt({
-        "thumb": f"{_IMG}{poster}" if poster else "",
-        "poster": f"{_IMG}{poster}" if poster else "",
-        "fanart": f"{_IMG}{backdrop}" if backdrop else "",
-    })
+    title = show.get("name", "Unknown")
+    year_str = (show.get("first_air_date") or "")[:4]
+    poster = show.get("poster_path") or ""
+    try:
+        details = Tmdb.tv_details(tmdb_id)
+    except Exception:
+        return
+    li = ShowItem(details).build()
+    li.setLabel(f"[TV] {title}")
     li.addContextMenuItems(_menus("show", tmdb_id, title, year_str, poster))
     show_url = url("/show/:show_id/seasons/", show_id=tmdb_id, show_title=title)
     _ = xbmcplugin.addDirectoryItem(HANDLE, show_url, li, isFolder=True)

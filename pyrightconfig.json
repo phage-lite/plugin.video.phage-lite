@@ -11,10 +11,9 @@
         "resources/lib/segno",
         "resources/lib/services/imdb.py"
     ],
-    "reportMissingTypeStubs": "none",
     "allowedUntypedLibraries": ["sqlite3", "xbmc", "xbmcgui", "xbmcaddon", "xbmcplugin", "xbmcvfs"],
     "reportAny": "none",
     "reportExplicitAny": "none",
     "reportImplicitOverride": "none",
-    "reportUntypedFunctionDecorator": "none",
+    "reportUntypedFunctionDecorator": "none"
 }

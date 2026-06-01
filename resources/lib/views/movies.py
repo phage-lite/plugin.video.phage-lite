@@ -1,16 +1,18 @@
 import os
 import sys
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import Any, Callable
+
 import xbmcaddon
 import xbmcgui
 import xbmcplugin
-from typing import Any, Callable
 
+from items import MovieItem
 from services.tmdb import Tmdb
 from utils.notifications import error
 from utils.router import url
 
 HANDLE = int(sys.argv[1])
-_IMG = "https://image.tmdb.org/t/p/w500"
 
 _SUBCATEGORIES = [
     ("Popular", "popular", "popular"),
@@ -131,7 +133,7 @@ def show_movie_list(subcategory: str, page: int = 1):
     results: list[dict[str, Any]] = data.get("results", [])
     total_pages: int = data.get("total_pages", 1)
     next_url = url(f"/movies/{subcategory}/", page=page + 1) if page < total_pages else ""
-    _render_movies(results, next_url, _genre_map())
+    _render_movies(results, next_url)
 
 
 def show_movie_genres():
@@ -161,52 +163,51 @@ def show_movies_by_genre(genre_id: int, genre_name: str = "", page: int = 1):
         url("/movies/genre/:genre_id/", genre_id=genre_id, genre_name=genre_name, page=page + 1)
         if page < total_pages else ""
     )
-    _render_movies(results, next_url, _genre_map())
+    _render_movies(results, next_url)
+
+
+def _fetch_movie_details(movie: dict[str, Any]) -> dict[str, Any]:
+    tmdb_id = int(movie.get("id") or 0)
+    if not tmdb_id:
+        return movie
+    try:
+        return Tmdb.movie_rich_details(tmdb_id)
+    except Exception:
+        return movie
 
 
 def _render_movies(
     results: list[dict[str, Any]],
     next_url: str = "",
-    genre_map: dict[int, str] | None = None,
 ):
-    gmap = genre_map or {}
     xbmcplugin.setContent(HANDLE, "movies")
     xbmcplugin.addSortMethod(HANDLE, xbmcplugin.SORT_METHOD_LABEL)
     xbmcplugin.addSortMethod(HANDLE, xbmcplugin.SORT_METHOD_VIDEO_RATING)
     xbmcplugin.addSortMethod(HANDLE, xbmcplugin.SORT_METHOD_VIDEO_YEAR)
 
-    for movie in results:
-        title = movie.get("title", "Unknown")
-        overview = movie.get("overview", "")
-        poster = movie.get("poster_path") or ""
-        backdrop = movie.get("backdrop_path") or ""
-        rating = float(movie.get("vote_average") or 0)
-        year_str = (movie.get("release_date") or "")[:4]
-        tmdb_id = int(movie.get("id") or 0)
-        genre_ids = [int(g) for g in movie.get("genre_ids", [])]
-        genre_str = " / ".join(gmap[g] for g in genre_ids[:3] if g in gmap)
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        future_to_movie = {
+            executor.submit(_fetch_movie_details, movie): movie for movie in results
+        }
+        details_map: dict[int, dict[str, Any]] = {}
+        for future in as_completed(future_to_movie):
+            original = future_to_movie[future]
+            movie_id = int(original.get("id") or 0)
+            try:
+                details_map[movie_id] = future.result()
+            except Exception:
+                details_map[movie_id] = original
 
-        li = xbmcgui.ListItem(label=title)
-        li.setProperty("IsPlayable", "true")
-        li.setInfo(
-            "video",
-            {
-                "title": title,
-                "plot": overview,
-                "year": int(year_str) if year_str.isdigit() else 0,
-                "rating": rating,
-                "genre": genre_str,
-                "mediatype": "movie",
-            },
-        )
-        li.setArt(
-            {
-                "thumb": f"{_IMG}{poster}" if poster else "",
-                "poster": f"{_IMG}{poster}" if poster else "",
-                "fanart": f"{_IMG}{backdrop}" if backdrop else "",
-            }
-        )
-        li.addContextMenuItems(_menus("movie", tmdb_id, title, year_str, poster))
+    for movie in results:
+        tmdb_id = int(movie.get("id") or 0)
+        details = details_map.get(tmdb_id, movie)
+        title = details.get("title") or movie.get("title") or "Unknown"
+        year_str = (details.get("release_date") or movie.get("release_date") or "")[:4]
+        poster_path = details.get("poster_path") or movie.get("poster_path") or ""
+
+        item = MovieItem(details)
+        li = item.build()
+        li.addContextMenuItems(_menus("movie", tmdb_id, title, year_str, poster_path))
         _ = xbmcplugin.addDirectoryItem(HANDLE, url("/play/", type="movie", id=tmdb_id), li, isFolder=False)
 
     if next_url:

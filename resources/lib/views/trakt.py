@@ -6,6 +6,7 @@ import xbmcplugin
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any
 
+from items import EpisodeItem, MovieItem, ShowItem
 from services.trakt import Trakt, PAGE_SIZE
 from services.tmdb import Tmdb
 from utils.logger import log
@@ -101,29 +102,22 @@ def _fetch_up_next() -> list[dict[str, Any]]:
             episode = next_ep.get("number", 1)
             season_data = Tmdb.tv_season(tmdb_id, season)
             episodes: list[dict[str, Any]] = season_data.get("episodes") or []
-            curr_info = next((e for e in episodes if e["episode_number"] == episode), {})
-            still = curr_info.get("still_path", "")
-            overview = curr_info.get("overview", "")
-
-            images = show_details.get("images", {})
-            clearlogo_data: dict[str, Any] = next((i for i in images["logos"]), { "file_path": "" },)
-            log(f"{clearlogo_data}", "logo data")
-            poster_data: dict[str, Any] = next((i for i in images["posters"]), { "file_path": "" },)
-            backdrop_data: dict[str, Any] = next((i for i in images["backdrops"]), { "file_path": "" },)
-            poster = poster_data.get("file_path", "")
-            backdrop = backdrop_data.get("file_path", "")
-            logo = clearlogo_data.get("file_path", "")
+            ep_info = next((e for e in episodes if e["episode_number"] == episode), {})
+            ep_dict: dict[str, Any] = {
+                "episode_number": episode,
+                "name": next_ep.get("title") or ep_info.get("name") or "",
+                "overview": ep_info.get("overview") or "",
+                "still_path": ep_info.get("still_path") or "",
+                "vote_average": ep_info.get("vote_average") or 0,
+                "air_date": ep_info.get("air_date") or "",
+                "runtime": ep_info.get("runtime") or 30,
+            }
             return {
-                "title":            show.get("title", "Unknown"),
+                "show_title":       show.get("title", "Unknown"),
                 "tmdb_id":          tmdb_id,
                 "season":           season,
-                "episode":          episode,
-                "ep_title":         next_ep.get("title") or "",
-                "poster":           poster,
-                "backdrop":         backdrop,
-                "logo":             logo,
-                "overview":         overview,
-                "still":            still,
+                "ep":               ep_dict,
+                "show_details":     show_details,
                 "last_watched_at":  watched_item.get("last_watched_at", ""),
             }
         except Exception:
@@ -142,48 +136,25 @@ def _fetch_up_next() -> list[dict[str, Any]]:
 
 
 def _add_up_next_item(item: dict[str, Any]):
-    title = item["title"]
-    season = item["season"]
-    episode = item["episode"]
-    ep_title = item.get("ep_title") or f"Episode {episode}"
+    show_title = item["show_title"]
     tmdb_id = item["tmdb_id"]
-    poster = item.get("poster", "")
-    backdrop = item.get("backdrop", "")
-    still = item.get("still", "")
-    overview = item.get("overview", "")
-    logo = item.get("logo", "")
+    season = item["season"]
+    ep = item["ep"]
+    show_details = item["show_details"]
 
-    label = f"{title}: S{season:02d}E{episode:02d}"
-    if ep_title and ep_title != f"Episode {episode}":
+    episode_num = ep.get("episode_number", 0)
+    ep_title = ep.get("name") or f"Episode {episode_num}"
+    label = f"{show_title}: S{season:02d}E{episode_num:02d}"
+    if ep_title and ep_title != f"Episode {episode_num}":
         label += f" - {ep_title}"
 
-    li = xbmcgui.ListItem(label=label)
-    li.setProperty("IsPlayable", "true")
-    li.setInfo("video", {
-        "title": ep_title,
-        "tvshowtitle": title,
-        "season": season,
-        "episode": episode,
-        "plot": overview,
-        "mediatype": "episode",
-    })
-            # li.setArt({'poster': show_poster, 'fanart': show_fanart, 'thumb': thumb, 'icon':thumb, 'clearlogo': show_clearlogo, 'landscape': show_landscape,
-            #                 'season.poster': season_poster, 'tvshow.poster': show_poster, 'tvshow.clearlogo': show_clearlogo})
+    episode_item = EpisodeItem(ep, show_title, tmdb_id, season, show_details)
+    li = episode_item.build()
+    li.setLabel(label)
 
-    log(Tmdb.get_image_url(logo))
-    li.setArt({
-        "thumb": Tmdb.get_image_url(still) if still else Tmdb.get_image_url(poster),
-        "poster": Tmdb.get_image_url(still) if still else Tmdb.get_image_url(poster),
-        "banner": Tmdb.get_image_url(logo),
-        "fanart": Tmdb.get_image_url(backdrop),
-        "clearart": Tmdb.get_image_url(logo),
-        "tvshow.clearlogo": Tmdb.get_image_url(logo),
-        "landscape": Tmdb.get_image_url(still),
-        "icon": Tmdb.get_image_url(logo),
-    })
-    mw = url("/trakt/watched/", type="episode", id=tmdb_id, season=season, episode=episode)
+    mw = url("/trakt/watched/", type="episode", id=tmdb_id, season=season, episode=episode_num)
     li.addContextMenuItems([("Mark as Watched", f"RunPlugin({mw})")])
-    play_url = url("/play/", type="episode", id=tmdb_id, season=season, episode=episode)
+    play_url = url("/play/", type="episode", id=tmdb_id, season=season, episode=episode_num)
     _ = xbmcplugin.addDirectoryItem(HANDLE, play_url, li, isFolder=False)
 
 
@@ -197,7 +168,7 @@ def show_trakt_watchlist_movies(page: int = 1):
         xbmcplugin.endOfDirectory(HANDLE)
         return
 
-    _warm_images([(int(i.get("movie", {}).get("ids", {}).get("tmdb") or 0), "movie") for i in items])
+    _warm_details([(int(i.get("movie", {}).get("ids", {}).get("tmdb") or 0), "movie") for i in items])
     xbmcplugin.setContent(HANDLE, "movies")
     for item in items:
         _add_watchlist_movie(item)
@@ -218,7 +189,7 @@ def show_trakt_watchlist_shows(page: int = 1):
         xbmcplugin.endOfDirectory(HANDLE)
         return
 
-    _warm_images([(int(i.get("show", {}).get("ids", {}).get("tmdb") or 0), "tv") for i in items])
+    _warm_details([(int(i.get("show", {}).get("ids", {}).get("tmdb") or 0), "tv") for i in items])
     xbmcplugin.setContent(HANDLE, "tvshows")
     for item in items:
         _add_watchlist_show(item)
@@ -241,7 +212,7 @@ def show_trakt_recommendations_movies(page: int = 1):
         xbmcplugin.endOfDirectory(HANDLE)
         return
 
-    _warm_images([(int(i.get("ids", {}).get("tmdb") or 0), "movie") for i in items])
+    _warm_details([(int(i.get("ids", {}).get("tmdb") or 0), "movie") for i in items])
     xbmcplugin.setContent(HANDLE, "movies")
     for item in items:
         _add_recommendation_movie(item)
@@ -262,7 +233,7 @@ def show_trakt_recommendations_shows(page: int = 1):
         xbmcplugin.endOfDirectory(HANDLE)
         return
 
-    _warm_images([(int(i.get("ids", {}).get("tmdb") or 0), "tv") for i in items])
+    _warm_details([(int(i.get("ids", {}).get("tmdb") or 0), "tv") for i in items])
     xbmcplugin.setContent(HANDLE, "tvshows")
     for item in items:
         _add_recommendation_show(item)
@@ -277,31 +248,19 @@ def show_trakt_recommendations_shows(page: int = 1):
 
 # ── Item renderers ────────────────────────────────────────────────────────────
 
-def _tmdb_images(tmdb_id: int, media: str) -> dict[str, str]:
-    try:
-        images = Tmdb.movie_images(tmdb_id) if media == "movie" else Tmdb.tv_images(tmdb_id)
-        clearlogo_data: dict[str, Any] = next((i for i in images["logos"]), { "file_path": "" },)
-        poster_data: dict[str, Any] = next((i for i in images["posters"]), { "file_path": "" },)
-        backdrop_data: dict[str, Any] = next((i for i in images["backdrops"]), { "file_path": "" },)
-        return {
-                "backdrop": Tmdb.get_image_url(str(backdrop_data.get("file_path"))),
-                "logo": Tmdb.get_image_url(str(clearlogo_data.get("file_path"))),
-                "poster": Tmdb.get_image_url(str(poster_data.get("file_path"))),
-        }
-    except Exception:
-        return {
-            "backdrop_path": "",
-            "logo": "",
-            "poster": ""
-        }
-
-
-def _warm_images(pairs: list[tuple[int, str]]) -> None:
+def _warm_details(pairs: list[tuple[int, str]]) -> None:
     """Pre-fetch TMDB details for all items in parallel to warm the disk cache."""
     def fetch(pair: tuple[int, str]) -> None:
         tid, media = pair
-        if tid:
-            _tmdb_images(tid, media)
+        if not tid:
+            return
+        try:
+            if media == "movie":
+                Tmdb.movie_rich_details(tid)
+            else:
+                Tmdb.tv_details(tid)
+        except Exception:
+            pass
     with ThreadPoolExecutor(max_workers=8) as ex:
         list(ex.map(fetch, pairs))
 
@@ -309,75 +268,55 @@ def _warm_images(pairs: list[tuple[int, str]]) -> None:
 def _add_watchlist_movie(item: dict[str, Any]):
     movie = item.get("movie", {})
     tmdb_id: int = int(movie.get("ids", {}).get("tmdb") or 0)
+    if not tmdb_id:
+        return
     title = movie.get("title", "Unknown")
     year = int(movie.get("year") or 0)
-    overview = movie.get("overview", "")
     year_str = str(year) if year else ""
-
-    images = _tmdb_images(tmdb_id, "movie")
-    poster = images.get("poster", "")
-    backdrop = images.get("backdrop", "")
-
-    li = xbmcgui.ListItem(label=f"{title} ({year})" if year else title)
-    li.setProperty("IsPlayable", "true")
-    li.setInfo("video", {"title": title, "plot": overview, "year": year, "mediatype": "movie"})
-    li.setArt({
-        "thumb": poster,
-        "poster": poster,
-        "fanart": backdrop,
-    })
-    if tmdb_id:
-        li.addContextMenuItems(_menus_watchlist("movie", tmdb_id, title, year_str, poster))
-        _ = xbmcplugin.addDirectoryItem(HANDLE, url("/play/", type="movie", id=tmdb_id), li, isFolder=False)
+    try:
+        details = Tmdb.movie_rich_details(tmdb_id)
+    except Exception:
+        return
+    poster_path = details.get("poster_path") or ""
+    li = MovieItem(details).build()
+    li.addContextMenuItems(_menus_watchlist("movie", tmdb_id, title, year_str, poster_path))
+    _ = xbmcplugin.addDirectoryItem(HANDLE, url("/play/", type="movie", id=tmdb_id), li, isFolder=False)
 
 
 def _add_watchlist_show(item: dict[str, Any]):
     show = item.get("show", {})
     tmdb_id: int = int(show.get("ids", {}).get("tmdb") or 0)
+    if not tmdb_id:
+        return
     title = show.get("title", "Unknown")
     year = int(show.get("year") or 0)
-    overview = show.get("overview", "")
     year_str = str(year) if year else ""
-
-    images = _tmdb_images(tmdb_id, "tv")
-    poster = images.get("poster", "")
-    backdrop = images.get("backdrop", "")
-
-    li = xbmcgui.ListItem(label=f"{title} ({year})" if year else title)
-    li.setInfo("video", {"title": title, "plot": overview, "year": year, "mediatype": "tvshow"})
-    li.setArt({
-        "thumb": poster,
-        "poster": poster,
-        "fanart": backdrop,
-    })
-    if tmdb_id:
-        li.addContextMenuItems(_menus_watchlist("show", tmdb_id, title, year_str, poster))
-        show_url = url("/show/:show_id/seasons/", show_id=tmdb_id, show_title=title)
-        _ = xbmcplugin.addDirectoryItem(HANDLE, show_url, li, isFolder=True)
+    try:
+        details = Tmdb.tv_details(tmdb_id)
+    except Exception:
+        return
+    poster_path = details.get("poster_path") or ""
+    li = ShowItem(details).build()
+    li.addContextMenuItems(_menus_watchlist("show", tmdb_id, title, year_str, poster_path))
+    show_url = url("/show/:show_id/seasons/", show_id=tmdb_id, show_title=title)
+    _ = xbmcplugin.addDirectoryItem(HANDLE, show_url, li, isFolder=True)
 
 
 def _add_recommendation_movie(item: dict[str, Any]):
     tmdb_id: int = int(item.get("ids", {}).get("tmdb") or 0)
+    if not tmdb_id:
+        return
     title = item.get("title", "Unknown")
     year = int(item.get("year") or 0)
-    overview = item.get("overview", "")
     year_str = str(year) if year else ""
-
-    images = _tmdb_images(tmdb_id, "movie")
-    poster = images.get("poster", "")
-    backdrop = images.get("backdrop", "")
-
-    li = xbmcgui.ListItem(label=f"{title} ({year})" if year else title)
-    li.setProperty("IsPlayable", "true")
-    li.setInfo("video", {"title": title, "plot": overview, "year": year, "mediatype": "movie"})
-    li.setArt({
-        "thumb": poster,
-        "poster": poster,
-        "fanart": backdrop,
-    })
-    if tmdb_id:
-        li.addContextMenuItems(_menus_browse("movie", tmdb_id, title, year_str, poster))
-        _ = xbmcplugin.addDirectoryItem(HANDLE, url("/play/", type="movie", id=tmdb_id), li, isFolder=False)
+    try:
+        details = Tmdb.movie_rich_details(tmdb_id)
+    except Exception:
+        return
+    poster_path = details.get("poster_path") or ""
+    li = MovieItem(details).build()
+    li.addContextMenuItems(_menus_browse("movie", tmdb_id, title, year_str, poster_path))
+    _ = xbmcplugin.addDirectoryItem(HANDLE, url("/play/", type="movie", id=tmdb_id), li, isFolder=False)
 
 
 # ── Calendar ──────────────────────────────────────────────────────────────────
@@ -399,7 +338,7 @@ def show_calendar():
         return
 
     all_items = [ep_item for eps in data.values() for ep_item in eps]
-    _warm_images([(int(i.get("show", {}).get("ids", {}).get("tmdb") or 0), "tv") for i in all_items])
+    _warm_details([(int(i.get("show", {}).get("ids", {}).get("tmdb") or 0), "tv") for i in all_items])
     xbmcplugin.setContent(HANDLE, "episodes")
     for date_str in sorted(data.keys()):
         for ep_item in data[date_str]:
@@ -409,68 +348,58 @@ def show_calendar():
 
 def _add_calendar_item(date_str: str, item: dict[str, Any]):
     show = item.get("show", {})
-    ep = item.get("episode", {})
+    ep_data = item.get("episode", {})
     tmdb_id: int = int(show.get("ids", {}).get("tmdb") or 0)
+    if not tmdb_id:
+        return
     show_title = show.get("title", "Unknown")
-    season = int(ep.get("season") or 1)
-    episode = int(ep.get("number") or 1)
-    ep_title = ep.get("title") or f"Episode {episode}"
-    overview = ep.get("overview", "")
-    rating = float(ep.get("rating") or 0)
+    season = int(ep_data.get("season") or 1)
+    episode = int(ep_data.get("number") or 1)
+    ep_title = ep_data.get("title") or f"Episode {episode}"
 
-    images = _tmdb_images(tmdb_id, "tv")
-    poster = images.get("poster", "")
-    backdrop = images.get("backdrop", "")
+    try:
+        show_details = Tmdb.tv_details(tmdb_id)
+    except Exception:
+        return
 
+    ep_dict: dict[str, Any] = {
+        "episode_number": episode,
+        "name": ep_title,
+        "overview": ep_data.get("overview") or "",
+        "still_path": "",
+        "vote_average": float(ep_data.get("rating") or 0),
+        "air_date": date_str,
+        "runtime": 30,
+    }
     label = f"[{date_str}]  {show_title}  S{season:02d}E{episode:02d} · {ep_title}"
-    li = xbmcgui.ListItem(label=label)
-    li.setProperty("IsPlayable", "true")
-    li.setInfo("video", {
-        "title": ep_title,
-        "tvshowtitle": show_title,
-        "season": season,
-        "episode": episode,
-        "plot": overview,
-        "rating": rating,
-        "aired": date_str,
-        "mediatype": "episode",
-    })
-    li.setArt({
-        "thumb": poster,
-        "poster": poster,
-        "fanart": backdrop,
-    })
-    if tmdb_id:
-        mw = url("/trakt/watched/", type="episode", id=tmdb_id, season=season, episode=episode)
-        li.addContextMenuItems([("Mark as Watched", f"RunPlugin({mw})")])
-        play_url = url("/play/", type="episode", id=tmdb_id, season=season, episode=episode)
-        _ = xbmcplugin.addDirectoryItem(HANDLE, play_url, li, isFolder=False)
+    episode_item = EpisodeItem(ep_dict, show_title, tmdb_id, season, show_details)
+    li = episode_item.build()
+    li.setLabel(label)
+
+    mw = url("/trakt/watched/", type="episode", id=tmdb_id, season=season, episode=episode)
+    li.addContextMenuItems([("Mark as Watched", f"RunPlugin({mw})")])
+    play_url = url("/play/", type="episode", id=tmdb_id, season=season, episode=episode)
+    _ = xbmcplugin.addDirectoryItem(HANDLE, play_url, li, isFolder=False)
 
 
 # ── Item renderers ────────────────────────────────────────────────────────────
 
 def _add_recommendation_show(item: dict[str, Any]):
     tmdb_id: int = int(item.get("ids", {}).get("tmdb") or 0)
+    if not tmdb_id:
+        return
     title = item.get("title", "Unknown")
     year = int(item.get("year") or 0)
-    overview = item.get("overview", "")
     year_str = str(year) if year else ""
-
-    images = _tmdb_images(tmdb_id, "tv")
-    poster = images.get("poster", "")
-    backdrop = images.get("backdrop", "")
-
-    li = xbmcgui.ListItem(label=f"{title} ({year})" if year else title)
-    li.setInfo("video", {"title": title, "plot": overview, "year": year, "mediatype": "tvshow"})
-    li.setArt({
-        "thumb": poster,
-        "poster": poster,
-        "fanart": backdrop,
-    })
-    if tmdb_id:
-        li.addContextMenuItems(_menus_browse("show", tmdb_id, title, year_str, poster))
-        show_url = url("/show/:show_id/seasons/", show_id=tmdb_id, show_title=title)
-        _ = xbmcplugin.addDirectoryItem(HANDLE, show_url, li, isFolder=True)
+    try:
+        details = Tmdb.tv_details(tmdb_id)
+    except Exception:
+        return
+    poster_path = details.get("poster_path") or ""
+    li = ShowItem(details).build()
+    li.addContextMenuItems(_menus_browse("show", tmdb_id, title, year_str, poster_path))
+    show_url = url("/show/:show_id/seasons/", show_id=tmdb_id, show_title=title)
+    _ = xbmcplugin.addDirectoryItem(HANDLE, show_url, li, isFolder=True)
 
 
 # ── In Progress Shows ─────────────────────────────────────────────────────────
@@ -516,24 +445,17 @@ def show_in_progress_shows():
         return
 
     results.sort(key=lambda x: x.get("last_watched_at", ""), reverse=True)
-    _warm_images([(r["tmdb_id"], "tv") for r in results])
+    _warm_details([(r["tmdb_id"], "tv") for r in results])
     xbmcplugin.setContent(HANDLE, "tvshows")
 
     for r in results:
         tmdb_id = r["tmdb_id"]
         title = r["title"]
-        year = r["year"]
-        images = _tmdb_images(tmdb_id, "tv")
-        poster = images.get("poster", "")
-        backdrop = images.get("backdrop", "")
-        label = f"{title} ({year})" if year else title
-        li = xbmcgui.ListItem(label=label)
-        li.setInfo("video", {"title": title, "year": year, "mediatype": "tvshow"})
-        li.setArt({
-            "thumb": poster,
-            "poster": poster,
-            "fanart": backdrop,
-        })
+        try:
+            details = Tmdb.tv_details(tmdb_id)
+        except Exception:
+            continue
+        li = ShowItem(details).build()
         show_url = url("/show/:show_id/seasons/", show_id=tmdb_id, show_title=title)
         _ = xbmcplugin.addDirectoryItem(HANDLE, show_url, li, isFolder=True)
 
@@ -544,25 +466,17 @@ def show_in_progress_shows():
 
 def _render_tmdb_shows(items: list[dict[str, Any]], next_url: str = "") -> None:
     xbmcplugin.setContent(HANDLE, "tvshows")
+    _warm_details([(int(s.get("id") or 0), "tv") for s in items])
     for show in items:
-        title = show.get("name", "Unknown")
-        overview = show.get("overview", "")
-        poster = show.get("poster_path") or ""
-        backdrop = show.get("backdrop_path") or ""
-        rating = float(show.get("vote_average") or 0)
-        year_str = (show.get("first_air_date") or "")[:4]
         tmdb_id = int(show.get("id") or 0)
-        li = xbmcgui.ListItem(label=title)
-        li.setInfo("video", {
-            "title": title, "plot": overview,
-            "year": int(year_str) if year_str.isdigit() else 0,
-            "rating": rating, "mediatype": "tvshow",
-        })
-        li.setArt({
-            "thumb": f"{_IMG}{poster}" if poster else "",
-            "poster": f"{_IMG}{poster}" if poster else "",
-            "fanart": f"{_IMG}{backdrop}" if backdrop else "",
-        })
+        title = show.get("name", "Unknown")
+        year_str = (show.get("first_air_date") or "")[:4]
+        poster = show.get("poster_path") or ""
+        try:
+            details = Tmdb.tv_details(tmdb_id)
+        except Exception:
+            continue
+        li = ShowItem(details).build()
         li.addContextMenuItems(_menus_browse("show", tmdb_id, title, year_str, poster))
         show_url = url("/show/:show_id/seasons/", show_id=tmdb_id, show_title=title)
         _ = xbmcplugin.addDirectoryItem(HANDLE, show_url, li, isFolder=True)
@@ -574,26 +488,17 @@ def _render_tmdb_shows(items: list[dict[str, Any]], next_url: str = "") -> None:
 
 def _render_tmdb_movies(items: list[dict[str, Any]], next_url: str = "") -> None:
     xbmcplugin.setContent(HANDLE, "movies")
+    _warm_details([(int(m.get("id") or 0), "movie") for m in items])
     for movie in items:
-        title = movie.get("title", "Unknown")
-        overview = movie.get("overview", "")
-        poster = movie.get("poster_path") or ""
-        backdrop = movie.get("backdrop_path") or ""
-        rating = float(movie.get("vote_average") or 0)
-        year_str = (movie.get("release_date") or "")[:4]
         tmdb_id = int(movie.get("id") or 0)
-        li = xbmcgui.ListItem(label=title)
-        li.setProperty("IsPlayable", "true")
-        li.setInfo("video", {
-            "title": title, "plot": overview,
-            "year": int(year_str) if year_str.isdigit() else 0,
-            "rating": rating, "mediatype": "movie",
-        })
-        li.setArt({
-            "thumb": f"{_IMG}{poster}" if poster else "",
-            "poster": f"{_IMG}{poster}" if poster else "",
-            "fanart": f"{_IMG}{backdrop}" if backdrop else "",
-        })
+        title = movie.get("title", "Unknown")
+        year_str = (movie.get("release_date") or "")[:4]
+        poster = movie.get("poster_path") or ""
+        try:
+            details = Tmdb.movie_rich_details(tmdb_id)
+        except Exception:
+            continue
+        li = MovieItem(details).build()
         li.addContextMenuItems(_menus_browse("movie", tmdb_id, title, year_str, poster))
         _ = xbmcplugin.addDirectoryItem(HANDLE, url("/play/", type="movie", id=tmdb_id), li, isFolder=False)
     if next_url:

@@ -7,6 +7,8 @@ import xbmcplugin
 import xbmcvfs
 from typing import Any
 
+from items import MovieItem, ShowItem
+from services.tmdb import Tmdb
 from utils.router import url
 
 HANDLE = int(sys.argv[1])
@@ -98,40 +100,33 @@ def _render_favourites(favs: list[dict[str, Any]]) -> None:
         tmdb_id = fav.get("tmdb_id", "")
         title = fav.get("title", "Unknown")
         year = fav.get("year", "")
-        poster = fav.get("poster", "")
         key = fav.get("key", "")
-
-        label = f"{title} ({year})" if year else title
-        li = xbmcgui.ListItem(label=label)
-        li.setArt({
-            "thumb": f"{_IMG}{poster}" if poster else "",
-            "poster": f"{_IMG}{poster}" if poster else "",
-        })
 
         remove_url = url("/favourite/remove/", key=key)
         wl_type = "movie" if item_type == "movie" else "show"
         wl_url = url("/trakt/watchlist/add/", type=wl_type, id=tmdb_id)
         mw_url = url("/trakt/watched/", type=wl_type, id=tmdb_id)
-        li.addContextMenuItems([
+        context_menus = [
             ("Remove from Favourites", f"RunPlugin({remove_url})"),
             ("Add to Trakt Watchlist", f"RunPlugin({wl_url})"),
             ("Mark as Watched", f"RunPlugin({mw_url})"),
-        ])
+        ]
 
         if item_type == "movie":
-            li.setProperty("IsPlayable", "true")
-            li.setInfo("video", {
-                "title": title,
-                "year": int(year) if year.isdigit() else 0,
-                "mediatype": "movie",
-            })
+            try:
+                details = Tmdb.movie_rich_details(int(tmdb_id))
+            except Exception:
+                continue
+            li = MovieItem(details).build()
+            li.addContextMenuItems(context_menus)
             _ = xbmcplugin.addDirectoryItem(HANDLE, url("/play/", type="movie", id=tmdb_id), li, isFolder=False)
         else:
-            li.setInfo("video", {
-                "title": title,
-                "year": int(year) if year.isdigit() else 0,
-                "mediatype": "tvshow",
-            })
+            try:
+                details = Tmdb.tv_details(int(tmdb_id))
+            except Exception:
+                continue
+            li = ShowItem(details).build()
+            li.addContextMenuItems(context_menus)
             show_url = url("/show/:show_id/seasons/", show_id=tmdb_id, show_title=title)
             _ = xbmcplugin.addDirectoryItem(HANDLE, show_url, li, isFolder=True)
 

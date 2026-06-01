@@ -382,7 +382,9 @@ class TmdbAPI(Service):
 
     def movie_rich_details(self, tmdb_id: int) -> dict[str, Any]:
         return self._get(
-            f"movie/{tmdb_id}", params={"append_to_response": "credits"}, ttl=7200
+            f"movie/{tmdb_id}",
+            params={"append_to_response": "credits,images,external_ids,release_dates,videos,keywords&include_image_language=en,null"},
+            ttl=7200,
         )
 
     def tv_rich_details(self, tmdb_id: int) -> dict[str, Any]:
