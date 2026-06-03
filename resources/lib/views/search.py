@@ -7,7 +7,6 @@ import xbmcplugin
 import xbmcvfs
 from typing import Any
 
-from concurrent.futures import ThreadPoolExecutor, as_completed
 from items import MovieItem, ShowItem
 from services.tmdb import Tmdb
 from utils.notifications import error

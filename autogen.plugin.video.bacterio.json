@@ -1,0 +1,15 @@
+{
+    "name": "bacterio",
+    "plugin": "plugin.video.bacterio",
+    "priority": 100,
+    "is_resolvable": "true",
+    "make_playlist": "false",
+    "play_movie": "plugin://plugin.video.bacterio/play/?type=movie&id={tmdb}",
+    "play_episode": "plugin://plugin.video.bacterio/play/?type=episode&id={tmdb}&season={season}&episode={episode}",
+    "search_movie": "plugin://plugin.video.bacterio/search/?query={title_url}",
+    "search_episode": "plugin://plugin.video.bacterio/search/?query={showname_url}",
+    "fallback": {
+        "play_movie": "autogen.plugin.video.bacterio.json search_movie",
+        "play_episode": "autogen.plugin.video.bacterio.json search_episode"
+    }
+}

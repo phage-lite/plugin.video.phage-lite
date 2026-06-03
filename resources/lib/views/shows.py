@@ -214,7 +214,7 @@ def show_episodes(show_id: int, season_number: int):
 
     for ep in episodes:
         ep_num = ep.get("episode_number", 0)
-        item = EpisodeItem(ep_num, season_number, season_details, show_details)
+        item = EpisodeItem(ep_num, season_details, show_details)
         li = item.build()
 
         _ = xbmcplugin.addDirectoryItem(HANDLE, item.play_url, li)
