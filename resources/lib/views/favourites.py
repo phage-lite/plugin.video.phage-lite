@@ -122,7 +122,7 @@ def _render_favourites(favs: list[dict[str, Any]]) -> None:
             _ = xbmcplugin.addDirectoryItem(HANDLE, url("/play/", type="movie", id=tmdb_id), li, isFolder=False)
         else:
             try:
-                details = Tmdb.tv_details(int(tmdb_id))
+                details = Tmdb.tv_show_details(int(tmdb_id))
             except Exception:
                 continue
             li = ShowItem(details).build()

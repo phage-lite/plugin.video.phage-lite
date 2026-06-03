@@ -160,7 +160,7 @@ def _add_show(show: dict[str, Any]):
     year_str = (show.get("first_air_date") or "")[:4]
     poster = show.get("poster_path") or ""
     try:
-        details = Tmdb.tv_details(tmdb_id)
+        details = Tmdb.tv_show_details(tmdb_id)
     except Exception:
         return
     li = ShowItem(details).build()

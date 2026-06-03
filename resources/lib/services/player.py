@@ -327,7 +327,7 @@ def resolve_and_play(
     try:
         if item_type == "episode":
             ext = Tmdb.tv_external_ids(int(tmdb_id))
-            details = Tmdb.tv_details(int(tmdb_id))
+            details = Tmdb.tv_show_details(int(tmdb_id))
             title = details.get("name", "")
             year = (details.get("first_air_date") or "")[:4]
         else:

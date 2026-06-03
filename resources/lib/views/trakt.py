@@ -9,16 +9,20 @@ from typing import Any
 from items import EpisodeItem, MovieItem, ShowItem
 from services.trakt import Trakt, PAGE_SIZE
 from services.tmdb import Tmdb
-from utils.logger import log
 from utils.notifications import error
 from utils.router import url
 
 HANDLE = int(sys.argv[1])
-_IMG = "https://image.tmdb.org/t/p/w500"
 
 
 def _icon(name: str) -> str:
-    return os.path.join(xbmcaddon.Addon().getAddonInfo("path"), "resources", "media", "icons", name + ".png")
+    return os.path.join(
+        xbmcaddon.Addon().getAddonInfo("path"),
+        "resources",
+        "media",
+        "icons",
+        name + ".png",
+    )
 
 
 def _next_page_item(label: str) -> xbmcgui.ListItem:
@@ -31,9 +35,19 @@ def _next_page_item(label: str) -> xbmcgui.ListItem:
 
 # ── Context menu helpers ──────────────────────────────────────────────────────
 
-def _menus_browse(media_type: str, tmdb_id: int, title: str, year: str, poster: str) -> list[tuple[str, str]]:
+
+def _menus_browse(
+    media_type: str, tmdb_id: int, title: str, year: str, poster: str
+) -> list[tuple[str, str]]:
     """Menus for items NOT in the watchlist - offer to add."""
-    fav = url("/favourite/add/", type=media_type, id=tmdb_id, title=title, year=year, poster=poster)
+    fav = url(
+        "/favourite/add/",
+        type=media_type,
+        id=tmdb_id,
+        title=title,
+        year=year,
+        poster=poster,
+    )
     wl = url("/trakt/watchlist/add/", type=media_type, id=tmdb_id)
     mw = url("/trakt/watched/", type=media_type, id=tmdb_id)
     menus = [
@@ -45,9 +59,18 @@ def _menus_browse(media_type: str, tmdb_id: int, title: str, year: str, poster: 
     return menus
 
 
-def _menus_watchlist(media_type: str, tmdb_id: int, title: str, year: str, poster: str) -> list[tuple[str, str]]:
+def _menus_watchlist(
+    media_type: str, tmdb_id: int, title: str, year: str, poster: str
+) -> list[tuple[str, str]]:
     """Menus for items already in the Trakt watchlist - offer to remove."""
-    fav = url("/favourite/add/", type=media_type, id=tmdb_id, title=title, year=year, poster=poster)
+    fav = url(
+        "/favourite/add/",
+        type=media_type,
+        id=tmdb_id,
+        title=title,
+        year=year,
+        poster=poster,
+    )
     rem = url("/trakt/watchlist/remove/", type=media_type, id=tmdb_id)
     mw = url("/trakt/watched/", type=media_type, id=tmdb_id)
     menus = [
@@ -60,6 +83,7 @@ def _menus_watchlist(media_type: str, tmdb_id: int, title: str, year: str, poste
 
 
 # ── Up Next ───────────────────────────────────────────────────────────────────
+
 
 def show_up_next():
     try:
@@ -97,28 +121,15 @@ def _fetch_up_next() -> list[dict[str, Any]]:
             next_ep = prog.get("next_episode")
             if not next_ep:
                 return None
-            show_details = Tmdb.tv_details(tmdb_id)
-            season = next_ep.get("season", 1)
-            episode = next_ep.get("number", 1)
-            season_data = Tmdb.tv_season(tmdb_id, season)
-            episodes: list[dict[str, Any]] = season_data.get("episodes") or []
-            ep_info = next((e for e in episodes if e["episode_number"] == episode), {})
-            ep_dict: dict[str, Any] = {
-                "episode_number": episode,
-                "name": next_ep.get("title") or ep_info.get("name") or "",
-                "overview": ep_info.get("overview") or "",
-                "still_path": ep_info.get("still_path") or "",
-                "vote_average": ep_info.get("vote_average") or 0,
-                "air_date": ep_info.get("air_date") or "",
-                "runtime": ep_info.get("runtime") or 30,
-            }
+            show_details = Tmdb.tv_show_details(tmdb_id)
+            season_number = next_ep.get("season", 1)
+            episode_number = next_ep.get("number", 1)
+            season_details = Tmdb.tv_season(tmdb_id, season_number)
             return {
-                "show_title":       show.get("title", "Unknown"),
-                "tmdb_id":          tmdb_id,
-                "season":           season,
-                "ep":               ep_dict,
-                "show_details":     show_details,
-                "last_watched_at":  watched_item.get("last_watched_at", ""),
+                "episode_number": episode_number,
+                "show_details": show_details,
+                "season_details": season_details,
+                "last_watched_at": watched_item.get("last_watched_at", ""),
             }
         except Exception:
             return None
@@ -136,29 +147,26 @@ def _fetch_up_next() -> list[dict[str, Any]]:
 
 
 def _add_up_next_item(item: dict[str, Any]):
-    show_title = item["show_title"]
-    tmdb_id = item["tmdb_id"]
-    season = item["season"]
-    ep = item["ep"]
+    episode_number = item["episode_number"]
     show_details = item["show_details"]
+    season_details = item["season_details"]
 
-    episode_num = ep.get("episode_number", 0)
-    ep_title = ep.get("name") or f"Episode {episode_num}"
-    label = f"{show_title}: S{season:02d}E{episode_num:02d}"
-    if ep_title and ep_title != f"Episode {episode_num}":
-        label += f" - {ep_title}"
-
-    episode_item = EpisodeItem(ep, show_title, tmdb_id, season, show_details)
+    # label = f"{show_title}: S{season:02d}E{episode_num:02d}"
+    # if ep_title and ep_title != f"Episode {episode_num}":
+    #     label += f" - {ep_title}"
+    episode_item = EpisodeItem(episode_number, season_details, show_details)
     li = episode_item.build()
+    label = (
+        f"{episode_item.show_title}: S{episode_item.season_number}E{episode_item.label}"
+    )
     li.setLabel(label)
+    li.setLabel2(label)
 
-    mw = url("/trakt/watched/", type="episode", id=tmdb_id, season=season, episode=episode_num)
-    li.addContextMenuItems([("Mark as Watched", f"RunPlugin({mw})")])
-    play_url = url("/play/", type="episode", id=tmdb_id, season=season, episode=episode_num)
-    _ = xbmcplugin.addDirectoryItem(HANDLE, play_url, li, isFolder=False)
+    _ = xbmcplugin.addDirectoryItem(HANDLE, episode_item.play_url, li)
 
 
 # ── Watchlist ─────────────────────────────────────────────────────────────────
+
 
 def show_trakt_watchlist_movies(page: int = 1):
     try:
@@ -168,15 +176,22 @@ def show_trakt_watchlist_movies(page: int = 1):
         xbmcplugin.endOfDirectory(HANDLE)
         return
 
-    _warm_details([(int(i.get("movie", {}).get("ids", {}).get("tmdb") or 0), "movie") for i in items])
+    _warm_details(
+        [
+            (int(i.get("movie", {}).get("ids", {}).get("tmdb") or 0), "movie")
+            for i in items
+        ]
+    )
     xbmcplugin.setContent(HANDLE, "movies")
     for item in items:
         _add_watchlist_movie(item)
 
     if len(items) >= PAGE_SIZE:
         _ = xbmcplugin.addDirectoryItem(
-            HANDLE, url("/movies/trakt_watchlist/", page=page + 1),
-            _next_page_item(f"Next Page → ({page + 1})"), isFolder=True
+            HANDLE,
+            url("/movies/trakt_watchlist/", page=page + 1),
+            _next_page_item(f"Next Page → ({page + 1})"),
+            isFolder=True,
         )
     xbmcplugin.endOfDirectory(HANDLE)
 
@@ -189,20 +204,25 @@ def show_trakt_watchlist_shows(page: int = 1):
         xbmcplugin.endOfDirectory(HANDLE)
         return
 
-    _warm_details([(int(i.get("show", {}).get("ids", {}).get("tmdb") or 0), "tv") for i in items])
+    _warm_details(
+        [(int(i.get("show", {}).get("ids", {}).get("tmdb") or 0), "tv") for i in items]
+    )
     xbmcplugin.setContent(HANDLE, "tvshows")
     for item in items:
         _add_watchlist_show(item)
 
     if len(items) >= PAGE_SIZE:
         _ = xbmcplugin.addDirectoryItem(
-            HANDLE, url("/shows/trakt_watchlist/", page=page + 1),
-            _next_page_item(f"Next Page → ({page + 1})"), isFolder=True
+            HANDLE,
+            url("/shows/trakt_watchlist/", page=page + 1),
+            _next_page_item(f"Next Page → ({page + 1})"),
+            isFolder=True,
         )
     xbmcplugin.endOfDirectory(HANDLE)
 
 
 # ── Recommendations ───────────────────────────────────────────────────────────
+
 
 def show_trakt_recommendations_movies(page: int = 1):
     try:
@@ -219,8 +239,10 @@ def show_trakt_recommendations_movies(page: int = 1):
 
     if len(items) >= PAGE_SIZE:
         _ = xbmcplugin.addDirectoryItem(
-            HANDLE, url("/movies/trakt_recommendations/", page=page + 1),
-            _next_page_item(f"Next Page → ({page + 1})"), isFolder=True
+            HANDLE,
+            url("/movies/trakt_recommendations/", page=page + 1),
+            _next_page_item(f"Next Page → ({page + 1})"),
+            isFolder=True,
         )
     xbmcplugin.endOfDirectory(HANDLE)
 
@@ -240,16 +262,20 @@ def show_trakt_recommendations_shows(page: int = 1):
 
     if len(items) >= PAGE_SIZE:
         _ = xbmcplugin.addDirectoryItem(
-            HANDLE, url("/shows/trakt_recommendations/", page=page + 1),
-            _next_page_item(f"Next Page → ({page + 1})"), isFolder=True
+            HANDLE,
+            url("/shows/trakt_recommendations/", page=page + 1),
+            _next_page_item(f"Next Page → ({page + 1})"),
+            isFolder=True,
         )
     xbmcplugin.endOfDirectory(HANDLE)
 
 
 # ── Item renderers ────────────────────────────────────────────────────────────
 
+
 def _warm_details(pairs: list[tuple[int, str]]) -> None:
     """Pre-fetch TMDB details for all items in parallel to warm the disk cache."""
+
     def fetch(pair: tuple[int, str]) -> None:
         tid, media = pair
         if not tid:
@@ -258,9 +284,10 @@ def _warm_details(pairs: list[tuple[int, str]]) -> None:
             if media == "movie":
                 Tmdb.movie_rich_details(tid)
             else:
-                Tmdb.tv_details(tid)
+                Tmdb.tv_show_details(tid)
         except Exception:
             pass
+
     with ThreadPoolExecutor(max_workers=8) as ex:
         list(ex.map(fetch, pairs))
 
@@ -279,8 +306,12 @@ def _add_watchlist_movie(item: dict[str, Any]):
         return
     poster_path = details.get("poster_path") or ""
     li = MovieItem(details).build()
-    li.addContextMenuItems(_menus_watchlist("movie", tmdb_id, title, year_str, poster_path))
-    _ = xbmcplugin.addDirectoryItem(HANDLE, url("/play/", type="movie", id=tmdb_id), li, isFolder=False)
+    li.addContextMenuItems(
+        _menus_watchlist("movie", tmdb_id, title, year_str, poster_path)
+    )
+    _ = xbmcplugin.addDirectoryItem(
+        HANDLE, url("/play/", type="movie", id=tmdb_id), li, isFolder=False
+    )
 
 
 def _add_watchlist_show(item: dict[str, Any]):
@@ -292,12 +323,14 @@ def _add_watchlist_show(item: dict[str, Any]):
     year = int(show.get("year") or 0)
     year_str = str(year) if year else ""
     try:
-        details = Tmdb.tv_details(tmdb_id)
+        details = Tmdb.tv_show_details(tmdb_id)
     except Exception:
         return
     poster_path = details.get("poster_path") or ""
     li = ShowItem(details).build()
-    li.addContextMenuItems(_menus_watchlist("show", tmdb_id, title, year_str, poster_path))
+    li.addContextMenuItems(
+        _menus_watchlist("show", tmdb_id, title, year_str, poster_path)
+    )
     show_url = url("/show/:show_id/seasons/", show_id=tmdb_id, show_title=title)
     _ = xbmcplugin.addDirectoryItem(HANDLE, show_url, li, isFolder=True)
 
@@ -315,11 +348,16 @@ def _add_recommendation_movie(item: dict[str, Any]):
         return
     poster_path = details.get("poster_path") or ""
     li = MovieItem(details).build()
-    li.addContextMenuItems(_menus_browse("movie", tmdb_id, title, year_str, poster_path))
-    _ = xbmcplugin.addDirectoryItem(HANDLE, url("/play/", type="movie", id=tmdb_id), li, isFolder=False)
+    li.addContextMenuItems(
+        _menus_browse("movie", tmdb_id, title, year_str, poster_path)
+    )
+    _ = xbmcplugin.addDirectoryItem(
+        HANDLE, url("/play/", type="movie", id=tmdb_id), li, isFolder=False
+    )
 
 
 # ── Calendar ──────────────────────────────────────────────────────────────────
+
 
 def show_calendar():
     try:
@@ -338,7 +376,12 @@ def show_calendar():
         return
 
     all_items = [ep_item for eps in data.values() for ep_item in eps]
-    _warm_details([(int(i.get("show", {}).get("ids", {}).get("tmdb") or 0), "tv") for i in all_items])
+    _warm_details(
+        [
+            (int(i.get("show", {}).get("ids", {}).get("tmdb") or 0), "tv")
+            for i in all_items
+        ]
+    )
     xbmcplugin.setContent(HANDLE, "episodes")
     for date_str in sorted(data.keys()):
         for ep_item in data[date_str]:
@@ -358,31 +401,21 @@ def _add_calendar_item(date_str: str, item: dict[str, Any]):
     ep_title = ep_data.get("title") or f"Episode {episode}"
 
     try:
-        show_details = Tmdb.tv_details(tmdb_id)
+        show_details = Tmdb.tv_show_details(tmdb_id)
+        season_data = Tmdb.tv_season(tmdb_id, season)
     except Exception:
         return
 
-    ep_dict: dict[str, Any] = {
-        "episode_number": episode,
-        "name": ep_title,
-        "overview": ep_data.get("overview") or "",
-        "still_path": "",
-        "vote_average": float(ep_data.get("rating") or 0),
-        "air_date": date_str,
-        "runtime": 30,
-    }
     label = f"[{date_str}]  {show_title}  S{season:02d}E{episode:02d} · {ep_title}"
-    episode_item = EpisodeItem(ep_dict, show_title, tmdb_id, season, show_details)
+    episode_item = EpisodeItem(episode, season_data, show_details)
     li = episode_item.build()
     li.setLabel(label)
-
-    mw = url("/trakt/watched/", type="episode", id=tmdb_id, season=season, episode=episode)
-    li.addContextMenuItems([("Mark as Watched", f"RunPlugin({mw})")])
     play_url = url("/play/", type="episode", id=tmdb_id, season=season, episode=episode)
     _ = xbmcplugin.addDirectoryItem(HANDLE, play_url, li, isFolder=False)
 
 
 # ── Item renderers ────────────────────────────────────────────────────────────
+
 
 def _add_recommendation_show(item: dict[str, Any]):
     tmdb_id: int = int(item.get("ids", {}).get("tmdb") or 0)
@@ -392,7 +425,7 @@ def _add_recommendation_show(item: dict[str, Any]):
     year = int(item.get("year") or 0)
     year_str = str(year) if year else ""
     try:
-        details = Tmdb.tv_details(tmdb_id)
+        details = Tmdb.tv_show_details(tmdb_id)
     except Exception:
         return
     poster_path = details.get("poster_path") or ""
@@ -403,6 +436,7 @@ def _add_recommendation_show(item: dict[str, Any]):
 
 
 # ── In Progress Shows ─────────────────────────────────────────────────────────
+
 
 def show_in_progress_shows():
     try:
@@ -440,7 +474,10 @@ def show_in_progress_shows():
                 results.append(val)
 
     if not results:
-        _ = xbmcgui.Dialog().ok("In Progress", "No shows in progress.\n\nStart watching a show to see it here.")
+        _ = xbmcgui.Dialog().ok(
+            "In Progress",
+            "No shows in progress.\n\nStart watching a show to see it here.",
+        )
         xbmcplugin.endOfDirectory(HANDLE)
         return
 
@@ -452,7 +489,7 @@ def show_in_progress_shows():
         tmdb_id = r["tmdb_id"]
         title = r["title"]
         try:
-            details = Tmdb.tv_details(tmdb_id)
+            details = Tmdb.tv_show_details(tmdb_id)
         except Exception:
             continue
         li = ShowItem(details).build()
@@ -464,6 +501,7 @@ def show_in_progress_shows():
 
 # ── Because You/Most Watched ──────────────────────────────────────────────────
 
+
 def _render_tmdb_shows(items: list[dict[str, Any]], next_url: str = "") -> None:
     xbmcplugin.setContent(HANDLE, "tvshows")
     _warm_details([(int(s.get("id") or 0), "tv") for s in items])
@@ -473,7 +511,7 @@ def _render_tmdb_shows(items: list[dict[str, Any]], next_url: str = "") -> None:
         year_str = (show.get("first_air_date") or "")[:4]
         poster = show.get("poster_path") or ""
         try:
-            details = Tmdb.tv_details(tmdb_id)
+            details = Tmdb.tv_show_details(tmdb_id)
         except Exception:
             continue
         li = ShowItem(details).build()
@@ -500,7 +538,9 @@ def _render_tmdb_movies(items: list[dict[str, Any]], next_url: str = "") -> None
             continue
         li = MovieItem(details).build()
         li.addContextMenuItems(_menus_browse("movie", tmdb_id, title, year_str, poster))
-        _ = xbmcplugin.addDirectoryItem(HANDLE, url("/play/", type="movie", id=tmdb_id), li, isFolder=False)
+        _ = xbmcplugin.addDirectoryItem(
+            HANDLE, url("/play/", type="movie", id=tmdb_id), li, isFolder=False
+        )
     if next_url:
         li = xbmcgui.ListItem(label="Next Page →")
         _ = xbmcplugin.addDirectoryItem(HANDLE, next_url, li, isFolder=True)
@@ -510,20 +550,28 @@ def _render_tmdb_movies(items: list[dict[str, Any]], next_url: str = "") -> None
 _N_SEEDS = 3  # number of watch-history seeds to aggregate
 
 
-def _because_shows(page: int, seed_ids: list[int], seed_title: str, sort_key: str, subcategory: str) -> None:
+def _because_shows(
+    page: int, seed_ids: list[int], seed_title: str, sort_key: str, subcategory: str
+) -> None:
     if not seed_ids:
         try:
             watched = Trakt.watched_shows(limit=50)
             if not watched:
-                _ = xbmcgui.Dialog().ok("Nothing found", "No watch history found on Trakt.")
+                _ = xbmcgui.Dialog().ok(
+                    "Nothing found", "No watch history found on Trakt."
+                )
                 xbmcplugin.endOfDirectory(HANDLE)
                 return
             if sort_key == "plays":
                 watched.sort(key=lambda x: int(x.get("plays") or 0), reverse=True)
             else:
-                watched.sort(key=lambda x: x.get("last_watched_at", "") or "", reverse=True)
+                watched.sort(
+                    key=lambda x: x.get("last_watched_at", "") or "", reverse=True
+                )
             seeds = watched[:_N_SEEDS]
-            seed_ids = [int(s.get("show", {}).get("ids", {}).get("tmdb") or 0) for s in seeds]
+            seed_ids = [
+                int(s.get("show", {}).get("ids", {}).get("tmdb") or 0) for s in seeds
+            ]
             seed_ids = [sid for sid in seed_ids if sid]
             seed_title = seeds[0].get("show", {}).get("title", "") if seeds else ""
         except Exception as e:
@@ -532,7 +580,9 @@ def _because_shows(page: int, seed_ids: list[int], seed_title: str, sort_key: st
             return
 
     if not seed_ids:
-        _ = xbmcgui.Dialog().ok("Nothing found", "Could not determine seeds from your history.")
+        _ = xbmcgui.Dialog().ok(
+            "Nothing found", "Could not determine seeds from your history."
+        )
         xbmcplugin.endOfDirectory(HANDLE)
         return
 
@@ -555,34 +605,54 @@ def _because_shows(page: int, seed_ids: list[int], seed_title: str, sort_key: st
 
     seed_param = ",".join(str(s) for s in seed_ids)
     next_url = (
-        url(f"/shows/{subcategory}/", seed_ids=seed_param, seed_title=seed_title, page=page + 1)
-        if len(merged) >= 20 else ""
+        url(
+            f"/shows/{subcategory}/",
+            seed_ids=seed_param,
+            seed_title=seed_title,
+            page=page + 1,
+        )
+        if len(merged) >= 20
+        else ""
     )
     _render_tmdb_shows(merged, next_url)
 
 
-def show_because_you_watched_shows(page: int = 1, seed_ids: list[int] | None = None, seed_title: str = "") -> None:
-    _because_shows(page, seed_ids or [], seed_title, "last_watched_at", "because_you_watched")
+def show_because_you_watched_shows(
+    page: int = 1, seed_ids: list[int] | None = None, seed_title: str = ""
+) -> None:
+    _because_shows(
+        page, seed_ids or [], seed_title, "last_watched_at", "because_you_watched"
+    )
 
 
-def show_because_most_watched_shows(page: int = 1, seed_ids: list[int] | None = None, seed_title: str = "") -> None:
+def show_because_most_watched_shows(
+    page: int = 1, seed_ids: list[int] | None = None, seed_title: str = ""
+) -> None:
     _because_shows(page, seed_ids or [], seed_title, "plays", "because_most_watched")
 
 
-def _because_movies(page: int, seed_ids: list[int], seed_title: str, sort_key: str, subcategory: str) -> None:
+def _because_movies(
+    page: int, seed_ids: list[int], seed_title: str, sort_key: str, subcategory: str
+) -> None:
     if not seed_ids:
         try:
             watched = Trakt.watched_movies(limit=50)
             if not watched:
-                _ = xbmcgui.Dialog().ok("Nothing found", "No watch history found on Trakt.")
+                _ = xbmcgui.Dialog().ok(
+                    "Nothing found", "No watch history found on Trakt."
+                )
                 xbmcplugin.endOfDirectory(HANDLE)
                 return
             if sort_key == "plays":
                 watched.sort(key=lambda x: int(x.get("plays") or 0), reverse=True)
             else:
-                watched.sort(key=lambda x: x.get("last_watched_at", "") or "", reverse=True)
+                watched.sort(
+                    key=lambda x: x.get("last_watched_at", "") or "", reverse=True
+                )
             seeds = watched[:_N_SEEDS]
-            seed_ids = [int(s.get("movie", {}).get("ids", {}).get("tmdb") or 0) for s in seeds]
+            seed_ids = [
+                int(s.get("movie", {}).get("ids", {}).get("tmdb") or 0) for s in seeds
+            ]
             seed_ids = [sid for sid in seed_ids if sid]
             seed_title = seeds[0].get("movie", {}).get("title", "") if seeds else ""
         except Exception as e:
@@ -591,7 +661,9 @@ def _because_movies(page: int, seed_ids: list[int], seed_title: str, sort_key: s
             return
 
     if not seed_ids:
-        _ = xbmcgui.Dialog().ok("Nothing found", "Could not determine seeds from your history.")
+        _ = xbmcgui.Dialog().ok(
+            "Nothing found", "Could not determine seeds from your history."
+        )
         xbmcplugin.endOfDirectory(HANDLE)
         return
 
@@ -614,15 +686,27 @@ def _because_movies(page: int, seed_ids: list[int], seed_title: str, sort_key: s
 
     seed_param = ",".join(str(s) for s in seed_ids)
     next_url = (
-        url(f"/movies/{subcategory}/", seed_ids=seed_param, seed_title=seed_title, page=page + 1)
-        if len(merged) >= 20 else ""
+        url(
+            f"/movies/{subcategory}/",
+            seed_ids=seed_param,
+            seed_title=seed_title,
+            page=page + 1,
+        )
+        if len(merged) >= 20
+        else ""
     )
     _render_tmdb_movies(merged, next_url)
 
 
-def show_because_you_watched_movies(page: int = 1, seed_ids: list[int] | None = None, seed_title: str = "") -> None:
-    _because_movies(page, seed_ids or [], seed_title, "last_watched_at", "because_you_watched")
+def show_because_you_watched_movies(
+    page: int = 1, seed_ids: list[int] | None = None, seed_title: str = ""
+) -> None:
+    _because_movies(
+        page, seed_ids or [], seed_title, "last_watched_at", "because_you_watched"
+    )
 
 
-def show_because_most_watched_movies(page: int = 1, seed_ids: list[int] | None = None, seed_title: str = "") -> None:
+def show_because_most_watched_movies(
+    page: int = 1, seed_ids: list[int] | None = None, seed_title: str = ""
+) -> None:
     _because_movies(page, seed_ids or [], seed_title, "plays", "because_most_watched")

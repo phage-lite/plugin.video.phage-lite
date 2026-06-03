@@ -1,8 +1,11 @@
 from typing import Any
+from typing_extensions import cast
 import xbmc
 import xbmcgui
 
-_IMG = "https://image.tmdb.org/t/p/"
+from services.tmdb import Tmdb
+from utils.logger import log
+from utils.router import url
 
 
 class ListItemBase:
@@ -13,10 +16,12 @@ class ListItemBase:
         raise NotImplementedError
 
     def build(self) -> xbmcgui.ListItem:
-        li = xbmcgui.ListItem(label=self.label)
+        li = xbmcgui.ListItem(label=self.label, label2=self.label)
         if not self.is_folder:
             li.setProperty("IsPlayable", "true")
-        tag = li.getVideoInfoTag()
+            self._addContextMenuItems(li)
+
+        tag = cast(xbmc.InfoTagVideo, li.getVideoInfoTag())
         self._apply_info(li, tag)
         self._apply_art(li)
         return li
@@ -27,96 +32,109 @@ class ListItemBase:
     def _apply_art(self, li: xbmcgui.ListItem) -> None:
         pass
 
-    @staticmethod
-    def _img(path: str, size: str = "original") -> str:
-        return f"{_IMG}{size}{path}" if path else ""
+    def _addContextMenuItems(self, li: xbmcgui.ListItem) -> None:
+        pass
 
     @staticmethod
     def extract_art(details: dict[str, Any]) -> dict[str, str]:
-        poster_path = details.get("poster_path") or ""
-        backdrop_path = details.get("backdrop_path") or ""
-        images = details.get("images") or {}
+        poster_path = details.get("poster_path", "")
+        backdrop_path = details.get("backdrop_path", "")
+        images: dict[str, Any] = details.get("images", {})
 
-        poster = f"{_IMG}w780{poster_path}" if poster_path else ""
-        fanart = f"{_IMG}w1280{backdrop_path}" if backdrop_path else ""
+        poster = Tmdb.get_image_url(poster_path, "w780")
+        fanart = Tmdb.get_image_url(backdrop_path, "w1280")
         clearlogo = ""
         landscape = ""
 
-        logos: list[dict[str, Any]] = images.get("logos") or []
-        backdrops: list[dict[str, Any]] = images.get("backdrops") or []
-        posters: list[dict[str, Any]] = images.get("posters") or []
+        logos: list[dict[str, Any]] = images.get("logos", [])
+        backdrops: list[dict[str, Any]] = images.get("backdrops", [])
+        posters: list[dict[str, Any]] = images.get("posters", [])
 
         for logo in logos:
-            path = logo.get("file_path") or ""
+            path = logo.get("file_path", "")
             if not path:
                 continue
             if not path.lower().endswith(".png"):
                 path = path.rsplit(".", 1)[0] + ".png"
-            clearlogo = f"{_IMG}original{path}"
+            clearlogo = Tmdb.get_image_url(path, "original")
             break
 
         for bd in backdrops:
             if bd.get("iso_639_1") == "en":
-                landscape = f"{_IMG}w1280{bd['file_path']}"
+                landscape = Tmdb.get_image_url(bd["file_path"], "w1280")
                 break
 
         if not poster:
             for p in posters:
                 if p.get("iso_639_1") == "en":
-                    poster = f"{_IMG}w780{p['file_path']}"
+                    poster = Tmdb.get_image_url(p["file_path"], "w780")
                     break
 
         if not fanart:
             for bd in backdrops:
                 if bd.get("iso_639_1") in (None, "xx", ""):
-                    fanart = f"{_IMG}w1280{bd['file_path']}"
+                    fanart = Tmdb.get_image_url(bd["file_path"], "w1280")
                     break
 
-        return {"poster": poster, "fanart": fanart, "clearlogo": clearlogo, "landscape": landscape}
+        return {
+            "poster": poster,
+            "fanart": fanart,
+            "clearlogo": clearlogo,
+            "landscape": landscape,
+        }
 
     @staticmethod
     def _build_cast(credits: dict[str, Any], limit: int = 15) -> list[Any]:
         members: list[dict[str, Any]] = credits.get("cast") or []
-        actors = []
+        actors: list[xbmc.Actor] = []
         for i, m in enumerate(members[:limit]):
-            thumb = f"{_IMG}h632{m['profile_path']}" if m.get("profile_path") else ""
-            actors.append(xbmc.Actor(
-                name=m.get("name") or "",
-                role=m.get("character") or "",
-                order=i,
-                thumbnail=thumb,
-            ))
+            thumb = (
+                Tmdb.get_image_url(m["profile_path"], "h632")
+                if m.get("profile_path")
+                else ""
+            )
+            actors.append(
+                xbmc.Actor(
+                    name=m.get("name") or "",
+                    role=m.get("character") or "",
+                    order=i,
+                    thumbnail=thumb,
+                )
+            )
         return actors
 
 
 class EpisodeItem(ListItemBase):
-    is_folder = False
+    is_folder: bool = False
 
     def __init__(
         self,
-        ep: dict[str, Any],
-        show_title: str,
-        show_id: int,
-        season_number: int,
+        episode_number: int,
+        season_details: dict[str, Any],
         show_details: dict[str, Any],
-        season_poster_path: str = "",
     ):
-        self._ep = ep
-        self._show_title = show_title
-        self._show_id = show_id
-        self._season_number = season_number
-        self._show_details = show_details
-        self._season_poster_path = season_poster_path
-        self._art = self.extract_art(show_details)
+        self.episode_number: int = episode_number
+        self._show_details: dict[str, Any] = show_details
+
+        episodes: list[dict[str, Any]] = season_details.get("episodes", [])
+        self.season_number: int = season_details.get("season_number", 0)
+        self._episode_details: dict[str, Any] = next((e for e in episodes if e["episode_number"] == episode_number))
+        self.show_title: str = show_details.get("name", "Unknown")
+        self._show_id: int = show_details.get("id", -1)
+        self._season_poster_path: str = season_details.get("poster_path", "")
+        self.play_url: str = url(
+            "/play/", type="episode", id=self._show_id, season=self.season_number, episode=self.episode_number
+        )
+        self._art: dict[str, Any] = self.extract_art(show_details)
 
     @property
     def label(self) -> str:
-        ep_num = self._ep.get("episode_number", 0)
-        ep_name = self._ep.get("name") or f"Episode {ep_num}"
-        return f"{ep_num:02d}: {ep_name}"
+        ep_num = self._episode_details.get("episode_number", 0)
+        ep_name = self._episode_details.get("name") or f"Episode {ep_num}"
+        return f"{ep_num:02d} - {ep_name}"
 
-    def _apply_info(self, li: xbmcgui.ListItem, tag: Any) -> None:
-        ep = self._ep
+    def _apply_info(self, li: xbmcgui.ListItem, tag: xbmc.InfoTagVideo) -> None:
+        ep = self._episode_details
         ep_num = ep.get("episode_number", 0)
         ep_name = ep.get("name") or f"Episode {ep_num}"
 
@@ -127,11 +145,11 @@ class EpisodeItem(ListItemBase):
         tag.setMediaType("episode")
         tag.setTitle(ep_name)
         tag.setOriginalTitle(ep_name)
-        tag.setTvShowTitle(self._show_title)
-        tag.setSeason(self._season_number)
+        tag.setTvShowTitle(self.show_title)
+        tag.setSeason(self.season_number)
         tag.setEpisode(ep_num)
         tag.setPlot(ep.get("overview") or "")
-        tag.setDuration(int((ep.get("runtime") or 30) * 60))
+        tag.setDuration(int(ep.get("runtime") or 30) * 60)
         tag.setRating(float(ep.get("vote_average") or 0))
         tag.setFirstAired(ep.get("air_date") or "")
         tag.setIMDBNumber(imdb_id)
@@ -140,30 +158,72 @@ class EpisodeItem(ListItemBase):
 
     def _apply_art(self, li: xbmcgui.ListItem) -> None:
         art = self._art
-        still_url = self._img(self._ep.get("still_path") or "")
-        season_url = self._img(self._season_poster_path, "w500") if self._season_poster_path else ""
+        still_url = Tmdb.get_image_url(self._episode_details.get("still_path", ""))
+        season_url = Tmdb.get_image_url(self._season_poster_path, "w500")
         thumb = still_url or season_url or art["poster"]
 
-        li.setArt({
-            "thumb": thumb,
-            "poster": art["poster"],
-            "fanart": art["fanart"],
-            "clearlogo": art["clearlogo"],
-            "landscape": art["landscape"],
-            "tvshow.poster": art["poster"],
-            "tvshow.fanart": art["fanart"],
-            "tvshow.clearlogo": art["clearlogo"],
-            "season.poster": season_url,
-        })
+        li.setArt(
+            {
+                "thumb": thumb,
+                "poster": art["poster"],
+                "fanart": art["fanart"],
+                "clearlogo": art["clearlogo"],
+                "landscape": art["landscape"],
+                "tvshow.poster": art["poster"],
+                "tvshow.fanart": art["fanart"],
+                "tvshow.clearlogo": art["clearlogo"],
+                "season.poster": season_url,
+            }
+        )
+
+    def _addContextMenuItems(self, li: xbmcgui.ListItem) -> None:
+        mw = url(
+            "/trakt/watched/",
+            type="episode",
+            id=self._show_id,
+            season=self.season_number,
+            episode=self.episode_number,
+        )
+        ss = url(
+            "/play/select/",
+            type="episode",
+            id=self._show_id,
+            season=self.season_number,
+            episode=self.episode_number,
+        )
+        sw_torrentio = url(
+            "/play/select/",
+            type="episode",
+            id=self._show_id,
+            season=self.season_number,
+            episode=self.episode_number,
+            scraper="torrentio",
+        )
+        sw_cocos = url(
+            "/play/select/",
+            type="episode",
+            id=self._show_id,
+            season=self.season_number,
+            episode=self.episode_number,
+            scraper="cocoscrapers",
+        )
+        li.addContextMenuItems(
+            [
+                ("Mark as Watched", f"RunPlugin({mw})"),
+                ("Select Source", f"PlayMedia({ss})"),
+                ("Scrape with Torrentio", f"PlayMedia({sw_torrentio})"),
+                ("Scrape with CocoScrapers", f"PlayMedia({sw_cocos})"),
+            ]
+        )
 
 
 class MovieItem(ListItemBase):
-    is_folder = False
+    is_folder: bool = False
 
     def __init__(self, details: dict[str, Any], genre_str: str = ""):
-        self._details = details
-        self._genre_str = genre_str
-        self._art = self.extract_art(details)
+        self._details: dict[str, Any] = details
+        self._genre_str: str = genre_str
+        self._art: dict[str, str] = self.extract_art(details)
 
     @property
     def label(self) -> str:
@@ -172,7 +232,7 @@ class MovieItem(ListItemBase):
     def _apply_info(self, li: xbmcgui.ListItem, tag: Any) -> None:
         d = self._details
         title = d.get("title") or ""
-        year_str = (d.get("release_date") or "")[:4]
+        year_str: str = (d.get("release_date") or "")[:4]
 
         external_ids: dict[str, Any] = d.get("external_ids") or {}
         imdb_id = str(external_ids.get("imdb_id") or d.get("imdb_id") or "")
@@ -181,15 +241,21 @@ class MovieItem(ListItemBase):
         credits: dict[str, Any] = d.get("credits") or {}
         crew: list[dict[str, Any]] = credits.get("crew") or []
         directors = [c["name"] for c in crew if c.get("job") == "Director"]
-        writers = [c["name"] for c in crew if c.get("job") in ("Writer", "Screenplay", "Author", "Characters")]
-        studios = [c["name"] for c in (d.get("production_companies") or []) if c.get("name")][:3]
+        writers = [
+            c["name"]
+            for c in crew
+            if c.get("job") in ("Writer", "Screenplay", "Author", "Characters")
+        ]
+        studios = [
+            c["name"] for c in (d.get("production_companies") or []) if c.get("name")
+        ][:3]
 
         genres = [g["name"] for g in (d.get("genres") or [])]
 
         mpaa = ""
-        for entry in ((d.get("release_dates") or {}).get("results") or []):
+        for entry in (d.get("release_dates") or {}).get("results") or []:
             if entry.get("iso_3166_1") == "US":
-                for rd in (entry.get("release_dates") or []):
+                for rd in entry.get("release_dates") or []:
                     cert = rd.get("certification") or ""
                     if cert:
                         mpaa = cert
@@ -198,7 +264,7 @@ class MovieItem(ListItemBase):
                     break
 
         trailer = ""
-        for v in ((d.get("videos") or {}).get("results") or []):
+        for v in (d.get("videos") or {}).get("results") or []:
             if v.get("site") == "YouTube" and v.get("type") == "Trailer":
                 trailer = f"plugin://plugin.video.youtube/play/?video_id={v['key']}"
                 break
@@ -210,7 +276,7 @@ class MovieItem(ListItemBase):
         tag.setTagLine(d.get("tagline") or "")
         tag.setYear(int(year_str) if year_str.isdigit() else 0)
         tag.setRating(float(d.get("vote_average") or 0))
-        tag.setVotes(str(d.get("vote_count") or ""))
+        tag.setVotes(int(d.get("vote_count") or 0))
         tag.setGenres(genres)
         tag.setStudios(studios)
         tag.setMpaa(mpaa)
@@ -223,22 +289,24 @@ class MovieItem(ListItemBase):
 
     def _apply_art(self, li: xbmcgui.ListItem) -> None:
         art = self._art
-        li.setArt({
-            "thumb": art["poster"],
-            "poster": art["poster"],
-            "fanart": art["fanart"],
-            "clearlogo": art["clearlogo"],
-            "landscape": art["landscape"],
-        })
+        li.setArt(
+            {
+                "thumb": art["poster"],
+                "poster": art["poster"],
+                "fanart": art["fanart"],
+                "clearlogo": art["clearlogo"],
+                "landscape": art["landscape"],
+            }
+        )
 
 
 class ShowItem(ListItemBase):
-    is_folder = True
+    is_folder: bool = True
 
     def __init__(self, details: dict[str, Any], genre_str: str = ""):
-        self._details = details
-        self._genre_str = genre_str
-        self._art = self.extract_art(details)
+        self._details: dict[str, Any] = details
+        self._genre_str: str = genre_str
+        self._art: dict[str, str] = self.extract_art(details)
 
     @property
     def label(self) -> str:
@@ -263,7 +331,7 @@ class ShowItem(ListItemBase):
         tag.setPlot(d.get("overview") or "")
         tag.setYear(int(year_str) if year_str.isdigit() else 0)
         tag.setRating(float(d.get("vote_average") or 0))
-        tag.setVotes(str(d.get("vote_count") or ""))
+        tag.setVotes(int(d.get("vote_count") or 0))
         tag.setGenres(genres)
         tag.setIMDBNumber(imdb_id)
         tag.setUniqueIDs({"tmdb": tmdb_id, "imdb": imdb_id, "tvdb": tvdb_id})
@@ -271,22 +339,26 @@ class ShowItem(ListItemBase):
 
     def _apply_art(self, li: xbmcgui.ListItem) -> None:
         art = self._art
-        li.setArt({
-            "thumb": art["poster"],
-            "poster": art["poster"],
-            "fanart": art["fanart"],
-            "clearlogo": art["clearlogo"],
-            "landscape": art["landscape"],
-        })
+        li.setArt(
+            {
+                "thumb": art["poster"],
+                "poster": art["poster"],
+                "fanart": art["fanart"],
+                "clearlogo": art["clearlogo"],
+                "landscape": art["landscape"],
+            }
+        )
 
 
 class SeasonItem(ListItemBase):
-    is_folder = True
+    is_folder: bool = True
 
-    def __init__(self, season: dict[str, Any], show_title: str, show_art: dict[str, str]):
-        self._season = season
-        self._show_title = show_title
-        self._show_art = show_art
+    def __init__(
+        self, season: dict[str, Any], show_title: str, show_art: dict[str, str]
+    ):
+        self._season: dict[str, Any] = season
+        self._show_title: str = show_title
+        self._show_art: dict[str, str] = show_art
 
     @property
     def label(self) -> str:
@@ -306,12 +378,14 @@ class SeasonItem(ListItemBase):
 
     def _apply_art(self, li: xbmcgui.ListItem) -> None:
         poster_path = self._season.get("poster_path") or ""
-        season_poster = self._img(poster_path, "w500") if poster_path else ""
+        season_poster = Tmdb.get_image_url(poster_path, "w500") if poster_path else ""
         art = self._show_art
-        li.setArt({
-            "thumb": season_poster or art.get("poster", ""),
-            "poster": season_poster or art.get("poster", ""),
-            "fanart": art.get("fanart", ""),
-            "clearlogo": art.get("clearlogo", ""),
-            "landscape": art.get("landscape", ""),
-        })
+        li.setArt(
+            {
+                "thumb": season_poster or art.get("poster", ""),
+                "poster": season_poster or art.get("poster", ""),
+                "fanart": art.get("fanart", ""),
+                "clearlogo": art.get("clearlogo", ""),
+                "landscape": art.get("landscape", ""),
+            }
+        )

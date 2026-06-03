@@ -1,0 +1,1094 @@
+[
+    {
+        "episode_number": 1,
+        "name": "My Bad",
+        "overview": "Jimmy grapples with being an empty nester and feeling torn about Alices major life choice. Paul faces fresh challenges with his Parkinsons.",
+        "still_path": "/ktwNnZppviKPoR8F0dFxRAIG9b1.jpg",
+        "vote_average": 8.139,
+        "air_date": "2026-01-27",
+        "runtime": 64
+    },
+    {
+        "adult": false,
+        "backdrop_path": "/hI9z1UuNhBthvkm3iJ8m3zv43Pf.jpg",
+        "created_by": [
+            {
+                "id": 21422,
+                "credit_id": "61672a7abe7f35006ac5c4a6",
+                "name": "Brett Goldstein",
+                "original_name": "Brett Goldstein",
+                "gender": 2,
+                "profile_path": "/xYdFNE7EkncE8uiPJzT3RrkqcAQ.jpg"
+            },
+            {
+                "id": 41088,
+                "credit_id": "61672a76cee4810062eee84e",
+                "name": "Jason Segel",
+                "original_name": "Jason Segel",
+                "gender": 2,
+                "profile_path": "/aG6tVNSbl1YEjN65G3luFYnWbUM.jpg"
+            },
+            {
+                "id": 1216859,
+                "credit_id": "61672a8184591c0023e5428c",
+                "name": "Bill Lawrence",
+                "original_name": "Bill Lawrence",
+                "gender": 2,
+                "profile_path": "/75mV8qLqPA9oMy23lTxmcoEGWAe.jpg"
+            }
+        ],
+        "episode_run_time": [],
+        "first_air_date": "2023-01-26",
+        "genres": [
+            {
+                "id": 18,
+                "name": "Drama"
+            },
+            {
+                "id": 35,
+                "name": "Comedy"
+            }
+        ],
+        "homepage": "https://tv.apple.com/show/umc.cmc.apzybj6eqf6pzccd97kev7bs",
+        "id": 136311,
+        "in_production": True,
+        "languages": [
+            "en"
+        ],
+        "last_air_date": "2026-04-07",
+        "last_episode_to_air": {
+            "id": 6617364,
+            "name": "And That"s Our Time", "overview": "As Alice heads to college, Jimmy tries to repair things before it"s too late. Gaby makes a happy discovery.",
+            "vote_average": 8.6,
+            "vote_count": 10,
+            "air_date": "2026-04-07",
+            "episode_number": 11,
+            "episode_type": "finale",
+            "production_code": "",
+            "runtime": 35,
+            "season_number": 3,
+            "show_id": 136311,
+            "still_path": "/nZcq2yHzmiHrpW23z9KQog4pWui.jpg"
+        },
+        "name": "Shrinking",
+        "next_episode_to_air": None,
+        "networks": [
+            {
+                "id": 2552,
+                "logo_path": "/bngHRFi794mnMq34gfVcm9nDxN1.png",
+                "name": "Apple TV",
+                "origin_country": ""
+            }
+        ],
+        "number_of_episodes": 33,
+        "number_of_seasons": 3,
+        "origin_country": [
+            "US"
+        ],
+        "original_language": "en",
+        "original_name": "Shrinking",
+        "overview": "Jimmy is struggling to grieve the loss of his wife while being a dad, friend, and therapist. He decides to try a new approach with everyone in his path: unfiltered, brutal honesty. Will it make things better—or unleash uproarious chaos?",
+        "popularity": 27.5714,
+        "poster_path": "/zEFKMNPBKq6JG7uuDkzTQ9WwErn.jpg",
+        "production_companies": [
+            {
+                "id": 23672,
+                "logo_path": "/a0sVfKvMT1d55p2XJXPpRfm7rRh.png",
+                "name": "Doozer",
+                "origin_country": "US"
+            },
+            {
+                "id": 1957,
+                "logo_path": "/pJJw98MtNFC9cHn3o15G7vaUnnX.png",
+                "name": "Warner Bros. Television",
+                "origin_country": "US"
+            },
+            {
+                "id": 224610,
+                "logo_path": None,
+                "name": "3 Chance Productions",
+                "origin_country": "US"
+            },
+            {
+                "id": 224611,
+                "logo_path": None,
+                "name": "Corporate Mandate",
+                "origin_country": "US"
+            }
+        ],
+        "production_countries": [
+            {
+                "iso_3166_1": "US",
+                "name": "United States of America"
+            }
+        ],
+        "seasons": [
+            {
+                "air_date": "2023-01-27",
+                "episode_count": 1,
+                "id": 436427,
+                "name": "Specials",
+                "overview": "",
+                "poster_path": "/fAilN7UZS812tRe7oz361Q79LEl.jpg",
+                "season_number": 0,
+                "vote_average": 0.0
+            },
+            {
+                "air_date": "2023-01-26",
+                "episode_count": 10,
+                "id": 215533,
+                "name": "Season 1",
+                "overview": "",
+                "poster_path": "/jFUZebOjrjZfvg7ZSrc19GvTRTg.jpg",
+                "season_number": 1,
+                "vote_average": 7.2
+            },
+            {
+                "air_date": "2024-10-15",
+                "episode_count": 12,
+                "id": 405274,
+                "name": "Season 2",
+                "overview": "Jimmy struggles with telling his daughter the truth about her mother"s death, Paul faces worsening Parkinson"s symptoms, and Gaby deals with her divorce, all while their personal and professional lives become more intertwined and complicated.",
+                "poster_path": "/a10iI7VAjQiyuCssuu2BDSPhJyp.jpg",
+                "season_number": 2,
+                "vote_average": 7.7
+            },
+            {
+                "air_date": "2026-01-27",
+                "episode_count": 11,
+                "id": 480887,
+                "name": "Season 3",
+                "overview": "Jimmy and his rag-tag crew pick up the pieces of last season, forcing them to reckon with grief, second chances, and the messy road toward healing. With old clients still reeling and a few new faces entering the fold",
+                "poster_path": "/zEFKMNPBKq6JG7uuDkzTQ9WwErn.jpg",
+                "season_number": 3,
+                "vote_average": 8.0
+            }
+        ],
+        "softcore": False,
+        "spoken_languages": [
+            {
+                "english_name": "English",
+                "iso_639_1": "en",
+                "name": "English"
+            }
+        ],
+        "status": "Returning Series",
+        "tagline": "Moving forward, together.",
+        "type": "Scripted",
+        "vote_average": 7.847,
+        "vote_count": 623,
+        "external_ids": {
+            "imdb_id": "tt15677150",
+            "freebase_mid": None,
+            "freebase_id": None,
+            "tvdb_id": 411364,
+            "tvrage_id": None,
+            "wikidata_id": "Q111942171",
+            "facebook_id": None,
+            "instagram_id": None,
+            "twitter_id": None
+        },
+        "videos": {
+            "results": [
+                {
+                    "iso_639_1": "en",
+                    "iso_3166_1": "US",
+                    "name": "Sitting Down with Harrison Ford and Jason Segel",
+                    "key": "1oxk9A44Z-g",
+                    "site": "YouTube",
+                    "size": 1080,
+                    "type": "Featurette",
+                    "official": True,
+                    "id": "63d2c21066ae4d00c1cf7c24",
+                    "published_at": "2023-01-26T17:29:50.000Z"
+                },
+                {
+                    "iso_639_1": "en",
+                    "iso_3166_1": "US",
+                    "name": "An Inside Look",
+                    "key": "oyDiqMpiIa0",
+                    "site": "YouTube",
+                    "size": 1080,
+                    "type": "Behind the Scenes",
+                    "official": True,
+                    "id": "63cecb78c6006d007c9c4bd3",
+                    "published_at": "2023-01-23T17:59:49.000Z"
+                },
+                {
+                    "iso_639_1": "en",
+                    "iso_3166_1": "US",
+                    "name": "Official Trailer",
+                    "key": "YjHfjQDWl1A",
+                    "site": "YouTube",
+                    "size": 1080,
+                    "type": "Trailer",
+                    "official": True,
+                    "id": "63c82c0870b44400e95a3cdd",
+                    "published_at": "2023-01-18T17:26:56.000Z"
+                },
+                {
+                    "iso_639_1": "en",
+                    "iso_3166_1": "US",
+                    "name": "Official Teaser",
+                    "key": "vLiH06blNME",
+                    "site": "YouTube",
+                    "size": 1080,
+                    "type": "Teaser",
+                    "official": True,
+                    "id": "63876ceefb834600cb22321c",
+                    "published_at": "2022-11-30T13:59:51.000Z"
+                }
+            ]
+        },
+        "credits": {
+            "cast": [
+                {
+                    "adult": False,
+                    "gender": 2,
+                    "id": 41088,
+                    "known_for_department": "Acting",
+                    "name": "Jason Segel",
+                    "original_name": "Jason Segel",
+                    "popularity": 2.497,
+                    "profile_path": "/aG6tVNSbl1YEjN65G3luFYnWbUM.jpg",
+                    "character": "Jimmy",
+                    "credit_id": "61672aea8fdda900623b4a97",
+                    "order": 0
+                },
+                {
+                    "adult": False,
+                    "gender": 2,
+                    "id": 3,
+                    "known_for_department": "Acting",
+                    "name": "Harrison Ford",
+                    "original_name": "Harrison Ford",
+                    "popularity": 5.3272,
+                    "profile_path": "/pjBMJVPpcZK23Vt1nzr1zEBTWrP.jpg",
+                    "character": "Dr. Paul Rhodes",
+                    "credit_id": "624b1895e8a3e10062c89f87",
+                    "order": 1
+                },
+                {
+                    "adult": False,
+                    "gender": 1,
+                    "id": 1394648,
+                    "known_for_department": "Acting",
+                    "name": "Jessica Williams",
+                    "original_name": "Jessica Williams",
+                    "popularity": 1.3968,
+                    "profile_path": "/tcEvFYXqb34Gp29VT4302P5ZQfQ.jpg",
+                    "character": "Gaby",
+                    "credit_id": "624f59c36082eb00a4c3f435",
+                    "order": 2
+                },
+                {
+                    "adult": False,
+                    "gender": 2,
+                    "id": 2101951,
+                    "known_for_department": "Acting",
+                    "name": "Luke Tennie",
+                    "original_name": "Luke Tennie",
+                    "popularity": 0.7538,
+                    "profile_path": "/nLn4tj69OEL9ZPZMxcSRWk2mOmG.jpg",
+                    "character": "Sean",
+                    "credit_id": "638771d82e0697024d2bff09",
+                    "order": 3
+                },
+                {
+                    "adult": False,
+                    "gender": 2,
+                    "id": 123795,
+                    "known_for_department": "Acting",
+                    "name": "Michael Urie",
+                    "original_name": "Michael Urie",
+                    "popularity": 1.3279,
+                    "profile_path": "/jnht4uEQEM9d8YXAKckD1aWamPN.jpg",
+                    "character": "Brian",
+                    "credit_id": "638771eafb834600b29634cf",
+                    "order": 4
+                },
+                {
+                    "adult": False,
+                    "gender": 1,
+                    "id": 1709431,
+                    "known_for_department": "Acting",
+                    "name": "Lukita Maxwell",
+                    "original_name": "Lukita Maxwell",
+                    "popularity": 2.7118,
+                    "profile_path": "/g5g6XxUAtSdPfsJrSoFkl7vH51d.jpg",
+                    "character": "Alice",
+                    "credit_id": "6318faa81d1bf4007ea0aa95",
+                    "order": 5
+                },
+                {
+                    "adult": False,
+                    "gender": 1,
+                    "id": 212821,
+                    "known_for_department": "Acting",
+                    "name": "Christa Miller",
+                    "original_name": "Christa Miller",
+                    "popularity": 2.1316,
+                    "profile_path": "/gfLL2dM209v3WfVrovwGszjgtB3.jpg",
+                    "character": "Liz",
+                    "credit_id": "6250eb635a07f50f49d73966",
+                    "order": 6
+                },
+                {
+                    "adult": False,
+                    "gender": 2,
+                    "id": 18982,
+                    "known_for_department": "Acting",
+                    "name": "Ted McGinley",
+                    "original_name": "Ted McGinley",
+                    "popularity": 2.3495,
+                    "profile_path": "/nUeN0vYFDgqX6LtLf29TgvnNhnJ.jpg",
+                    "character": "Derek",
+                    "credit_id": "63de26ceddd52d00d82a9592",
+                    "order": 7
+                }
+            ],
+            "crew": [
+                {
+                    "adult": False,
+                    "gender": 2,
+                    "id": 1773202,
+                    "known_for_department": "Production",
+                    "name": "Kip Kroeger",
+                    "original_name": "Kip Kroeger",
+                    "popularity": 0.1631,
+                    "profile_path": None,
+                    "credit_id": "69c442b0d0163d291fa257d7",
+                    "department": "Production",
+                    "job": "Co-Executive Producer"
+                },
+                {
+                    "adult": False,
+                    "gender": 1,
+                    "id": 1569189,
+                    "known_for_department": "Writing",
+                    "name": "Emily R. Wilson",
+                    "original_name": "Emily R. Wilson",
+                    "popularity": 0.1329,
+                    "profile_path": "/5uGvJa5hkWG30IlKD5vdvfmgMwI.jpg",
+                    "credit_id": "69c442abfef5ac138baabefb",
+                    "department": "Production",
+                    "job": "Co-Executive Producer"
+                },
+                {
+                    "adult": False,
+                    "gender": 2,
+                    "id": 4617764,
+                    "known_for_department": "Production",
+                    "name": "Mike Livanos",
+                    "original_name": "Mike Livanos",
+                    "popularity": 0.0286,
+                    "profile_path": None,
+                    "credit_id": "69c4422ce0f096fa27a2568c",
+                    "department": "Production",
+                    "job": "Co-Producer"
+                },
+                {
+                    "adult": False,
+                    "gender": 0,
+                    "id": 5764216,
+                    "known_for_department": "Art",
+                    "name": "Alex Grande",
+                    "original_name": "Alex Grande",
+                    "popularity": 0.0746,
+                    "profile_path": None,
+                    "credit_id": "68f811e4551ce6e517cac2b4",
+                    "department": "Art",
+                    "job": "Set Decoration"
+                },
+                {
+                    "adult": False,
+                    "gender": 1,
+                    "id": 3966498,
+                    "known_for_department": "Writing",
+                    "name": "Sofi Selig",
+                    "original_name": "Sofi Selig",
+                    "popularity": 0.1383,
+                    "profile_path": None,
+                    "credit_id": "68f8113d28bd644df1cac2d0",
+                    "department": "Production",
+                    "job": "Co-Producer"
+                },
+                {
+                    "adult": False,
+                    "gender": 2,
+                    "id": 1766367,
+                    "known_for_department": "Directing",
+                    "name": "Zack Bornstein",
+                    "original_name": "Zack Bornstein",
+                    "popularity": 0.1043,
+                    "profile_path": "/fz6nXzKnrdPsGsNJLrwVJA0sX7U.jpg",
+                    "credit_id": "68f81137b5c6aabb37cac2ca",
+                    "department": "Production",
+                    "job": "Co-Producer"
+                },
+                {
+                    "adult": False,
+                    "gender": 1,
+                    "id": 3170449,
+                    "known_for_department": "Directing",
+                    "name": "Sasha Garron",
+                    "original_name": "Sasha Garron",
+                    "popularity": 0.2159,
+                    "profile_path": None,
+                    "credit_id": "68f810f7bfe8f00b98608f58",
+                    "department": "Writing",
+                    "job": "Executive Story Editor"
+                },
+                {
+                    "adult": False,
+                    "gender": 2,
+                    "id": 1484511,
+                    "known_for_department": "Camera",
+                    "name": "John Brawley",
+                    "original_name": "John Brawley",
+                    "popularity": 0.2266,
+                    "profile_path": None,
+                    "credit_id": "68f8118f6fe772a71bd3b7e1",
+                    "department": "Camera",
+                    "job": "Director of Photography"
+                },
+                {
+                    "adult": False,
+                    "gender": 2,
+                    "id": 1488178,
+                    "known_for_department": "Acting",
+                    "name": "Bill Posley",
+                    "original_name": "Bill Posley",
+                    "popularity": 0.1942,
+                    "profile_path": "/imo5z9IPTMQCI6VQfZXFlpOP9VN.jpg",
+                    "credit_id": "67e1d1430ee53d4e71f056ff",
+                    "department": "Production",
+                    "job": "Executive Producer"
+                },
+                {
+                    "adult": False,
+                    "gender": 1,
+                    "id": 2371913,
+                    "known_for_department": "Writing",
+                    "name": "Ashley Nicole Black",
+                    "original_name": "Ashley Nicole Black",
+                    "popularity": 1.6957,
+                    "profile_path": "/kHaP4ieKWKKVNkaPO69NDMZnmK0.jpg",
+                    "credit_id": "67e1d13a4c52746665dc5db1",
+                    "department": "Production",
+                    "job": "Executive Producer"
+                },
+                {
+                    "adult": False,
+                    "gender": 2,
+                    "id": 4617759,
+                    "known_for_department": "Production",
+                    "name": "Ryan Stephens",
+                    "original_name": "Ryan Stephens",
+                    "popularity": 0.0143,
+                    "profile_path": None,
+                    "credit_id": "6762b49e67c96321804a2828",
+                    "department": "Production",
+                    "job": "Co-Producer"
+                },
+                {
+                    "adult": False,
+                    "gender": 2,
+                    "id": 1785135,
+                    "known_for_department": "Sound",
+                    "name": "Tom Howe",
+                    "original_name": "Tom Howe",
+                    "popularity": 0.2666,
+                    "profile_path": "/87DOUTcZoOZd5m2ewKx1cyROhtD.jpg",
+                    "credit_id": "6604163cd38b58017d1c33ca",
+                    "department": "Sound",
+                    "job": "Original Music Composer"
+                },
+                {
+                    "adult": False,
+                    "gender": 2,
+                    "id": 962464,
+                    "known_for_department": "Art",
+                    "name": "Cabot McMullen",
+                    "original_name": "Cabot McMullen",
+                    "popularity": 0.1591,
+                    "profile_path": None,
+                    "credit_id": "6604165a1b1f3c01639a9598",
+                    "department": "Art",
+                    "job": "Production Design"
+                },
+                {
+                    "adult": False,
+                    "gender": 2,
+                    "id": 1380058,
+                    "known_for_department": "Acting",
+                    "name": "Brian Gallivan",
+                    "original_name": "Brian Gallivan",
+                    "popularity": 0.2451,
+                    "profile_path": "/gYLfkuxVtOw6dlu3XdPgR6d3BVp.jpg",
+                    "credit_id": "6762b3c167c96321804a27e4",
+                    "department": "Production",
+                    "job": "Executive Producer"
+                },
+                {
+                    "adult": False,
+                    "gender": 1,
+                    "id": 1354982,
+                    "known_for_department": "Writing",
+                    "name": "Rachna Fruchbom",
+                    "original_name": "Rachna Fruchbom",
+                    "popularity": 0.1751,
+                    "profile_path": "/hoRIeXSBNwNFBN7s9AiWHZTzRz8.jpg",
+                    "credit_id": "6762b3bda0cc3de647ffe90a",
+                    "department": "Production",
+                    "job": "Executive Producer"
+                },
+                {
+                    "adult": False,
+                    "gender": 1,
+                    "id": 1923246,
+                    "known_for_department": "Costume & Make-Up",
+                    "name": "Allyson B. Fanger",
+                    "original_name": "Allyson B. Fanger",
+                    "popularity": 0.1514,
+                    "profile_path": None,
+                    "credit_id": "6604190d1b1f3c017c9ec230",
+                    "department": "Costume & Make-Up",
+                    "job": "Costume Design"
+                },
+                {
+                    "adult": False,
+                    "gender": 1,
+                    "id": 1473941,
+                    "known_for_department": "Production",
+                    "name": "Debby Romano",
+                    "original_name": "Debby Romano",
+                    "popularity": 0.1253,
+                    "profile_path": None,
+                    "credit_id": "660418807f6c8d016371389b",
+                    "department": "Production",
+                    "job": "Casting"
+                },
+                {
+                    "adult": False,
+                    "gender": 2,
+                    "id": 1473942,
+                    "known_for_department": "Production",
+                    "name": "Brett Benner",
+                    "original_name": "Brett Benner",
+                    "popularity": 0.2508,
+                    "profile_path": None,
+                    "credit_id": "6604187a0929f6017e9fa5d7",
+                    "department": "Production",
+                    "job": "Casting"
+                },
+                {
+                    "adult": False,
+                    "gender": 2,
+                    "id": 4617764,
+                    "known_for_department": "Production",
+                    "name": "Mike Livanos",
+                    "original_name": "Mike Livanos",
+                    "popularity": 0.0286,
+                    "profile_path": None,
+                    "credit_id": "66041861770700017c11b5af",
+                    "department": "Production",
+                    "job": "Unit Production Manager"
+                },
+                {
+                    "adult": False,
+                    "gender": 2,
+                    "id": 1785135,
+                    "known_for_department": "Sound",
+                    "name": "Tom Howe",
+                    "original_name": "Tom Howe",
+                    "popularity": 0.2666,
+                    "profile_path": "/87DOUTcZoOZd5m2ewKx1cyROhtD.jpg",
+                    "credit_id": "66041647d38b5801641aae7c",
+                    "department": "Sound",
+                    "job": "Main Title Theme Composer"
+                },
+                {
+                    "adult": False,
+                    "gender": 2,
+                    "id": 550438,
+                    "known_for_department": "Acting",
+                    "name": "Benjamin Gibbard",
+                    "original_name": "Benjamin Gibbard",
+                    "popularity": 0.1627,
+                    "profile_path": "/odhdDHLNx7ZUkaxe5dJ7FlcwF2z.jpg",
+                    "credit_id": "66041642d38b58017d1c33d4",
+                    "department": "Sound",
+                    "job": "Main Title Theme Composer"
+                },
+                {
+                    "adult": False,
+                    "gender": 2,
+                    "id": 1237149,
+                    "known_for_department": "Production",
+                    "name": "Randall Keenan Winston",
+                    "original_name": "Randall Keenan Winston",
+                    "popularity": 0.1961,
+                    "profile_path": "/zoogk5ypiFH9ruxiudRONqg4VD7.jpg",
+                    "credit_id": "660415a73520e80165d879b6",
+                    "department": "Production",
+                    "job": "Executive Producer"
+                },
+                {
+                    "adult": False,
+                    "gender": 2,
+                    "id": 1224478,
+                    "known_for_department": "Writing",
+                    "name": "Neil Goldman",
+                    "original_name": "Neil Goldman",
+                    "popularity": 0.4003,
+                    "profile_path": "/qau1DZTRHpfOgnzXT1FivGN55sW.jpg",
+                    "credit_id": "6604159f1b1f3c017c9ebed9",
+                    "department": "Production",
+                    "job": "Executive Producer"
+                },
+                {
+                    "adult": False,
+                    "gender": 1,
+                    "id": 2505140,
+                    "known_for_department": "Production",
+                    "name": "Liza Katzer",
+                    "original_name": "Liza Katzer",
+                    "popularity": 0.2582,
+                    "profile_path": "/m6MZXfzqN4tC1I9YqKEG6xPnMY7.jpg",
+                    "credit_id": "624f5a14e263bb137044ac6f",
+                    "department": "Production",
+                    "job": "Executive Producer"
+                },
+                {
+                    "adult": False,
+                    "gender": 2,
+                    "id": 930710,
+                    "known_for_department": "Directing",
+                    "name": "James Ponsoldt",
+                    "original_name": "James Ponsoldt",
+                    "popularity": 0.3098,
+                    "profile_path": "/oK7xXMCfmgUerkr8oUUp3FlaIfU.jpg",
+                    "credit_id": "624f5998396e9717ac623090",
+                    "department": "Production",
+                    "job": "Executive Producer"
+                },
+                {
+                    "adult": False,
+                    "gender": 2,
+                    "id": 1321773,
+                    "known_for_department": "Production",
+                    "name": "Jeff Ingold",
+                    "original_name": "Jeff Ingold",
+                    "popularity": 0.2822,
+                    "profile_path": None,
+                    "credit_id": "61672ba6158c8500650f53aa",
+                    "department": "Production",
+                    "job": "Executive Producer"
+                },
+                {
+                    "adult": False,
+                    "gender": 2,
+                    "id": 21422,
+                    "known_for_department": "Acting",
+                    "name": "Brett Goldstein",
+                    "original_name": "Brett Goldstein",
+                    "popularity": 2.4482,
+                    "profile_path": "/xYdFNE7EkncE8uiPJzT3RrkqcAQ.jpg",
+                    "credit_id": "61672ade681888006500ce84",
+                    "department": "Production",
+                    "job": "Executive Producer"
+                },
+                {
+                    "adult": False,
+                    "gender": 2,
+                    "id": 41088,
+                    "known_for_department": "Acting",
+                    "name": "Jason Segel",
+                    "original_name": "Jason Segel",
+                    "popularity": 2.497,
+                    "profile_path": "/aG6tVNSbl1YEjN65G3luFYnWbUM.jpg",
+                    "credit_id": "61672ad63a99370062a91ce8",
+                    "department": "Production",
+                    "job": "Executive Producer"
+                },
+                {
+                    "adult": False,
+                    "gender": 2,
+                    "id": 1216859,
+                    "known_for_department": "Writing",
+                    "name": "Bill Lawrence",
+                    "original_name": "Bill Lawrence",
+                    "popularity": 1.4304,
+                    "profile_path": "/75mV8qLqPA9oMy23lTxmcoEGWAe.jpg",
+                    "credit_id": "61672ac1d43f010091d9c327",
+                    "department": "Production",
+                    "job": "Executive Producer"
+                }
+            ]
+        },
+        "content_ratings": {
+            "results": [
+                {
+                    "descriptors": [],
+                    "iso_3166_1": "SG",
+                    "rating": "M18"
+                },
+                {
+                    "descriptors": [],
+                    "iso_3166_1": "US",
+                    "rating": "TV-MA"
+                },
+                {
+                    "descriptors": [],
+                    "iso_3166_1": "MX",
+                    "rating": "C"
+                },
+                {
+                    "descriptors": [],
+                    "iso_3166_1": "FR",
+                    "rating": "12"
+                },
+                {
+                    "descriptors": [],
+                    "iso_3166_1": "KR",
+                    "rating": "19"
+                },
+                {
+                    "descriptors": [],
+                    "iso_3166_1": "NL",
+                    "rating": "12"
+                },
+                {
+                    "descriptors": [],
+                    "iso_3166_1": "GB",
+                    "rating": "15"
+                },
+                {
+                    "descriptors": [],
+                    "iso_3166_1": "RU",
+                    "rating": "18+"
+                },
+                {
+                    "descriptors": [],
+                    "iso_3166_1": "CA",
+                    "rating": "18+"
+                },
+                {
+                    "descriptors": [],
+                    "iso_3166_1": "ES",
+                    "rating": "16"
+                },
+                {
+                    "descriptors": [],
+                    "iso_3166_1": "AR",
+                    "rating": "SAM 13"
+                },
+                {
+                    "descriptors": [],
+                    "iso_3166_1": "AU",
+                    "rating": "M"
+                },
+                {
+                    "descriptors": [],
+                    "iso_3166_1": "BR",
+                    "rating": "16"
+                },
+                {
+                    "descriptors": [],
+                    "iso_3166_1": "DK",
+                    "rating": "11"
+                },
+                {
+                    "descriptors": [],
+                    "iso_3166_1": "FI",
+                    "rating": "K12"
+                },
+                {
+                    "descriptors": [],
+                    "iso_3166_1": "DE",
+                    "rating": "12"
+                },
+                {
+                    "descriptors": [],
+                    "iso_3166_1": "GR",
+                    "rating": "16"
+                },
+                {
+                    "descriptors": [],
+                    "iso_3166_1": "HU",
+                    "rating": "18"
+                },
+                {
+                    "descriptors": [],
+                    "iso_3166_1": "IN",
+                    "rating": "A"
+                },
+                {
+                    "descriptors": [],
+                    "iso_3166_1": "IL",
+                    "rating": "18+"
+                },
+                {
+                    "descriptors": [],
+                    "iso_3166_1": "IT",
+                    "rating": "VM14"
+                },
+                {
+                    "descriptors": [],
+                    "iso_3166_1": "LT",
+                    "rating": "S"
+                },
+                {
+                    "descriptors": [],
+                    "iso_3166_1": "MY",
+                    "rating": "18"
+                },
+                {
+                    "descriptors": [],
+                    "iso_3166_1": "NO",
+                    "rating": "12"
+                },
+                {
+                    "descriptors": [],
+                    "iso_3166_1": "PH",
+                    "rating": "SPG"
+                },
+                {
+                    "descriptors": [],
+                    "iso_3166_1": "PL",
+                    "rating": "16"
+                },
+                {
+                    "descriptors": [],
+                    "iso_3166_1": "PT",
+                    "rating": "16"
+                },
+                {
+                    "descriptors": [],
+                    "iso_3166_1": "SK",
+                    "rating": "15"
+                },
+                {
+                    "descriptors": [],
+                    "iso_3166_1": "ZA",
+                    "rating": "16"
+                },
+                {
+                    "descriptors": [],
+                    "iso_3166_1": "TW",
+                    "rating": "15+"
+                },
+                {
+                    "descriptors": [],
+                    "iso_3166_1": "TH",
+                    "rating": "น 18+"
+                },
+                {
+                    "descriptors": [],
+                    "iso_3166_1": "PR",
+                    "rating": "TV-MA"
+                },
+                {
+                    "descriptors": [],
+                    "iso_3166_1": "VI",
+                    "rating": "TV-MA"
+                },
+                {
+                    "descriptors": [],
+                    "iso_3166_1": "AT",
+                    "rating": "16"
+                },
+                {
+                    "descriptors": [],
+                    "iso_3166_1": "IE",
+                    "rating": "15"
+                },
+                {
+                    "descriptors": [],
+                    "iso_3166_1": "CH",
+                    "rating": "12"
+                },
+                {
+                    "descriptors": [],
+                    "iso_3166_1": "CZ",
+                    "rating": "15+"
+                },
+                {
+                    "descriptors": [],
+                    "iso_3166_1": "BG",
+                    "rating": "16"
+                },
+                {
+                    "descriptors": [],
+                    "iso_3166_1": "CL",
+                    "rating": "I12"
+                },
+                {
+                    "descriptors": [],
+                    "iso_3166_1": "UA",
+                    "rating": "18+"
+                },
+                {
+                    "descriptors": [],
+                    "iso_3166_1": "SE",
+                    "rating": "Från 15 år"
+                },
+                {
+                    "descriptors": [],
+                    "iso_3166_1": "BE",
+                    "rating": "12"
+                },
+                {
+                    "descriptors": [],
+                    "iso_3166_1": "LU",
+                    "rating": "12"
+                },
+                {
+                    "descriptors": [],
+                    "iso_3166_1": "ID",
+                    "rating": "D"
+                }
+            ]
+        },
+        "alternative_titles": {
+            "results": [
+                {
+                    "iso_3166_1": "CN",
+                    "title": "诊疗中",
+                    "type": "喜剧"
+                },
+                {
+                    "iso_3166_1": "CN",
+                    "title": "诚实诊疗室",
+                    "type": ""
+                },
+                {
+                    "iso_3166_1": "ES",
+                    "title": "Terapia sin filtro",
+                    "type": ""
+                },
+                {
+                    "iso_3166_1": "IL",
+                    "title": "שרינקינג",
+                    "type": ""
+                },
+                {
+                    "iso_3166_1": "JP",
+                    "title": "シュリンキング 悩めるセラピスト",
+                    "type": ""
+                },
+                {
+                    "iso_3166_1": "RU",
+                    "title": "Мозгоправство",
+                    "type": ""
+                }
+            ]
+        },
+        "translations": {
+            "translations": [
+                {
+                    "iso_3166_1": "US",
+                    "iso_639_1": "en",
+                    "name": "English",
+                    "english_name": "English",
+                    "data": {
+                        "name": "",
+                        "overview": "Jimmy is struggling to grieve the loss of his wife while being a dad, friend, and therapist. He decides to try a new approach with everyone in his path: unfiltered, brutal honesty. Will it make things better—or unleash uproarious chaos?",
+                        "homepage": "",
+                        "tagline": "Moving forward, together."
+                    }
+                },
+                {
+                    "iso_3166_1": "RU",
+                    "iso_639_1": "ru",
+                    "name": "Pусский",
+                    "english_name": "Russian",
+                    "data": {
+                        "name": "Терапия",
+                        "overview": "Джимми оплакивает смерть жены, при этом стараясь оставаться отцом, другом и психотерапевтом. Он решает применить новый подход: безжалостная честность без цензуры со всеми, кто встречается на его пути. Станет ли от этого легче? Или это повлечет за собой безудержный хаос?",
+                        "homepage": "",
+                        "tagline": "Всем пора собраться."
+                    }
+                },
+                {
+                    "iso_3166_1": "FR",
+                    "iso_639_1": "fr",
+                    "name": "Français",
+                    "english_name": "French",
+                    "data": {
+                        "name": "",
+                        "overview": "Jimmy lutte pour se remettre de la mort de sa femme tout en faisant de son mieux pour être un bon père, un bon ami et un bon psychothérapeute. Il decide de tenter une nouvelle approche avec tous ceux qui croisent son chemin: dire la vérité sans filtre. Cette méthode sera-t-elle concluante ou mènera-t-elle au chaos?",
+                        "homepage": "",
+                        "tagline": "Changer les choses. Changer ensemble."
+                    }
+                },
+                {
+                    "iso_3166_1": "ES",
+                    "iso_639_1": "es",
+                    "name": "Español",
+                    "english_name": "Spanish",
+                    "data": {
+                        "name": "Terapia sin filtro",
+                        "overview": "Jimmy trata de asimilar la muerte de su esposa mientras ejerce de padre, amigo y terapeuta. Decide cambiar su forma de ser con la gente y volverse una persona completamente honesta, sin ningún tipo de filtro. ¿Conseguirá que las cosas mejoren o desatará el caos?",
+                        "homepage": "",
+                        "tagline": "La unión hace la fuerza."
+                    }
+                },
+                {
+                    "iso_3166_1": "TW",
+                    "iso_639_1": "zh",
+                    "name": "普通话",
+                    "english_name": "Mandarin",
+                    "data": {
+                        "name": "誠實診療室",
+                        "overview": "吉米因為失去妻子而感到極為悲傷，同時還要努力扮演好父親、朋友和治療師的角色。他決定嘗試一種新的方法來對待他生活中的每個人：不修飾且殘酷的誠實。這種做法會改善現況，還是會引發一場令人捧腹大笑的混亂呢？",
+                        "homepage": "",
+                        "tagline": "接受彼此，也接住彼此。"
+                    }
+                },
+                {
+                    "iso_3166_1": "NL",
+                    "iso_639_1": "nl",
+                    "name": "Nederlands",
+                    "english_name": "Dutch",
+                    "data": {
+                        "name": "",
+                        "overview": "Jimmy worstelt met het verlies van zijn vrouw terwijl hij ook gewoon vader, vriend en therapeut is. Hij besluit het roer om te gooien en geen blad meer voor de mond te nemen. Zal zijn leven er beter door worden of wordt het één grote chaos?",
+                        "homepage": "",
+                        "tagline": "Samen door de storm."
+                    }
+                },
+                {
+                    "iso_3166_1": "KR",
+                    "iso_639_1": "ko",
+                    "name": "한국어/조선말",
+                    "english_name": "Korean",
+                    "data": {
+                        "name": ""맵다 매워! 지미의 상담소" - Shrinking",
+                        "overview": "지미는 아빠, 친구, 상담사 역할을 해내며 아내의 죽음을 애도하기 버거워한다. 그래서 모두에게 맵디매운 진실을 말해 주는 새로운 방식을 실행에 보기로 한다. 효과가 있을까? 아니면 요절복통 대소동이 벌어질까?",
+                        "homepage": "",
+                        "tagline": "제대로 살자. 함께!"
+                    }
+                },
+                {
+                    "iso_3166_1": "PL",
+                    "iso_639_1": "pl",
+                    "name": "Polski",
+                    "english_name": "Polish",
+                    "data": {
+                        "name": "Terapia bez trzymanki",
+                        "overview": "Jimmy nie radzi sobie po stracie żony, a musi wypełniać swoje obowiązki jako ojciec, przyjaciel i terapeuta. Postanawia wypróbować nową technikę, którą stosuje wobec wszystkich: brutalną szczerość, bez owijania w bawełnę. Czy Jimmy pomoże sobie, pomagając innym? Czy dzięki temu stanie znów na nogi?",
+                        "homepage": "",
+                        "tagline": "Razem do przodu."
+                    }
+                },
+                {
+                    "iso_3166_1": "IL",
+                    "iso_639_1": "he",
+                    "name": "עִבְרִית",
+                    "english_name": "Hebrew",
+                    "data": {
+                        "name": "",
+                        "overview": "ג"ימי מתקשה להתאבל על מותה של אשתו תוך מילוי תפקידיו כאב, כחבר וכפסיכולוג. הוא מחליט לנסות גישה חדשה לגבי כל דבר שעומד בדרכו: כנות אכזרית ולא מסוננת. האם זה ישפר את המצב או רק יעורר תוהו ובוהו פרוע?", "homepage": "", "tagline": "להתגבר על הקשיים. ביחד."}}, {"iso_3166_1": "BR", "iso_639_1": "pt", "name": "Português", "english_name": "Portuguese", "data": {"name": "Falando a Real", "overview": "Jimmy luta para lidar com a perda da esposa enquanto tenta ser pai, amigo e terapeuta. Ele decide adotar uma nova postura com todos ao seu redor: ser brutalmente sincero e sem filtros. Será que isso vai melhorar as coisas ou desencadear um caos total?", "homepage": "", "tagline": "A terapia agora é em grupo."}}, {"iso_3166_1": "HU", "iso_639_1": "hu", "name": "Magyar", "english_name": "Hungarian", "data": {"name": "Direkt terápia", "overview": "Jimmy küszködik a felesége elvesztése okozta gyászával, miközben apa, barát és pszichológus is egyben. Úgy dönt, hogy új megközelítést próbál ki mindenkivel, aki az útjába kerül: a nyers, kíméletlen őszinteséget. Vajon ez jobbá teszi a dolgokat, vagy borzasztó zűrzavart okoz?", "homepage": "", "tagline": "Együtt minden egyszerűbb."}}, {"iso_3166_1": "UA", "iso_639_1": "uk", "name": "Український", "english_name": "Ukrainian", "data": {"name": "Правдива терапія", "overview": "Джиммі переживає втрату дружини, і йому важко водночас бути батьком, другом і психотерапевтом. Він вирішує змінити своє ставлення до людей і стати абсолютно чесним, без жодних фільтрів. Покращиться від цього ситуація чи тільки переросте в шалений неконтрольований хаос?", "homepage": "", "tagline": "Долаємо труднощі разом."}}, {"iso_3166_1": "MX", "iso_639_1": "es", "name": "Español", "english_name": "Spanish", "data": {"name": "Terapia sin filtro", "overview": "Jimmy tiene problemas para sobrellevar la muerte de su esposa al ser padre, amigo y terapeuta. Decide tener un método nuevo con todas las personas que se le crucen: completa sinceridad sin filtros. ¿Hará que las cosas mejoren... o se desatará un caos turbulento?", "homepage": "", "tagline": "La unión hace la fuerza."}}, {"iso_3166_1": "SA", "iso_639_1": "ar", "name": "العربية", "english_name": "Arabic", "data": {"name": "التضاءل", "overview": ""جيمي" يكافح للحداد على وفاة زوجته، بينما يشغل دور الأب والصديق والطبيب النفسي. فيقرّر تجربة نهج جديد مع كل من في طريقه: الصراحة القاسية التامة. فهل سيحسّن ذلك الأوضاع، أم يتسبّب في خلق فوضى عارمة؟", "homepage": "", "tagline": "سنجتاز تقلبات الحياة، معًا."}}, {"iso_3166_1": "CN", "iso_639_1": "zh", "name": "普通话", "english_name": "Mandarin", "data": {"name": "", "overview": "吉米在担当爸爸、朋友和心理治疗师的同时，还要痛苦地哀悼亡妻。他决定尝试一种新的方式来对待所遇到的每一个人：毫不留情地直话直说。他能通过助人来助己吗？这能让他的人生恢复光明吗？", "homepage": "", "tagline": ""}}, {"iso_3166_1": "CZ", "iso_639_1": "cs", "name": "Český", "english_name": "Czech", "data": {"name": "Terapie pravdou", "overview": "Jimmy je táta, přítel a terapeut v jedné osobě a nedokáže se vyrovnat se smrtí své ženy. Rozhodne se vůči svému okolí vyzkoušet nový přístup: brutální upřímnost. Zlepší tím něco, nebo rozpoutá šílený chaos?", "homepage": "", "tagline": "Najít společnou řeč. Společně."}}, {"iso_3166_1": "DE", "iso_639_1": "de", "name": "Deutsch", "english_name": "German", "data": {"name": "", "overview": "Jimmy hat damit zu kämpfen, den Verlust seiner Frau zu betrauern und gleichzeitig Vater, Freund und Therapeut zu sein. Er beschließt, mit allen, die ihm über den Weg laufen, einen neuen Ansatz auszuprobieren: ungefilterte, brutale Ehrlichkeit. Wird das die Dinge besser machen - oder ein heilloses Chaos auslösen?", "homepage": "", "tagline": "Zeit für eine Gruppentherapie."}}, {"iso_3166_1": "JP", "iso_639_1": "ja", "name": "日本語", "english_name": "Japanese", "data": {"name": "シュリンキング：悩めるセラピスト", "overview": "妻を亡くし悲しみに暮れるセラピストのジミー。父親、そして友人でもある彼が新たに試すことにしたのが、自分の考えをそのまま伝える、残酷なまでに正直なアプローチだった。果たして状況は好転するのだろうか。それとも大混乱を引き起こすのだろうか。", "homepage": "", "tagline": "ひとりじゃないから大丈夫。"}}, {"iso_3166_1": "IT", "iso_639_1": "it", "name": "Italiano", "english_name": "Italian", "data": {"name": "", "overview": "Jimmy, che fatica a superare il dolore per la morte della moglie, è anche padre, amico e terapista. Decide così di tentare un nuovo approccio con chiunque incontri: sincerità, brutale e senza filtri. Migliorerà le cose... o scatenerà un incredibile caos?", "homepage": "", "tagline": "Affrontare la vita, insieme."}}, {"iso_3166_1": "VN", "iso_639_1": "vi", "name": "Tiếng Việt", "english_name": "Vietnamese", "data": {"name": "Liệu Pháp Sự Thật - Shrinking", "overview": "Jimmy đang vật lộn để vượt qua nỗi đau mất vợ trong khi vẫn phải làm cha, làm bạn và làm nhà trị liệu. Anh quyết định thử cách tiếp cận mới với mọi người: thẳng thắn không kiêng nể. Liệu điều đó có khiến mọi chuyện trở nên tốt hơn — hay sẽ gây ra hỗn loạn?", "homepage": "", "tagline": "Cùng nhau vượt qua mọi chông gai."}}, {"iso_3166_1": "GR", "iso_639_1": "el", "name": "ελληνικά", "english_name": "Greek", "data": {"name": "Η θεραπεία ξέφυγε", "overview": "Ο Τζίμι παλεύει να αντιμετωπίσει την απώλεια της γυναίκας του, ενώ παράλληλα είναι πατέρας, φίλος και ψυχολόγος. Αποφασίζει να δοκιμάσει μια νέα προσέγγιση με όλους: την αφιλτράριστη, ωμή ειλικρίνεια. Θα βελτιωθούν τα πράγματα; Ή θα δημιουργηθεί ένα ξεκαρδιστικό χάος;", "homepage": "", "tagline": "Ξεπερνάμε τις δυσκολίες παρέα."}}, {"iso_3166_1": "MY", "iso_639_1": "my", "name": "", "english_name": "Burmese", "data": {"name": "", "overview": "ဂျင်မီဆိုတဲ့လူက စိတ်ကုထုံးပညာရှင်တစ်\u200bယောက်ပါ။ လူနာ\u200bတွေရဲ့ မပဋာ\u200bမြေလူးတာထက်ဆိုးတဲ့ \u200bအပူ\u200bတွေကိုခံနိုင်တဲ့ ခန္တီစပါရမီ Limit ပျက်\u200bနေတဲ့ကုထုံးဆရာပေါ့။ ပျက်ဆိုလည်း သူကိုယ်၌ကိုက မိသားစုရဲ့အပူ\u200bတွေ ရင်ထဲရှိ\u200bနေတာကိုး။ ဒီလိုနဲ့ လူနာ\u200bတွေကို သည်းညည်းမခံနိုင်\u200bတော့တဲ့ ဂျင်မီတစ်\u200bယောက် ကုထုံးဆရာ\u200bရဲ့ ကျင့်ဝတ်\u200bနဲ့မညီတဲ့လုပ်ရပ်\u200bတွေ စလုပ်ပါ\u200bတော့တယ်။ ဥပမာ – လူနာတစ်\u200bယောက်က အိမ်\u200bထောင်\u200bရေးအဆင်မ\u200bပြေဘူးဆိုပါစို့။ ကုထုံးဆရာရဲ့အလုပ်က ပုံမှန်ဆို သူ\u200bပြောတာနား\u200bထောင်၊ နှစ်ဖက်စလုံးကို ညှိယူဖို့ ပြောပေးရတာပေါ့။ ဒါ\u200bပေမဲ့ အိမ်\u200bထောင်\u200bရေးအဆင်မ\u200bပြေတဲ့ လင်မယား\u200bတွေဆို ကွာရှင်းခိုင်းတယ်။ စစ်ပွဲကရခဲ့တဲ့ စိတ်ဒဏ်ရာ\u200bတွေ\u200bကြောင့် \u200bဒေါသ\u200bတွေကြီး ရန်\u200bပွဲ\u200bတွေများနေတဲ့ စစ်ပြန်စစ်သားကို \u200bဒေါသထိန်းဖို့ တရားထိုင်ဖို့ သူမတိုက်တွန်းပါဘူး။ MMA လက်\u200bဝှေ့သမား\u200bတွေနဲ့ ထိုးခိုင်းပါတယ်။ ကိုင်တွယ်\u200bဖြေရှင်းပုံက ကျင့်ဝတ်\u200bရေးရာအရကြည့်လိုက်ရင် အ\u200bတော်လွဲ\u200bမှားနေ\u200bပေမယ့် \u200bထွက်လာတဲ့ရလဒ်\u200bတွေက \u200bအ\u200bတော်\u200b \u200bကောင်း\u200bနေပြန်\u200bရော။ ဒီ\u200bလိုနဲ့ပဲ ကုထုံးဆရာကြီးဂျင်မီအ\u200bနေနဲ့ သူ့ရဲ့နည်းလမ်းအမှား\u200bတွေကိုပဲ သုံးရင်း၊ ရလဒ်\u200b\u200bတွေ\u200bကောင်း\u200bနေရင်း အလွဲလွဲအမှားမှားဖြစ်နေပုံ\u200bတွေကို", "homepage": "", "tagline": ""}}, {"iso_3166_1": "LT", "iso_639_1": "lt", "name": "Lietuvių", "english_name": "Lithuanian", "data": {"name": "Sąžininga terapija", "overview": "Sielvartaujantis terapeutas pradeda sakyti savo klientams tai, ką galvoja. Nepaisydamas savo išsilavinimo ir etikos normų, jis ima smarkiai keisti žmonių gyvenimus, įskaitant ir savo paties.", "homepage": "", "tagline": ""}}, {"iso_3166_1": "TR", "iso_639_1": "tr", "name": "Türkçe", "english_name": "Turkish", "data": {"name": "", "overview": "Jimmy bir yandan baba, arkadaş ve terapist olurken bir yandan da karısını kaybetmenin yasını tutmaya çalışmaktadır. Hayatındaki herkese karşı yeni bir yaklaşım denemeye karar verir: Filtresiz, acımasız dürüstlük. Bu, her şeyi daha iyi hâle mi getirecek yoksa şamatalı bir kargaşaya mı yol açacak?", "homepage": "", "tagline": ""}}, {"iso_3166_1": "EE", "iso_639_1": "et", "name": "Eesti", "english_name": "Estonian", "data": {"name": "", "overview": "Sarja keskmes on leinav terapeut Jimmy, kes eirab reegleid ja ütleb patsientidele otse välja, mida ta arvab. See avaldab mõju nii teda ümbritsevatele inimestele kui ka talle endale.", "homepage": "", "tagline": ""}}, {"iso_3166_1": "BG", "iso_639_1": "bg", "name": "български език", "english_name": "Bulgarian", "data": {"name": "Терапия", "overview": "Терапевт, който нарушава правилата и професионалната етика, казва на клиентите си точно какво мисли за тях. Той открива, че тази непрофесионална откровеност прави огромни и бурни промени в техния живот, така и в неговия.", "homepage": "", "tagline": ""}}, {"iso_3166_1": "HK", "iso_639_1": "zh", "name": "普通话", "english_name": "Mandarin", "data": {"name": "誠實治療法", "overview": "面對喪妻之痛的同時，佔美嘗試做好父親、朋友和治療師的角色。他決定換個方式應對生命中的每個人：毫無保留、絕不修飾地坦誠。這樣到底會帶來曙光，抑或令亂局一發不可收拾？", "homepage": "", "tagline": "治療亦自療，互撐就雙贏。"}}, {"iso_3166_1": "DK", "iso_639_1": "da", "name": "Dansk", "english_name": "Danish", "data": {"name": "", "overview": "Jimmy kæmper med at sørge over tabet af sin kone, mens han er far, ven og terapeut. Han beslutter sig for at afprøve en ny tilgang over for alle, han støder på: brutal ærlighed. Vil det gøre tingene bedre – eller medføre øredøvende kaos?", "homepage": "", "tagline": "Tid til at tage sig sammen. Sammen."}}, {"iso_3166_1": "AE", "iso_639_1": "ar", "name": "العربية", "english_name": "Arabic", "data": {"name": "", "overview": ""جيمي" يكافح للحداد على وفاة زوجته، بينما يشغل دور الأب والصديق والطبيب النفسي. فيقرّر تجربة نهج جديد مع كل من في طريقه: الصراحة القاسية التامة. فهل سيحسّن ذلك الأوضاع، أم يتسبّب في خلق فوضى عارمة؟", "homepage": "", "tagline": "سنجتاز تقلبات الحياة، معًا."}}, {"iso_3166_1": "FI", "iso_639_1": "fi", "name": "suomi", "english_name": "Finnish", "data": {"name": "", "overview": "Jimmyn on vaikea surra vaimonsa kuolemaa ja olla samalla isä, ystävä ja terapeutti. Hän kokeilee uutta lähestymistapaa kaikkien kanssa: suodattamatonta, raakaa rehellisyyttä. Parantaako se asioita vai saako aikaan hupaisan kaaoksen?", "homepage": "", "tagline": "Homma haltuun. Yhteistuumin."}}, {"iso_3166_1": "CA", "iso_639_1": "fr", "name": "Français", "english_name": "French", "data": {"name": "Thérapie vérité", "overview": "Jimmy lutte pour se remettre de la mort de sa femme tout en faisant de son mieux pour être un bon père, un bon ami et un bon psychothérapeute. Il decide de tenter une nouvelle approche avec tous ceux qui croisent son chemin: dire la vérité sans filtre. Cette méthode sera-t-elle concluante ou mènera-t-elle au chaos?", "homepage": "", "tagline": "Changer les choses. Changer ensemble."}}, {"iso_3166_1": "IN", "iso_639_1": "hi", "name": "हिन्दी", "english_name": "Hindi", "data": {"name": "श्रिंकिंग", "overview": "जिमी एक पिता, दोस्त और चिकित्सक होने का फ़र्ज़ निभाते हुए अपनी पत्नी की मृत्यु का शोक मनाने की कोशिश कर रहा है। वह उसके सामने आने वाले हर इंसान के साथ एक नया दृष्टिकोण अपनाने का फैसला करता है : बिना किसी लागलपेट के, विशुद्ध ईमानदारी। क्या इससे हालात बेहतर होंगे—या सब कुछ उथल-पुथल हो जाएगा?", "homepage": "", "tagline": "ज़िंदगी की मुश्किलों का सामना... एक साथ।"}}, {"iso_3166_1": "ID", "iso_639_1": "id", "name": "Bahasa indonesia", "english_name": "Indonesian", "data": {"name": "", "overview": "Jimmy kesulitan merasa berduka atas kematian istrinya di antara kesibukannya menjadi ayah, teman, dan terapis. Dia memutuskan untuk mencoba pendekatan baru dalam menghadapi semua orang di sekitarnya: berkata jujur tanpa filter. Akankah hal itu membuat keadaan menjadi lebih baik atau malah menimbulkan kekacauan yang menggemparkan?", "homepage": "", "tagline": "Perbaiki diri. Bersama-sama."}}, {"iso_3166_1": "NO", "iso_639_1": "no", "name": "Norsk", "english_name": "Norwegian", "data": {"name": "", "overview": "Jimmy er far, venn og terapeut, men sliter med sorgen etter tapet av kona. Han bestemmer seg for å prøve en ny tilnærmingsmåte til alle han møter; en ren og brutal ærlighet. Vil det gjøre ting bedre, eller skape fullstendig kaos?", "homepage": "", "tagline": "Å ta seg sammen er lettere sammen."}}, {"iso_3166_1": "PT", "iso_639_1": "pt", "name": "Português", "english_name": "Portuguese", "data": {"name": "Terapia Sem Filtros", "overview": "É difícil para Jimmy chorar a perda da mulher, ao mesmo tempo que tem de ser pai, amigo e terapeuta. Ele tenta uma nova abordagem com todos os que o rodeiam: a sinceridade brutal e sem filtros. Isso melhorará a situação ou causará um estrondoso caos?", "homepage": "", "tagline": "A terapia cura. O amor também."}}, {"iso_3166_1": "SK", "iso_639_1": "sk", "name": "Slovenčina", "english_name": "Slovak", "data": {"name": "Terapia pravdou", "overview": "Jimmy nedokáže smútiť za nebohou manželkou a zároveň byť aj otcom, priateľom a psychológom. Rozhodne sa na každom vo svojom živote vyskúšať nový prístup: úplne brutálnu úprimnosť. Pomôže to, alebo to rozpúta pohromu a chaos?", "homepage": "", "tagline": "Nabrať silu. Spoločnými silami."}}, {"iso_3166_1": "SE", "iso_639_1": "sv", "name": "svenska", "english_name": "Swedish", "data": {"name": "", "overview": "Jimmy kämpar med att sörja sin hustrus bortgång och vara pappa, vän och terapeut samtidigt. Han bestämmer sig för att prova ett nytt tillvägagångssätt med alla han möter: ofiltrerad, brutal ärlighet. Kommer det att göra saker och ting bättre, eller kommer allt urarta i kaos?", "homepage": "", "tagline": "De tar sig samman. Tillsammans."}}, {"iso_3166_1": "TH", "iso_639_1": "th", "name": "ภาษาไทย", "english_name": "Thai", "data": {"name": "", "overview": "จิมมี่กำลังพยายามจัดการกับความเศร้าที่ภรรยาเสียชีวิตไปพร้อมๆ กับที่ต้องเป็นทั้งพ่อ ทั้งเพื่อน และเป็นนักจิตบำบัดด้วย เขาตัดสินใจลองวิธีรักษาใหม่กับทุกคนที่ได้เจอ พูดไม่กรอง พูดตรงอย่างโหดๆแล้ววิธีนี้จะช่วยได้ไหม... หรือทำให้ยิ่งวุ่นวายโกลาหลไปหมดกันแน่", "homepage": "", "tagline": "โอบรับพลังใจ แล้วลุกขึ้นใหม่เพื่อก้าวต่อ"}}, {"iso_3166_1": "SG", "iso_639_1": "zh", "name": "普通话", "english_name": "Mandarin", "data": {"name": "", "overview": "吉米在担当爸爸、朋友和心理治疗师的同时，还要痛苦地哀悼亡妻。他决定尝试一种新的方式来对待所遇到的每一个人：毫不留情地直话直说。这做法会让事情变得更好，还是会引发喧闹的混乱局面？", "homepage": "", "tagline": ""}}, {"iso_3166_1": "RS", "iso_639_1": "sr", "name": "Srpski", "english_name": "Serbian", "data": {"name": "Терапија", "overview": "Џими се бори са губитком супруге, док испуњава своје улоге оца, пријатеља и психолога. Одлучује да испроба нови приступ према својим клијентима: брутална искреност без икаквих филтера. Да ли ће моћи да помогне себи помажући другима?", "homepage": "", "tagline": ""}}, {"iso_3166_1": "IR", "iso_639_1": "fa", "name": "فارسی", "english_name": "Persian", "data": {"name": "روان شناس عجیب", "overview": "داستان این سریال درمورد یک درمانگر غمگین است که می تواند به مشتریان خود بگوید دقیقا به چه چیزی فکر می کنند. کم کم با نادیده گرفتن اخلاق حرفه ای، او متوجه می شود که قدرت عجیب او باعث شده تا بتواند تغییرات بزرگی در زندگی مردم ایجاد کند.", "homepage": "", "tagline": ""}}, {"iso_3166_1": "RO", "iso_639_1": "ro", "name": "Română", "english_name": "Romanian", "data": {"name": "", "overview": "Jimmy se luptă să își trăiască durerea pierderii soției sale, în timp ce încearcă să fie tată, prieten și terapeut. Decide să adopte o abordare nouă cu toți cei din jurul său: sinceritate nefiltrată și brutală.", "homepage": "", "tagline": ""}}, {"iso_3166_1": "SI", "iso_639_1": "sl", "name": "Slovenščina", "english_name": "Slovenian", "data": {"name": "", "overview": "Jimmy se spopada z žalovanjem za pokojno ženo, hkrati pa je oče, prijatelj in psihoterapevt. Odloči se, da bo pri vseh poskušal z novim pristopom: z neolepšano, brutalno iskrenostjo. Bo to izboljšalo stvari ali bo povzročilo strašanski kaos?", "homepage": "", "tagline": ""}}]}, "images": {"backdrops": [{"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": None, "iso_639_1": None, "file_path": "/hI9z1UuNhBthvkm3iJ8m3zv43Pf.jpg", "vote_average": 4.722, "vote_count": 9, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": None, "iso_639_1": None, "file_path": "/8lWcmMKvIbilcIMaTNTk5nEcYYS.jpg", "vote_average": 4.572, "vote_count": 14, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "RU", "iso_639_1": "ru", "file_path": "/hosi5Qx4D9ADCrnuICh5iM1gZ7Y.jpg", "vote_average": 3.334, "vote_count": 1, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "ES", "iso_639_1": "es", "file_path": "/zInH71E3Wxx1pnkQnLuv7WSUwfo.jpg", "vote_average": 3.334, "vote_count": 1, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "US", "iso_639_1": "en", "file_path": "/6HTP8xan3HdBCdUi15SDqjWKAOB.jpg", "vote_average": 3.334, "vote_count": 3, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "US", "iso_639_1": "en", "file_path": "/gGs1gMTlcpBBqlm4M7F9IUHR5da.jpg", "vote_average": 3.334, "vote_count": 1, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": None, "iso_639_1": None, "file_path": "/nHEOQ7aBefcEvbrGWCD14aRr0eE.jpg", "vote_average": 3.334, "vote_count": 2, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "UA", "iso_639_1": "uk", "file_path": "/9FN648X8kd4LvSUY1Bd9pzkRbOA.jpg", "vote_average": 3.334, "vote_count": 1, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": None, "iso_639_1": None, "file_path": "/t8VLQzfkNVb9Z3r7kfi7Mgy0jvo.jpg", "vote_average": 3.334, "vote_count": 1, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": None, "iso_639_1": None, "file_path": "/uo9HkiU57BmVLCbNwdlsIDnTTxw.jpg", "vote_average": 3.334, "vote_count": 1, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "US", "iso_639_1": "en", "file_path": "/nkCvrJtuM2Uy3NQNLqt1IcFGofA.jpg", "vote_average": 2.278, "vote_count": 3, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": None, "iso_639_1": None, "file_path": "/s3MGIfDQcQs41qMQ2FTXT5OmIii.jpg", "vote_average": 2.278, "vote_count": 3, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "US", "iso_639_1": "en", "file_path": "/yABYTpHE18Kq14mqAFAgQdyw5gE.jpg", "vote_average": 2.278, "vote_count": 4, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": None, "iso_639_1": None, "file_path": "/aC7l4TpJuf1pImYu2MYwmxqNNNg.jpg", "vote_average": 2.278, "vote_count": 3, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": None, "iso_639_1": None, "file_path": "/7nPxQhodO3OXYTA9ZlaNxa9x6SR.jpg", "vote_average": 2.066, "vote_count": 5, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "US", "iso_639_1": "en", "file_path": "/7TOew5OMXetSem3qXjW9SgvlDKG.jpg", "vote_average": 1.75, "vote_count": 2, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "US", "iso_639_1": "en", "file_path": "/nLVAcUHaJi9ehjRU8Fmz44VDGcl.jpg", "vote_average": 1.75, "vote_count": 2, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": None, "iso_639_1": None, "file_path": "/e4edGRlnnr0Emzl3D5rfKLDTAKG.jpg", "vote_average": 1.75, "vote_count": 2, "width": 3840}, {"aspect_ratio": 1.778, "height": 1440, "iso_3166_1": None, "iso_639_1": None, "file_path": "/iAoMjjE17zuW0H0gvBQpX016mO1.jpg", "vote_average": 1.75, "vote_count": 2, "width": 2560}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "US", "iso_639_1": "en", "file_path": "/k7Xi2zK84qvKNlLJAe3VHRpt6sM.jpg", "vote_average": 1.75, "vote_count": 2, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": None, "iso_639_1": None, "file_path": "/oO7ns2FyHfx9D3Pa2p9XsMQtu3O.jpg", "vote_average": 1.75, "vote_count": 2, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": None, "iso_639_1": None, "file_path": "/8dOAQMCJvnyyDo4UMv9kdGM6Mj7.jpg", "vote_average": 1.222, "vote_count": 3, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": None, "iso_639_1": None, "file_path": "/pIKZ6W9dgAIwMBK8CslTRd14tRI.jpg", "vote_average": 1.222, "vote_count": 3, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": None, "iso_639_1": None, "file_path": "/xjHEpVZ6ERo1Qr10FVqi4XYE8Nw.jpg", "vote_average": 1.222, "vote_count": 3, "width": 3840}, {"aspect_ratio": 1.778, "height": 1080, "iso_3166_1": None, "iso_639_1": None, "file_path": "/2J9ugm4ycaw4VzZudIQ6HJnK6FS.jpg", "vote_average": 1.222, "vote_count": 3, "width": 1920}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "US", "iso_639_1": "en", "file_path": "/zS49zHFduTV0CUiSkI8t5z6cxx6.jpg", "vote_average": 0.166, "vote_count": 1, "width": 3840}, {"aspect_ratio": 1.776, "height": 832, "iso_3166_1": "RU", "iso_639_1": "ru", "file_path": "/dovggFXkGKCakAzkBUwwXehw7gt.jpg", "vote_average": 0.166, "vote_count": 1, "width": 1478}, {"aspect_ratio": 1.778, "height": 1080, "iso_3166_1": None, "iso_639_1": None, "file_path": "/t3JxzXGPj6pUAVbncd791B1ij9R.jpg", "vote_average": 0.166, "vote_count": 1, "width": 1920}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": None, "iso_639_1": None, "file_path": "/tHup0SxItYiitbbgrGqqch2c8J1.jpg", "vote_average": 0.166, "vote_count": 2, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": None, "iso_639_1": None, "file_path": "/vMRUIK3NfUN0DKTsx2shF7SpWSH.jpg", "vote_average": 0.166, "vote_count": 2, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "US", "iso_639_1": "en", "file_path": "/abABJZATDZY0YKaDjXi2jgFgSyS.jpg", "vote_average": 0.166, "vote_count": 1, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "US", "iso_639_1": "en", "file_path": "/gEQAoQUPBJuXi1iLCXmDYyqrSQI.jpg", "vote_average": 0.166, "vote_count": 1, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "US", "iso_639_1": "en", "file_path": "/qc3MD0g69U7xf5I0NJqzmiKlKWZ.jpg", "vote_average": 0.166, "vote_count": 1, "width": 3840}, {"aspect_ratio": 1.778, "height": 720, "iso_3166_1": "RU", "iso_639_1": "ru", "file_path": "/o4dmRs8ZVR0E9lrQlhqret4eDhg.jpg", "vote_average": 0.0, "vote_count": 0, "width": 1280}, {"aspect_ratio": 1.778, "height": 1080, "iso_3166_1": "US", "iso_639_1": "en", "file_path": "/zywsVAfTVsVOYXbMhWYSdJkLKGt.jpg", "vote_average": 0.0, "vote_count": 0, "width": 1920}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "ES", "iso_639_1": "es", "file_path": "/jfDz2c0TWkEbBDdeWvhu8i4Aya3.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "IN", "iso_639_1": "hi", "file_path": "/oiyDunU9VrFuAxDezLAMJkpWURx.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "SK", "iso_639_1": "sk", "file_path": "/sYVNQWhsD185oo5uT6VQFui0qwZ.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "HK", "iso_639_1": "zh", "file_path": "/k8aCatZeJTdwl26utChphKwqVrS.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "VN", "iso_639_1": "vi", "file_path": "/8sutpDwycqx64A97IvY2FhNIlWJ.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "UA", "iso_639_1": "uk", "file_path": "/aUheouN9DnyPnVvRVjtCHW0xFcH.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "TW", "iso_639_1": "zh", "file_path": "/imdgDRVv7Q72qhP2TZWzuxT9Ygb.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "HU", "iso_639_1": "hu", "file_path": "/bs6XOI4FzoL01azMhuxMYKTRVQ7.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "BR", "iso_639_1": "pt", "file_path": "/oLCgmTyCN0RNc0gSTs1FKacOnfE.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "PL", "iso_639_1": "pl", "file_path": "/2ufuPn8oucAck0TXFq9TxfN5hbc.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "PT", "iso_639_1": "pt", "file_path": "/bXeZ4ucr2cSJEPNZgHMJzduBnD0.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "CZ", "iso_639_1": "cs", "file_path": "/r3BWWdrmzCi0F573OG1E9M3wVe8.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "GR", "iso_639_1": "el", "file_path": "/wPotVzMU1dNduH97yHDLA998oiK.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "JP", "iso_639_1": "ja", "file_path": "/l1Zkb4ef5lZ41x97rQAK8IOpSsR.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "KR", "iso_639_1": "ko", "file_path": "/yzLHTpudLZ9th3P2bdLjymLXsoI.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "CA", "iso_639_1": "fr", "file_path": "/60PyY3WG61rFZoSkKZTmTV6r5Gb.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "SK", "iso_639_1": "sk", "file_path": "/9eesuYYD1dKcI6ZQEQRabzDLc3z.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "CZ", "iso_639_1": "cs", "file_path": "/nplbCmTzrHU3iYOMGfQjsc2oPYE.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "PT", "iso_639_1": "pt", "file_path": "/hNGlVJh3mEiqlEXahNeXNPzdX8m.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "IN", "iso_639_1": "hi", "file_path": "/rNhSKkANwE7EQtrAilFXJ1s6Fr.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "ES", "iso_639_1": "es", "file_path": "/usny5mIewyGcfqjVQI3If4QKiw2.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "UA", "iso_639_1": "uk", "file_path": "/pqkPE9OZCPFZiZBvU538lxTXRFL.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "VN", "iso_639_1": "vi", "file_path": "/e0pNcH0fBBz14tHIm3rftlqtWk7.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "BR", "iso_639_1": "pt", "file_path": "/lozLI3bTlCWH4B5Fuq2UsRKU1dQ.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "RU", "iso_639_1": "ru", "file_path": "/c17TrghVq0EnfneLO4NGjjSQpNP.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "KR", "iso_639_1": "ko", "file_path": "/9ghylZcqkpG0tpB2zByWUkZAiNQ.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "PL", "iso_639_1": "pl", "file_path": "/yN1iwkPwGRL3JZ65A0wYYNDJNDY.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "TW", "iso_639_1": "zh", "file_path": "/oEOGZqz17BUuIxGTH15S1FFjtyN.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "JP", "iso_639_1": "ja", "file_path": "/yHp2F3bzOPkSg0T13P5yloN6fP5.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "HU", "iso_639_1": "hu", "file_path": "/4E4CvgTvoLnESKMG0z72vQSuJ1k.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "GR", "iso_639_1": "el", "file_path": "/pSTHEv71lPDEDeGCEAn7mNSHIn6.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "HK", "iso_639_1": "zh", "file_path": "/105Wuyx3miOurmPxn4xLT8Owld2.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "CA", "iso_639_1": "fr", "file_path": "/wCo6Nuqq2ifczWNt8VO1nucxnzE.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": None, "iso_639_1": None, "file_path": "/uND2wDtTGnOieyg97h833zj1o12.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "CA", "iso_639_1": "fr", "file_path": "/ztC5WsrsxMkYyNK5tL9cHxPqxUH.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "ES", "iso_639_1": "es", "file_path": "/73nlVFKIg92GsJjVfRiMM9Enkru.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "CA", "iso_639_1": "fr", "file_path": "/f7nhnGGpPnuGky1EGwbQ2u6Q91b.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "ES", "iso_639_1": "es", "file_path": "/mXn8TrgsFzaXLnmCNPn4ZISU8Vs.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "BR", "iso_639_1": "pt", "file_path": "/osxSrDtDH8ChrBl9HMWaVR0oy8S.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 1080, "iso_3166_1": None, "iso_639_1": None, "file_path": "/vyySAzAWXl72ZgfeLwx4ptyn24y.jpg", "vote_average": 0.0, "vote_count": 0, "width": 1920}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "UA", "iso_639_1": "uk", "file_path": "/8Hq9zci8LT3i2DturSMccpXPQ3a.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "RU", "iso_639_1": "ru", "file_path": "/5B4KTPpHxv0gNAFeHFBA7qTz9HY.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "PT", "iso_639_1": "pt", "file_path": "/4khXcLp9cTsiX9nsGMdZHj7pCyP.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "VN", "iso_639_1": "vi", "file_path": "/qVIExIpYiuxHu7ds0i9J2x2b8ik.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "TW", "iso_639_1": "zh", "file_path": "/u1c8ltEOizqvCxLzlSJVFMFeiXq.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "SK", "iso_639_1": "sk", "file_path": "/mxVq2oxbLc2T95qds7cHVSDqfad.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "IN", "iso_639_1": "hi", "file_path": "/yiu122lANQi0Bme746tKYvk4iqP.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "CA", "iso_639_1": "fr", "file_path": "/s4zyB81ZoWmLATQhfAvftTxdZK5.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "PL", "iso_639_1": "pl", "file_path": "/2nuM0xJtaK1QdAWB5FLz62tp5QK.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "ES", "iso_639_1": "es", "file_path": "/fHXyUlS0y5ts2H72oZfIzZnbqqV.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "HU", "iso_639_1": "hu", "file_path": "/FyJPq1c0EhgHFtHMusoHy9tUkI.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "KR", "iso_639_1": "ko", "file_path": "/srrhuEQ1xDHlIdRpG0aNOUOEkkl.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "BR", "iso_639_1": "pt", "file_path": "/pnzPcKXglsn5Q1nPb73bdIazbcf.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "CZ", "iso_639_1": "cs", "file_path": "/modNWQiy2PZdf69MiCKO1UAMnBp.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": None, "iso_639_1": None, "file_path": "/nQXYgGOAQIMoE0YXQU8ADcYRDfr.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "JP", "iso_639_1": "ja", "file_path": "/u4mIjng9EM6hBqpcozHETsN1Pzq.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "GR", "iso_639_1": "el", "file_path": "/cgpPot4XfQOP7YxK7wj6XzISjXp.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}, {"aspect_ratio": 1.778, "height": 2160, "iso_3166_1": "HK", "iso_639_1": "zh", "file_path": "/mSD1KOKrjk7HXhp7EuF5LamF4cq.jpg", "vote_average": 0.0, "vote_count": 0, "width": 3840}], "logos": [{"aspect_ratio": 7.632, "height": 389, "iso_3166_1": "US", "iso_639_1": "en", "file_path": "/lVkj9F9l9BQyUgasd55dIt9KkQe.png", "vote_average": 3.334, "vote_count": 3, "width": 2969}, {"aspect_ratio": 12.763, "height": 389, "iso_3166_1": "CZ", "iso_639_1": "cs", "file_path": "/vLN4BwimfYjSgJslJ1o2N5lqNnj.png", "vote_average": 3.334, "vote_count": 1, "width": 4965}, {"aspect_ratio": 12.763, "height": 389, "iso_3166_1": "CZ", "iso_639_1": "cs", "file_path": "/3d39PJLj0BdcnnFcwfSRIZLTfXS.png", "vote_average": 3.334, "vote_count": 1, "width": 4965}, {"aspect_ratio": 16.434, "height": 389, "iso_3166_1": "PL", "iso_639_1": "pl", "file_path": "/gRfPp7rDMhhFK20g43eMFVDRqG3.png", "vote_average": 3.334, "vote_count": 1, "width": 6393}, {"aspect_ratio": 16.434, "height": 389, "iso_3166_1": "PL", "iso_639_1": "pl", "file_path": "/wigTI1F0MZOrwIqAP2ib6Hm7Gm6.png", "vote_average": 3.334, "vote_count": 1, "width": 6393}, {"aspect_ratio": 8.624, "height": 482, "iso_3166_1": "HU", "iso_639_1": "hu", "file_path": "/t7jidP4EmDPOjqw4uxEGccaeTcW.png", "vote_average": 3.334, "vote_count": 1, "width": 4157}, {"aspect_ratio": 13.26, "height": 342, "iso_3166_1": "BR", "iso_639_1": "pt", "file_path": "/wJ2kVqmlS876ORMGv4HUphLAJsj.png", "vote_average": 3.334, "vote_count": 1, "width": 4535}, {"aspect_ratio": 14.344, "height": 389, "iso_3166_1": "PT", "iso_639_1": "pt", "file_path": "/t3Ay7ziZmU85VGYOkJBMSEDHTgh.png", "vote_average": 3.334, "vote_count": 1, "width": 5580}, {"aspect_ratio": 14.344, "height": 389, "iso_3166_1": "PT", "iso_639_1": "pt", "file_path": "/39UDKLdZPFthgPYb5QUhyiDuhsI.png", "vote_average": 3.334, "vote_count": 1, "width": 5580}, {"aspect_ratio": 13.257, "height": 389, "iso_3166_1": "ES", "iso_639_1": "es", "file_path": "/bxcE5bPOibbuG8kTtLaSBQEGUuT.png", "vote_average": 3.334, "vote_count": 2, "width": 5157}, {"aspect_ratio": 12.795, "height": 409, "iso_3166_1": "GR", "iso_639_1": "el", "file_path": "/zVFvGXTvG343wnzy9vZhUvVoH5x.png", "vote_average": 3.334, "vote_count": 1, "width": 5233}, {"aspect_ratio": 5.335, "height": 936, "iso_3166_1": "VN", "iso_639_1": "vi", "file_path": "/9w0E99xiUbFJLEGxLPmP2rAoYgl.png", "vote_average": 3.334, "vote_count": 1, "width": 4994}, {"aspect_ratio": 8.642, "height": 481, "iso_3166_1": "HU", "iso_639_1": "hu", "file_path": "/hN9WtA7d1gmE2BKHxSoFGNQRp1S.png", "vote_average": 3.334, "vote_count": 1, "width": 4157}, {"aspect_ratio": 2.881, "height": 478, "iso_3166_1": "IN", "iso_639_1": "hi", "file_path": "/zwOVcNJ7AuQqnZEvCYyyn29zpP6.png", "vote_average": 3.334, "vote_count": 1, "width": 1377}, {"aspect_ratio": 14.837, "height": 423, "iso_3166_1": "JP", "iso_639_1": "ja", "file_path": "/3W3u68DBN4be703gLLfXJ7N2fVC.png", "vote_average": 3.334, "vote_count": 1, "width": 6276}, {"aspect_ratio": 16.434, "height": 389, "iso_3166_1": "PL", "iso_639_1": "pl", "file_path": "/h9vugN7shA2BqXYmTLwHUFsj30l.png", "vote_average": 3.334, "vote_count": 1, "width": 6393}, {"aspect_ratio": 14.344, "height": 389, "iso_3166_1": "PT", "iso_639_1": "pt", "file_path": "/gAnIN87ZcxWSPWahjlEW0JQnrrA.png", "vote_average": 3.334, "vote_count": 1, "width": 5580}, {"aspect_ratio": 12.337, "height": 389, "iso_3166_1": "SK", "iso_639_1": "sk", "file_path": "/vOW4pJYrN8BwjTPxJLJHzYo3hCY.png", "vote_average": 3.334, "vote_count": 1, "width": 4799}, {"aspect_ratio": 2.881, "height": 478, "iso_3166_1": "IN", "iso_639_1": "hi", "file_path": "/qQMwvRlEqVK5kzkkihOVjURmJg1.png", "vote_average": 3.334, "vote_count": 1, "width": 1377}, {"aspect_ratio": 12.795, "height": 409, "iso_3166_1": "GR", "iso_639_1": "el", "file_path": "/rx8HNRr1JrCu48luNEEMjx0uoxr.png", "vote_average": 3.334, "vote_count": 1, "width": 5233}, {"aspect_ratio": 6.107, "height": 843, "iso_3166_1": "KR", "iso_639_1": "ko", "file_path": "/7hu8eju7XOcZFCzxnFlqda4nmOX.png", "vote_average": 3.334, "vote_count": 1, "width": 5148}, {"aspect_ratio": 3.111, "height": 772, "iso_3166_1": "HK", "iso_639_1": "zh", "file_path": "/xe3ewmVdaYeJYoZwi9tKb8ztQgy.png", "vote_average": 3.334, "vote_count": 1, "width": 2402}, {"aspect_ratio": 12.337, "height": 389, "iso_3166_1": "SK", "iso_639_1": "sk", "file_path": "/plBcSX7Z86IEWw9lcGW0E28zmBB.png", "vote_average": 3.334, "vote_count": 1, "width": 4799}, {"aspect_ratio": 3.111, "height": 772, "iso_3166_1": "HK", "iso_639_1": "zh", "file_path": "/pNVcxE0VZws7nC7778wTipDc52y.png", "vote_average": 3.334, "vote_count": 1, "width": 2402}, {"aspect_ratio": 5.596, "height": 446, "iso_3166_1": "TW", "iso_639_1": "zh", "file_path": "/zUtEb39lcni3C8hyNngXUUHN3L6.png", "vote_average": 3.334, "vote_count": 1, "width": 2496}, {"aspect_ratio": 5.596, "height": 446, "iso_3166_1": "TW", "iso_639_1": "zh", "file_path": "/p6oDlKTwG4JdxG6KRtLB0GPssRX.png", "vote_average": 3.334, "vote_count": 1, "width": 2496}, {"aspect_ratio": 12.763, "height": 389, "iso_3166_1": "CZ", "iso_639_1": "cs", "file_path": "/gU3sSnRudUTW12sQ3V8L9Iq2Rzo.png", "vote_average": 3.334, "vote_count": 1, "width": 4965}, {"aspect_ratio": 7.25, "height": 340, "iso_3166_1": "RU", "iso_639_1": "ru", "file_path": "/px2lYpqsoMKG4vyVM5nNAMsaiAM.png", "vote_average": 3.334, "vote_count": 1, "width": 2465}, {"aspect_ratio": 13.299, "height": 341, "iso_3166_1": "BR", "iso_639_1": "pt", "file_path": "/imSW6PyO8A5AfQYfbqQqT7Xap8a.png", "vote_average": 3.334, "vote_count": 1, "width": 4535}, {"aspect_ratio": 6.107, "height": 843, "iso_3166_1": "KR", "iso_639_1": "ko", "file_path": "/5teWPavKbvyik3iie9Y8FWJdu7y.png", "vote_average": 3.334, "vote_count": 1, "width": 5148}, {"aspect_ratio": 7.25, "height": 340, "iso_3166_1": "RU", "iso_639_1": "ru", "file_path": "/nliVPLucQ7997XQqcBDtA9k9AHI.png", "vote_average": 3.334, "vote_count": 1, "width": 2465}, {"aspect_ratio": 13.299, "height": 341, "iso_3166_1": "BR", "iso_639_1": "pt", "file_path": "/3rZNdLsDH6jf3Yy9TMSpIiA0lYj.png", "vote_average": 3.334, "vote_count": 1, "width": 4535}, {"aspect_ratio": 14.837, "height": 423, "iso_3166_1": "JP", "iso_639_1": "ja", "file_path": "/rwNZbOkakF5l5oiPaZZB9QMkbeP.png", "vote_average": 3.334, "vote_count": 1, "width": 6276}, {"aspect_ratio": 12.33, "height": 418, "iso_3166_1": "UA", "iso_639_1": "uk", "file_path": "/ao3aAEtj2AShVmhHusH2hcb2kXb.png", "vote_average": 3.334, "vote_count": 1, "width": 5154}, {"aspect_ratio": 12.33, "height": 418, "iso_3166_1": "UA", "iso_639_1": "uk", "file_path": "/9DjSAx5VlIfUHwsIXSc6texEilD.png", "vote_average": 3.334, "vote_count": 1, "width": 5154}, {"aspect_ratio": 5.335, "height": 936, "iso_3166_1": "VN", "iso_639_1": "vi", "file_path": "/qomOJgj0ScXDshWHUjK2gm7o81z.png", "vote_average": 3.334, "vote_count": 1, "width": 4994}, {"aspect_ratio": 8.642, "height": 481, "iso_3166_1": "HU", "iso_639_1": "hu", "file_path": "/cJyhFMmmR3uvQbWgKu7gQVXj00V.png", "vote_average": 3.334, "vote_count": 1, "width": 4157}, {"aspect_ratio": 7.632, "height": 389, "iso_3166_1": "US", "iso_639_1": "en", "file_path": "/p545iXNbMpevFLsl1qGetYwMiDE.png", "vote_average": 3.334, "vote_count": 1, "width": 2969}, {"aspect_ratio": 8.5, "height": 92, "iso_3166_1": "FR", "iso_639_1": "fr", "file_path": "/l8WvArKFtDWPKARER8qgIeU4PSe.png", "vote_average": 3.334, "vote_count": 1, "width": 782}, {"aspect_ratio": 7.632, "height": 389, "iso_3166_1": "US", "iso_639_1": "en", "file_path": "/xebT8UrGumQ2rd6kCdrbMzHDeGi.png", "vote_average": 2.278, "vote_count": 3, "width": 2969}, {"aspect_ratio": 10.435, "height": 444, "iso_3166_1": "CA", "iso_639_1": "fr", "file_path": "/ovZCXL2MkcaVE9wv4YFDDLrioyu.png", "vote_average": 1.75, "vote_count": 2, "width": 4633}, {"aspect_ratio": 10.435, "height": 444, "iso_3166_1": "CA", "iso_639_1": "fr", "file_path": "/vYmtGM0p9lBhl6BpMoqUWTcDYeR.png", "vote_average": 1.75, "vote_count": 2, "width": 4633}, {"aspect_ratio": 13.257, "height": 389, "iso_3166_1": "ES", "iso_639_1": "es", "file_path": "/lonSAwQHEk8HbgjQDymDM4kVmMY.png", "vote_average": 1.75, "vote_count": 2, "width": 5157}, {"aspect_ratio": 12.795, "height": 409, "iso_3166_1": "GR", "iso_639_1": "el", "file_path": "/czcXK2AzpybWwfZbO7VO1QN37DP.png", "vote_average": 1.75, "vote_count": 2, "width": 5233}, {"aspect_ratio": 4.743, "height": 626, "iso_3166_1": "US", "iso_639_1": "en", "file_path": "/cNhvWD7H0mmyM3Qjo56u25DnMlF.png", "vote_average": 1.75, "vote_count": 2, "width": 2969}, {"aspect_ratio": 10.435, "height": 444, "iso_3166_1": "CA", "iso_639_1": "fr", "file_path": "/nWqrzqNb8uAydiSMYhVv2In0nC.png", "vote_average": 1.75, "vote_count": 2, "width": 4633}, {"aspect_ratio": 13.257, "height": 389, "iso_3166_1": "ES", "iso_639_1": "es", "file_path": "/wBTO8VMbnKffaLnZv9n7pDmVrur.png", "vote_average": 1.75, "vote_count": 2, "width": 5157}, {"aspect_ratio": 8.238, "height": 626, "iso_3166_1": "ES", "iso_639_1": "es", "file_path": "/cckVuAYMelhyoCzFQv0sBMqMLbf.png", "vote_average": 0.166, "vote_count": 1, "width": 5157}, {"aspect_ratio": 4.743, "height": 626, "iso_3166_1": "US", "iso_639_1": "en", "file_path": "/7FlbGKVOsn6wNASvR9QO9jEfM7h.png", "vote_average": 0.166, "vote_count": 1, "width": 2969}, {"aspect_ratio": 7.401, "height": 626, "iso_3166_1": "CA", "iso_639_1": "fr", "file_path": "/l8wHX99e9P0JEpPb4DZaqyHg0Tj.png", "vote_average": 0.166, "vote_count": 1, "width": 4633}, {"aspect_ratio": 8.238, "height": 626, "iso_3166_1": "ES", "iso_639_1": "es", "file_path": "/lINM9VzFkcYnnnLya2MQQOPBl8K.png", "vote_average": 0.166, "vote_count": 1, "width": 5157}, {"aspect_ratio": 7.401, "height": 626, "iso_3166_1": "CA", "iso_639_1": "fr", "file_path": "/zQ4iRUQHpr5fMfn0n54ubkME4zC.png", "vote_average": 0.166, "vote_count": 1, "width": 4633}, {"aspect_ratio": 2.879, "height": 479, "iso_3166_1": "IN", "iso_639_1": "hi", "file_path": "/nWmV4rhG6CQthg4JqXqrvKoIJzk.png", "vote_average": 0.0, "vote_count": 0, "width": 1379}, {"aspect_ratio": 14.802, "height": 424, "iso_3166_1": "JP", "iso_639_1": "ja", "file_path": "/9M0LZyVM0pYgNHAQ2rD137I4Wlg.png", "vote_average": 0.0, "vote_count": 0, "width": 6276}, {"aspect_ratio": 5.186, "height": 608, "iso_3166_1": "RU", "iso_639_1": "ru", "file_path": "/xwQA08QI1pt9imgcrOT2B0V9Ano.png", "vote_average": 0.0, "vote_count": 0, "width": 3153}, {"aspect_ratio": 8.359, "height": 626, "iso_3166_1": "GR", "iso_639_1": "el", "file_path": "/4aHEBqmDjiY5ZnZ4fgK8EhUjtTM.png", "vote_average": 0.0, "vote_count": 0, "width": 5233}, {"aspect_ratio": 2.683, "height": 779, "iso_3166_1": "IN", "iso_639_1": "hi", "file_path": "/zMWq7bCvl68l5U7wxkjQsT2LrnN.png", "vote_average": 0.0, "vote_count": 0, "width": 2090}, {"aspect_ratio": 3.405, "height": 733, "iso_3166_1": "TW", "iso_639_1": "zh", "file_path": "/tPZ2BkZ5ejIvsuwSiQmJ7zxFuJb.png", "vote_average": 0.0, "vote_count": 0, "width": 2496}, {"aspect_ratio": 7.931, "height": 626, "iso_3166_1": "CZ", "iso_639_1": "cs", "file_path": "/zGGbJjyNbl1oPw593EyRUOBnbda.png", "vote_average": 0.0, "vote_count": 0, "width": 4965}, {"aspect_ratio": 2.683, "height": 779, "iso_3166_1": "IN", "iso_639_1": "hi", "file_path": "/yPczqR15ktGT8FCuqXE2rnOSe0u.png", "vote_average": 0.0, "vote_count": 0, "width": 2090}, {"aspect_ratio": 9.162, "height": 685, "iso_3166_1": "JP", "iso_639_1": "ja", "file_path": "/pJWGloqD2xJlEuvksd1xP0EY0FA.png", "vote_average": 0.0, "vote_count": 0, "width": 6276}, {"aspect_ratio": 10.212, "height": 626, "iso_3166_1": "PL", "iso_639_1": "pl", "file_path": "/6wBFGcLVjWgyawF8RqwQTP3pErr.png", "vote_average": 0.0, "vote_count": 0, "width": 6393}, {"aspect_ratio": 7.666, "height": 626, "iso_3166_1": "SK", "iso_639_1": "sk", "file_path": "/j6ePNbuBfaGYr5aEUsoydFJaEYb.png", "vote_average": 0.0, "vote_count": 0, "width": 4799}, {"aspect_ratio": 8.914, "height": 626, "iso_3166_1": "PT", "iso_639_1": "pt", "file_path": "/aXazXiRhwCoByehZ4EsVvnobYUv.png", "vote_average": 0.0, "vote_count": 0, "width": 5580}, {"aspect_ratio": 7.832, "height": 579, "iso_3166_1": "BR", "iso_639_1": "pt", "file_path": "/5DUwyWmyKBOsJqrMHnbdVIPRLpR.png", "vote_average": 0.0, "vote_count": 0, "width": 4535}, {"aspect_ratio": 7.832, "height": 579, "iso_3166_1": "BR", "iso_639_1": "pt", "file_path": "/tPjXL0wC20sarklAOiA5T9MjumV.png", "vote_average": 0.0, "vote_count": 0, "width": 4535}, {"aspect_ratio": 6.261, "height": 664, "iso_3166_1": "HU", "iso_639_1": "hu", "file_path": "/mBXlxq3ZjFT5qB9H3tqTcxEUGJ8.png", "vote_average": 0.0, "vote_count": 0, "width": 4157}, {"aspect_ratio": 7.666, "height": 626, "iso_3166_1": "SK", "iso_639_1": "sk", "file_path": "/2I1COPFg0lu6PLWwgepWkYUU9j.png", "vote_average": 0.0, "vote_count": 0, "width": 4799}, {"aspect_ratio": 2.446, "height": 1214, "iso_3166_1": "HK", "iso_639_1": "zh", "file_path": "/tmAoTIjoPgL7vugaxabR96WEuxI.png", "vote_average": 0.0, "vote_count": 0, "width": 2969}, {"aspect_ratio": 4.655, "height": 1106, "iso_3166_1": "KR", "iso_639_1": "ko", "file_path": "/s0Gp6t04CpcVMxMjm13uwB04TsS.png", "vote_average": 0.0, "vote_count": 0, "width": 5148}, {"aspect_ratio": 8.359, "height": 626, "iso_3166_1": "GR", "iso_639_1": "el", "file_path": "/2vzVbxRIBTi87Ps9T94rldMhEVy.png", "vote_average": 0.0, "vote_count": 0, "width": 5233}, {"aspect_ratio": 4.655, "height": 1106, "iso_3166_1": "KR", "iso_639_1": "ko", "file_path": "/sFwxvnvhpTsHn5DyPhf8ZT4318t.png", "vote_average": 0.0, "vote_count": 0, "width": 5148}, {"aspect_ratio": 7.513, "height": 686, "iso_3166_1": "UA", "iso_639_1": "uk", "file_path": "/uO9pzQ2JtgTobDOrry40JvCwW9v.png", "vote_average": 0.0, "vote_count": 0, "width": 5154}, {"aspect_ratio": 4.467, "height": 1118, "iso_3166_1": "VN", "iso_639_1": "vi", "file_path": "/79O5CyFvjVlbzvxzRGrn1bDGoG4.png", "vote_average": 0.0, "vote_count": 0, "width": 4994}, {"aspect_ratio": 2.446, "height": 1214, "iso_3166_1": "HK", "iso_639_1": "zh", "file_path": "/5ToUCrxcn0wSUIYm2z0VzLsWjBT.png", "vote_average": 0.0, "vote_count": 0, "width": 2969}, {"aspect_ratio": 10.212, "height": 626, "iso_3166_1": "PL", "iso_639_1": "pl", "file_path": "/4TYazwYetOLGlM3q012kyCSv7ux.png", "vote_average": 0.0, "vote_count": 0, "width": 6393}, {"aspect_ratio": 3.405, "height": 733, "iso_3166_1": "TW", "iso_639_1": "zh", "file_path": "/iHJRRP6jNqfHB6NjmrWMRNedSBO.png", "vote_average": 0.0, "vote_count": 0, "width": 2496}, {"aspect_ratio": 7.513, "height": 686, "iso_3166_1": "UA", "iso_639_1": "uk", "file_path": "/ib0wOmd6NFEEhfzYdH6pLo3rIRn.png", "vote_average": 0.0, "vote_count": 0, "width": 5154}, {"aspect_ratio": 7.931, "height": 626, "iso_3166_1": "CZ", "iso_639_1": "cs", "file_path": "/7aC2Men92dmySFd8xJTd9blrN55.png", "vote_average": 0.0, "vote_count": 0, "width": 4965}, {"aspect_ratio": 8.914, "height": 626, "iso_3166_1": "PT", "iso_639_1": "pt", "file_path": "/z1EWUOg1VMWdn7vtFSyBSE4jrfT.png", "vote_average": 0.0, "vote_count": 0, "width": 5580}, {"aspect_ratio": 6.261, "height": 664, "iso_3166_1": "HU", "iso_639_1": "hu", "file_path": "/1VP7FTTVerfDD4j3hhfcdx9m4t3.png", "vote_average": 0.0, "vote_count": 0, "width": 4157}, {"aspect_ratio": 5.186, "height": 608, "iso_3166_1": "RU", "iso_639_1": "ru", "file_path": "/e4FserE3BlWk4NVdKS1cJLPcs7W.png", "vote_average": 0.0, "vote_count": 0, "width": 3153}, {"aspect_ratio": 4.467, "height": 1118, "iso_3166_1": "VN", "iso_639_1": "vi", "file_path": "/e2RxCZ1T9eBV1H0UKcglYwwNLe1.png", "vote_average": 0.0, "vote_count": 0, "width": 4994}, {"aspect_ratio": 9.162, "height": 685, "iso_3166_1": "JP", "iso_639_1": "ja", "file_path": "/jxx7RMRvuOeVQKlVuUY1d1DQd3w.png", "vote_average": 0.0, "vote_count": 0, "width": 6276}], "posters": [{"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "UA", "iso_639_1": "uk", "file_path": "/l9QKBoa2lDxMACoePC3B9LggdEv.jpg", "vote_average": 3.334, "vote_count": 1, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "US", "iso_639_1": "en", "file_path": "/zEFKMNPBKq6JG7uuDkzTQ9WwErn.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "ES", "iso_639_1": "es", "file_path": "/1paLVdoniAR45emRMlOTGnZG0F7.jpg", "vote_average": 10.0, "vote_count": 5, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "US", "iso_639_1": "en", "file_path": "/mLEBTTD3D3hjhpKMIzSjNi7nNGM.jpg", "vote_average": 7.542, "vote_count": 8, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "US", "iso_639_1": "en", "file_path": "/jFUZebOjrjZfvg7ZSrc19GvTRTg.jpg", "vote_average": 5.53, "vote_count": 17, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "UA", "iso_639_1": "uk", "file_path": "/lmoeWW0wCIx64ciXVLQJSopx1oX.jpg", "vote_average": 4.722, "vote_count": 9, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "CZ", "iso_639_1": "cs", "file_path": "/AgfI6DdL5G9VrIQlE6LYjpo70dy.jpg", "vote_average": 3.334, "vote_count": 1, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "IR", "iso_639_1": "fa", "file_path": "/8RQgT4RGZWlpklBn9jhTsK0R6qF.jpg", "vote_average": 3.334, "vote_count": 1, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": None, "iso_639_1": None, "file_path": "/wlOd1KWv91efhHaDYa8YmKHZpzu.jpg", "vote_average": 3.334, "vote_count": 1, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "US", "iso_639_1": "en", "file_path": "/waeJ87shaluH07UF3iFp4dWp7aY.jpg", "vote_average": 3.334, "vote_count": 1, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "US", "iso_639_1": "en", "file_path": "/7TmOGt6rdN2fTpOgjencFRqLzLT.jpg", "vote_average": 3.334, "vote_count": 1, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "HK", "iso_639_1": "zh", "file_path": "/rmKIFxoBNHQBtsux2Pjob6AP3rl.jpg", "vote_average": 3.334, "vote_count": 1, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "GR", "iso_639_1": "el", "file_path": "/bv7Y0LCukmJHdTmnNjhOOrj5Lxp.jpg", "vote_average": 3.334, "vote_count": 1, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "TW", "iso_639_1": "zh", "file_path": "/rQOUJZybsQMjbNukYBzW6EOVi4T.jpg", "vote_average": 3.334, "vote_count": 1, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "JP", "iso_639_1": "ja", "file_path": "/prxPhdIprg1nPdMo9A84jZrwu6R.jpg", "vote_average": 3.334, "vote_count": 1, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "IN", "iso_639_1": "hi", "file_path": "/3O6ifGtlKMAnWKfegwIscCSMaC1.jpg", "vote_average": 3.334, "vote_count": 1, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "CZ", "iso_639_1": "cs", "file_path": "/hOIUCFt9I2ksDVJceGCmZEO5U0N.jpg", "vote_average": 3.334, "vote_count": 1, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "VN", "iso_639_1": "vi", "file_path": "/tOOXbtE6CrPMhZUjriV6CaWiOng.jpg", "vote_average": 3.334, "vote_count": 1, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "BR", "iso_639_1": "pt", "file_path": "/oaYi4n3pgBLeQ6FH3SU8G3XcSqq.jpg", "vote_average": 3.334, "vote_count": 1, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "KR", "iso_639_1": "ko", "file_path": "/fuqyrGmctahwktUurdUb5hOF5sH.jpg", "vote_average": 3.334, "vote_count": 1, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "SK", "iso_639_1": "sk", "file_path": "/v2rGhCz69pjIyqcme0gRIKOCQOa.jpg", "vote_average": 3.334, "vote_count": 1, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "PT", "iso_639_1": "pt", "file_path": "/kBe1FT5E4UWj48X1eu20toHYhev.jpg", "vote_average": 3.334, "vote_count": 1, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "PL", "iso_639_1": "pl", "file_path": "/xESwtf3oIyEy9MmeTXaCf9XGmW4.jpg", "vote_average": 3.334, "vote_count": 1, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "RU", "iso_639_1": "ru", "file_path": "/y9jtLN5TWe6iXwhSXXoEwuitPLQ.jpg", "vote_average": 3.334, "vote_count": 1, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "HU", "iso_639_1": "hu", "file_path": "/rUl141UDVl6zcno15U1FlnSgG9S.jpg", "vote_average": 3.334, "vote_count": 1, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "HK", "iso_639_1": "zh", "file_path": "/ux0yNz9gVxq1jtmAisN6DZiqTX1.jpg", "vote_average": 3.334, "vote_count": 1, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": None, "iso_639_1": None, "file_path": "/anrKHQxIULHqRiXLfSE4yDvvpmZ.jpg", "vote_average": 3.334, "vote_count": 1, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "US", "iso_639_1": "en", "file_path": "/y2yHguow0l7OkFxMhJGHrG27Vzj.jpg", "vote_average": 3.334, "vote_count": 2, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "US", "iso_639_1": "en", "file_path": "/dloiKuYsKKWLTpHDCfvpPMql99z.jpg", "vote_average": 3.334, "vote_count": 1, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": None, "iso_639_1": None, "file_path": "/n2fMIOq0P1qRkGVyuAG35fMjRxW.jpg", "vote_average": 3.334, "vote_count": 1, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "US", "iso_639_1": "en", "file_path": "/6gDL5B2zT5lIlHOzldpyalQBAV7.jpg", "vote_average": 3.334, "vote_count": 1, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "BR", "iso_639_1": "pt", "file_path": "/hFm2BotenkhcLwrOXp8JlwcKw4O.jpg", "vote_average": 2.278, "vote_count": 3, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "CZ", "iso_639_1": "cs", "file_path": "/jqKiNZjW6B1zlo0c1CUjK2KzBnN.jpg", "vote_average": 2.278, "vote_count": 3, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "UA", "iso_639_1": "uk", "file_path": "/uR1gl2IWWItqs494VPjEJQzQRg8.jpg", "vote_average": 2.278, "vote_count": 3, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": None, "iso_639_1": None, "file_path": "/bHbUchUMe1lTxM1UTHjYWH0PD7K.jpg", "vote_average": 1.75, "vote_count": 2, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "PL", "iso_639_1": "pl", "file_path": "/ue6bMnPT5xaaauyEEt7AQdY6ToW.jpg", "vote_average": 1.75, "vote_count": 2, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "HU", "iso_639_1": "hu", "file_path": "/b6MV2O0eTBD5MJsuP03H4q3PDMJ.jpg", "vote_average": 1.75, "vote_count": 2, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "ES", "iso_639_1": "es", "file_path": "/Axo92mJ4qtcn0AgBVaYB4hyIDc.jpg", "vote_average": 1.75, "vote_count": 4, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "GR", "iso_639_1": "el", "file_path": "/by1ouUR2TvEnnRmn01Y1co5lfiW.jpg", "vote_average": 1.75, "vote_count": 2, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "IN", "iso_639_1": "hi", "file_path": "/csJNR5BxKmavFBVdxZBNi3jYtig.jpg", "vote_average": 1.75, "vote_count": 2, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "JP", "iso_639_1": "ja", "file_path": "/8R8IN7B8gnGkBwc66WRNwN6oTNh.jpg", "vote_average": 1.75, "vote_count": 2, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "RU", "iso_639_1": "ru", "file_path": "/xDzWGIc91laVJbL1nyhnKOGfAj9.jpg", "vote_average": 1.75, "vote_count": 2, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "CA", "iso_639_1": "fr", "file_path": "/vOn72IFPhA6B8d0hsEl1riECOES.jpg", "vote_average": 1.75, "vote_count": 2, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "ES", "iso_639_1": "es", "file_path": "/f2W2SVdGJj5BYMKC4635Gss0vYd.jpg", "vote_average": 1.75, "vote_count": 2, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "UA", "iso_639_1": "uk", "file_path": "/wSRTFIgdSh12eFuDHuxbBcLuKNY.jpg", "vote_average": 1.714, "vote_count": 7, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "US", "iso_639_1": "en", "file_path": "/sFK5E3UeC7tw2c71uelBtNOOph2.jpg", "vote_average": 1.444, "vote_count": 6, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "US", "iso_639_1": "en", "file_path": "/ixbhqhmiRHdRiyfg1TOfm8sleny.jpg", "vote_average": 1.434, "vote_count": 5, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "US", "iso_639_1": "en", "file_path": "/qE2Fwr9nr5dBRWY2Xx1lWjufP61.jpg", "vote_average": 1.222, "vote_count": 3, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "CA", "iso_639_1": "fr", "file_path": "/fcSYTzvh8DpGAILjZKNdipccQZ5.jpg", "vote_average": 1.222, "vote_count": 3, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "US", "iso_639_1": "en", "file_path": "/dEvkSXRA8avHnfnq3uzEc2abXH9.jpg", "vote_average": 0.958, "vote_count": 4, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "US", "iso_639_1": "en", "file_path": "/cVmrNYgm5wcEexbXg4laNn3u4vq.jpg", "vote_average": 0.736, "vote_count": 12, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "UA", "iso_639_1": "uk", "file_path": "/gnXo0T958s81JsdxKOtheNvuOSq.jpg", "vote_average": 0.166, "vote_count": 3, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "CA", "iso_639_1": "fr", "file_path": "/8PgRCozpdrVquQNcU7sl31D3LS4.jpg", "vote_average": 0.166, "vote_count": 2, "width": 2000}, {"aspect_ratio": 0.667, "height": 750, "iso_3166_1": "RU", "iso_639_1": "ru", "file_path": "/nEyl696RYEPoOpIboYxNGJd6ioM.jpg", "vote_average": 0.166, "vote_count": 1, "width": 500}, {"aspect_ratio": 0.667, "height": 2250, "iso_3166_1": "RU", "iso_639_1": "ru", "file_path": "/7pr4rN2M3i6Z7cQJ8ZyqbJFz6rI.jpg", "vote_average": 0.166, "vote_count": 1, "width": 1500}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "RU", "iso_639_1": "ru", "file_path": "/qT4OCbHaAVVmRqkgtBc3hQjyOWs.jpg", "vote_average": 0.166, "vote_count": 1, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "VN", "iso_639_1": "vi", "file_path": "/sLW0BLXfFfZ5Ay0UfOyTqjE5ood.jpg", "vote_average": 0.166, "vote_count": 1, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": None, "iso_639_1": None, "file_path": "/bcEGG08NU0RZU2gFJNSqzvWz4tc.jpg", "vote_average": 0.166, "vote_count": 2, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": None, "iso_639_1": None, "file_path": "/T8BX6aT50KnREeu7ICpbTjeYd7.jpg", "vote_average": 0.166, "vote_count": 1, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "KR", "iso_639_1": "ko", "file_path": "/8BiHmx7gOP6o2Vwz3RJKGRuurLR.jpg", "vote_average": 0.166, "vote_count": 1, "width": 2000}, {"aspect_ratio": 0.667, "height": 2560, "iso_3166_1": "IR", "iso_639_1": "fa", "file_path": "/hCweTtjIavIuPdR0Iil6QLFQuOC.jpg", "vote_average": 0.166, "vote_count": 1, "width": 1707}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "CA", "iso_639_1": "fr", "file_path": "/vZTJxXOjij5HegAzcQm5dOIsWRJ.jpg", "vote_average": 0.166, "vote_count": 1, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "CA", "iso_639_1": "fr", "file_path": "/zNUANmiz5m69ab30cGh2X7CQd25.jpg", "vote_average": 0.166, "vote_count": 1, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "CA", "iso_639_1": "fr", "file_path": "/rYrfqVCZrhdvvB4HcVQG9lfT1ND.jpg", "vote_average": 0.166, "vote_count": 1, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "CA", "iso_639_1": "fr", "file_path": "/8yM65rY550XG29W8Nzc9I1vvVPJ.jpg", "vote_average": 0.166, "vote_count": 1, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "CA", "iso_639_1": "fr", "file_path": "/bHIw64M9cZvhV1QfOdQODDCOTLR.jpg", "vote_average": 0.166, "vote_count": 1, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "CA", "iso_639_1": "fr", "file_path": "/mQi20wkFCb2fdmUV4Y0tos5UcpX.jpg", "vote_average": 0.166, "vote_count": 1, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "US", "iso_639_1": "en", "file_path": "/pXYnIDTteaSKqEL1v57KyTUed8Z.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "PT", "iso_639_1": "pt", "file_path": "/8N06hCKDcZPh2TZzFsL1VgcDfgE.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "ES", "iso_639_1": "es", "file_path": "/j0MOW413fZVKtVNSgDB5uPeUL3O.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 1800, "iso_3166_1": "US", "iso_639_1": "en", "file_path": "/l1vVppRCODGFlzWugmrzK2mNIyX.jpg", "vote_average": 0.0, "vote_count": 0, "width": 1200}, {"aspect_ratio": 0.675, "height": 2844, "iso_3166_1": "US", "iso_639_1": "en", "file_path": "/1oW3nC6e976lkGjUdEEAmpQoI8A.jpg", "vote_average": 0.0, "vote_count": 0, "width": 1920}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "ES", "iso_639_1": "es", "file_path": "/snlERVunUNXETp1eaTAYh2EE1QI.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.68, "height": 1000, "iso_3166_1": "US", "iso_639_1": "en", "file_path": "/6U4uXtGlgtXroqQvh2wtTBFktPo.jpg", "vote_average": 0.0, "vote_count": 0, "width": 680}, {"aspect_ratio": 0.667, "height": 1500, "iso_3166_1": "US", "iso_639_1": "en", "file_path": "/z0R3x9Jo35gbBeqm8kaVokcsTDP.jpg", "vote_average": 0.0, "vote_count": 0, "width": 1000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "US", "iso_639_1": "en", "file_path": "/2pmKYvOUGdQ734Qkln2pXRTbMzw.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "ES", "iso_639_1": "es", "file_path": "/ca5GhvODt5VoJnREbSvSuuirOrW.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "TW", "iso_639_1": "zh", "file_path": "/9dA7MzC3XvCcgP6SN7AMggzMtXn.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "IR", "iso_639_1": "fa", "file_path": "/7kLQZIzxkZR6Yy49xhWUP4vyCg3.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "IR", "iso_639_1": "fa", "file_path": "/mTl7TCG2i46xcWgcHVizsSIrchv.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "IN", "iso_639_1": "hi", "file_path": "/u3cmUD20tWyHbeDj9GwptdD6Zq9.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "JP", "iso_639_1": "ja", "file_path": "/sX63SfRsKu7kVqROaV1GDnQtAZy.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "BR", "iso_639_1": "pt", "file_path": "/xfVj5k4dycJcojw6vixa1yx8Dvf.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "PL", "iso_639_1": "pl", "file_path": "/qcCBlDMg82xRjA4wd0qznxHh9Om.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "US", "iso_639_1": "en", "file_path": "/jXImIdJrEZtxkok3tPNwZdcTEHR.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "ES", "iso_639_1": "es", "file_path": "/1tJRJfzTazwovl7xqK9t9CZdVLY.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "CZ", "iso_639_1": "cs", "file_path": "/3b8Mmp1BiT6fnbyXTAQt8jYl2kN.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "TW", "iso_639_1": "zh", "file_path": "/8rkIHI9O9YjRecB4uKgePejBkUl.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "HK", "iso_639_1": "zh", "file_path": "/ivcvJKPXFXL3FJ3Te0bUCWLRWiY.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "GR", "iso_639_1": "el", "file_path": "/cL2BvCYTWKikiYeuRfysSTMv9jr.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "SK", "iso_639_1": "sk", "file_path": "/67tVhRngBGZJiGuLgH6rRY4K8xT.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "RU", "iso_639_1": "ru", "file_path": "/8CdS7vIyg0l6UPYuy6EGYAptaup.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "ES", "iso_639_1": "es", "file_path": "/pweVsYyCxfKQLZvdd5UoFgthCba.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "HU", "iso_639_1": "hu", "file_path": "/cAa2SQHLah7tt1qZOUOgNFWkadB.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "BR", "iso_639_1": "pt", "file_path": "/ywAKr2qOdf4iPW78CtgQvNr1E5z.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "IN", "iso_639_1": "hi", "file_path": "/yLn6w9DyQUHhKNPKpVRGhMQMorT.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "PL", "iso_639_1": "pl", "file_path": "/76gIjNk64GsxjeZxSqNsn34mqUD.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "PT", "iso_639_1": "pt", "file_path": "/h6KxA11KiVbMVHoyenHE7UgrsPz.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "VN", "iso_639_1": "vi", "file_path": "/uvA8UKCGzRbfpmvpXcP579o5YIa.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "JP", "iso_639_1": "ja", "file_path": "/bTrJn6ze1KzPBdYzRNLxzAriVQS.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "UA", "iso_639_1": "uk", "file_path": "/m8dfbwiaDqYbxis1Za14R6DPJb7.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "KR", "iso_639_1": "ko", "file_path": "/kYgEqKeZUuiAbDsZmp34FrwbYFQ.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "US", "iso_639_1": "en", "file_path": "/a10iI7VAjQiyuCssuu2BDSPhJyp.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "BR", "iso_639_1": "pt", "file_path": "/agpJRVUWZ9C40K6lytAcK9lbjl4.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "PL", "iso_639_1": "pl", "file_path": "/hFyuFVb6fzX9lsNZjulibnQLst3.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "CA", "iso_639_1": "fr", "file_path": "/kq84vBjTaf4biF1mVrsx3nCSWPj.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "HU", "iso_639_1": "hu", "file_path": "/yXzFoIpwD6DcwTvah0Ge16co2PR.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "SK", "iso_639_1": "sk", "file_path": "/rrtdjnZoKq4qSHRJdmCuBEuDx3v.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "UA", "iso_639_1": "uk", "file_path": "/8PwDvUlAJPpnyezh8iC1sj0yoXP.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "IN", "iso_639_1": "hi", "file_path": "/qwHXS0pGYfdBWnYEFiWlAJZxhBz.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "PT", "iso_639_1": "pt", "file_path": "/sD65ti6hyTeq3gQu7h83dzYXx7F.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "JP", "iso_639_1": "ja", "file_path": "/dq8KXigCXsshn1v3vgCC2AD5nLh.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "VN", "iso_639_1": "vi", "file_path": "/yJiuRnBrQaicPFIi3uSRvMY1TEo.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "ES", "iso_639_1": "es", "file_path": "/gkaQ8PO4HtQztrlG7SGAg00vStq.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "KR", "iso_639_1": "ko", "file_path": "/eLBUsi9VDMQn0R6FidRfnr3YU5z.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "CZ", "iso_639_1": "cs", "file_path": "/hD93BasgyOdCVG867uW580XpSPE.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "RU", "iso_639_1": "ru", "file_path": "/w42l0h9ZQ3Bjqfadd18eYEQ54yC.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "US", "iso_639_1": "en", "file_path": "/eF7Rf2wHPtIO9EbqODbnsUyoZ1I.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "HK", "iso_639_1": "zh", "file_path": "/5SmYp2WBEjoxsJNnXVnly2SfNvb.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "GR", "iso_639_1": "el", "file_path": "/7Y0NqgwNryWgSaF94os9MJ01zrZ.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "TW", "iso_639_1": "zh", "file_path": "/AlbhiCRAl1FElCOfa53oCmtglpv.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "ES", "iso_639_1": "es", "file_path": "/jUuzz6S3dVBsYtgjt5Zb8hDFDl4.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "UA", "iso_639_1": "uk", "file_path": "/v4krCEzVCprIw3O5fxVybGbVZbO.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "JP", "iso_639_1": "ja", "file_path": "/mgohVadxvWCIFH8MUfA65YDZux8.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "SK", "iso_639_1": "sk", "file_path": "/rZWYSu4hgKZpMP4zsWnQ0rvr8JS.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "VN", "iso_639_1": "vi", "file_path": "/274mQtQDSqPibAZLgpsjqP7YklP.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "GR", "iso_639_1": "el", "file_path": "/5lTmICtkVP0M7VdX7eUZwbp3AdM.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "HU", "iso_639_1": "hu", "file_path": "/tvu1KulylGTZarsesqKG0tkvtmY.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "IN", "iso_639_1": "hi", "file_path": "/jrrtg6sTkBFIEP7ULocZIE5O3Bk.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "RU", "iso_639_1": "ru", "file_path": "/2JRN9gtPLiQoekd851qWeJ3Nhj0.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "TW", "iso_639_1": "zh", "file_path": "/vplLvelKTrxHWMZ2FlDQHFM1e6.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "CZ", "iso_639_1": "cs", "file_path": "/y01xS9INMpSyfNWTVUOEKZYPnTT.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "US", "iso_639_1": "en", "file_path": "/1KOwh7HNitk0utUukSCz48j4vZ4.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "PL", "iso_639_1": "pl", "file_path": "/dhLwWJud8CewCo5veqUEEJOPeEU.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "UA", "iso_639_1": "uk", "file_path": "/dvcE8yXiRhjejDaOFtqa2q4Qv9e.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "ES", "iso_639_1": "es", "file_path": "/ukRnzDbUIX7sUfnUifZk3uQGht4.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "PT", "iso_639_1": "pt", "file_path": "/l45j9vhquO4uhXjDnG90J3hIIdc.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "KR", "iso_639_1": "ko", "file_path": "/vUSXA4RMECHERu2aW4e6vPkwIsQ.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "SA", "iso_639_1": "ar", "file_path": "/AdPfLMntAarLzSOUBErGoCocqEv.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "ES", "iso_639_1": "es", "file_path": "/rPLcLQ2rxp0jgAJWnjpGTWP0eJW.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}, {"aspect_ratio": 0.667, "height": 3000, "iso_3166_1": "US", "iso_639_1": "en", "file_path": "/a2URDaGDPJ47WghFmSad8Dc9hlz.jpg", "vote_average": 0.0, "vote_count": 0, "width": 2000}]}}
+                    ]

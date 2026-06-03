@@ -358,7 +358,7 @@ class TmdbAPI(Service):
     def movie_details(self, tmdb_id: int) -> dict[str, Any]:
         return self._get(f"movie/{tmdb_id}", ttl=7200)
 
-    def tv_details(self, tmdb_id: int) -> dict[str, Any]:
+    def tv_show_details(self, tmdb_id: int) -> dict[str, Any]:
         return self._get(
             f"tv/{tmdb_id}",
             params={
@@ -393,7 +393,7 @@ class TmdbAPI(Service):
         )
 
     def get_image_url(self, path: str, size: str = "original") -> str:
-        return f"https://image.tmdb.org/t/p/{size}{path}"
+        return f"https://image.tmdb.org/t/p/{size}{path}" if path else ""
 
 
 Tmdb = TmdbAPI()

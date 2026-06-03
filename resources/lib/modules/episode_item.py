@@ -6,11 +6,7 @@ from utils.router import url
 
 
 class EpisodeItem(PlayableItem):
-    def __init__(
-        self,
-        ep_info: dict[str, Any],
-        show_details: dict[str, Any]
-    ) -> None:
+    def __init__(self, ep_info: dict[str, Any], show_details: dict[str, Any]) -> None:
         self.show_id: int = int(show_details.get("show_id", -1))
         self.season: int = int(ep_info.get("season_number", -1))
         self.episode: int = int(ep_info.get("episode_number", -1))
@@ -20,32 +16,24 @@ class EpisodeItem(PlayableItem):
         self.playcount: int = int(ep_info.get("vote_count", 0))
         self.rating: int = int(ep_info.get("vote_average", 0))
         self.firstaired: str = str(ep_info.get("air_date", "1999-12-31"))
-        self.runtime: int = int(ep_info.get("runtime", 0)) * 3600
-        """
-        ========= ======================= 
-        Label     Type                    
-        ========= ======================= 
-        thumb     string - image filename 
-        poster    string - image filename 
-        banner    string - image filename 
-        fanart    string - image filename 
-        clearart  string - image filename 
-        clearlogo string - image filename 
-        landscape string - image filename 
-        icon      string - image filename 
-        ========= ======================= 
-        """
+        self.runtime: int = int(ep_info.get("runtime", 30))
+
         images = show_details.get("images", {})
-        clearlogodata: dict[str, Any] = next((i for i in images["logos"]), { "file_path": "" },)
+        clearlogodata: dict[str, Any] = next(
+            (i for i in images["logos"]),
+            {"file_path": ""},
+        )
         clearlogo = clearlogodata.get("file_path")
-        self.listItem.setArt({
-            "thumb" : Tmdb.get_image_url(str(ep_info.get("still_path")), "w500"),
-            "poster" : Tmdb.get_image_url(str(show_details.get("still_path"))),
-            "banner" : Tmdb.get_image_url(str(show_details.get("backdrop_path"))),
-            "clearart" : Tmdb.get_image_url(str(show_details.get("backdrop_path"))),
-            "clearlogo" : Tmdb.get_image_url(str(clearlogo)),
-            "landscape" : Tmdb.get_image_url(str(show_details.get("backdrop_path"))),
-        })
+        self.listItem.setArt(
+            {
+                "thumb": Tmdb.get_image_url(str(ep_info.get("still_path")), "w500"),
+                "poster": Tmdb.get_image_url(str(show_details.get("still_path"))),
+                "banner": Tmdb.get_image_url(str(show_details.get("backdrop_path"))),
+                "clearart": Tmdb.get_image_url(str(show_details.get("backdrop_path"))),
+                "clearlogo": Tmdb.get_image_url(str(clearlogo)),
+                "landscape": Tmdb.get_image_url(str(show_details.get("backdrop_path"))),
+            }
+        )
 
         label = f"{self.episode:02d}: {self.title}"
         super().__init__(label)

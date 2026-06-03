@@ -22,13 +22,13 @@ def _find_next(
     from services.tmdb import Tmdb
 
     try:
-        show_details = Tmdb.tv_details(show_id)
+        show_details = Tmdb.tv_show_details(show_id)
 
         season_data = Tmdb.tv_season(show_id, season)
         episodes: list[dict[str, Any]] = season_data.get("episodes") or []
         ep_nums = {e["episode_number"] for e in episodes}
 
-        curr_info = next((e for e in episodes if e["episode_number"] == episode), {})
+        curr_info: dict[str, Any] = next((e for e in episodes if e["episode_number"] == episode), {})
 
         current_episode = _build_episode(curr_info, show_details)
 
@@ -77,7 +77,7 @@ def _build_episode(
         "playcount": int(ep_info.get("vote_count", 0)),
         "rating": int(ep_info.get("vote_average", 0)),
         "firstaired": str(ep_info.get("air_date", "1999-12-31")),
-        "runtime": int(ep_info.get("runtime", 0)) * 3600,
+        "runtime": int(ep_info.get("runtime", 30) * 60),
         "art": {
             "thumb": Tmdb.get_image_url(str(ep_info.get("still_path")), "w500"),
             "tvshow.clearart": Tmdb.get_image_url(str(show_details.get("backdrop_path")), "w500"),

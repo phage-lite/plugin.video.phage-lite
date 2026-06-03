@@ -170,7 +170,7 @@ def show_shows_by_genre(genre_id: int, genre_name: str = "", page: int = 1):
 
 def show_seasons(show_id: int, show_title: str = ""):
     try:
-        details = Tmdb.tv_details(show_id)
+        details = Tmdb.tv_show_details(show_id)
     except Exception as e:
         error(f"TMDB error: {e}")
         xbmcplugin.endOfDirectory(HANDLE)
@@ -197,10 +197,10 @@ def show_seasons(show_id: int, show_title: str = ""):
     xbmcplugin.endOfDirectory(HANDLE)
 
 
-def show_episodes(show_id: int, show_title: str, season_number: int):
+def show_episodes(show_id: int, season_number: int):
     try:
-        season_data = Tmdb.tv_season(show_id, season_number)
-        show_details = Tmdb.tv_details(show_id)
+        season_details = Tmdb.tv_season(show_id, season_number)
+        show_details = Tmdb.tv_show_details(show_id)
     except Exception as e:
         error(f"TMDB error: {e}")
         xbmcplugin.endOfDirectory(HANDLE)
@@ -210,56 +210,14 @@ def show_episodes(show_id: int, show_title: str, season_number: int):
     xbmcplugin.addSortMethod(HANDLE, xbmcplugin.SORT_METHOD_EPISODE)
     xbmcplugin.addSortMethod(HANDLE, xbmcplugin.SORT_METHOD_LABEL)
 
-    season_poster = season_data.get("poster_path") or ""
-    episodes: list[dict[str, Any]] = season_data.get("episodes", [])
+    episodes: list[dict[str, Any]] = season_details.get("episodes", [])
 
     for ep in episodes:
         ep_num = ep.get("episode_number", 0)
-        item = EpisodeItem(ep, show_title, show_id, season_number, show_details, season_poster)
+        item = EpisodeItem(ep_num, season_number, season_details, show_details)
         li = item.build()
 
-        mw = url(
-            "/trakt/watched/",
-            type="episode",
-            id=show_id,
-            season=season_number,
-            episode=ep_num,
-        )
-        ss = url(
-            "/play/select/",
-            type="episode",
-            id=show_id,
-            season=season_number,
-            episode=ep_num,
-        )
-        sw_torrentio = url(
-            "/play/select/",
-            type="episode",
-            id=show_id,
-            season=season_number,
-            episode=ep_num,
-            scraper="torrentio",
-        )
-        sw_cocos = url(
-            "/play/select/",
-            type="episode",
-            id=show_id,
-            season=season_number,
-            episode=ep_num,
-            scraper="cocoscrapers",
-        )
-        li.addContextMenuItems(
-            [
-                ("Mark as Watched", f"RunPlugin({mw})"),
-                ("Select Source", f"PlayMedia({ss})"),
-                ("Scrape with Torrentio", f"PlayMedia({sw_torrentio})"),
-                ("Scrape with CocoScrapers", f"PlayMedia({sw_cocos})"),
-            ]
-        )
-        play_url = url(
-            "/play/", type="episode", id=show_id, season=season_number, episode=ep_num
-        )
-        _ = xbmcplugin.addDirectoryItem(HANDLE, play_url, li, isFolder=False)
+        _ = xbmcplugin.addDirectoryItem(HANDLE, item.play_url, li)
 
     xbmcplugin.endOfDirectory(HANDLE)
 
@@ -269,7 +227,7 @@ def _fetch_show_details(show: dict[str, Any]) -> dict[str, Any]:
     if not tmdb_id:
         return show
     try:
-        return Tmdb.tv_details(tmdb_id)
+        return Tmdb.tv_show_details(tmdb_id)
     except Exception:
         return show
 
@@ -300,8 +258,10 @@ def _render_shows(
         tmdb_id = int(show.get("id") or 0)
         details = details_map.get(tmdb_id, show)
         title = details.get("name") or show.get("name") or "Unknown"
-        year_str = (details.get("first_air_date") or show.get("first_air_date") or "")[:4]
-        poster_path = (details.get("poster_path") or show.get("poster_path") or "")
+        year_str = (details.get("first_air_date") or show.get("first_air_date") or "")[
+            :4
+        ]
+        poster_path = details.get("poster_path") or show.get("poster_path") or ""
 
         item = ShowItem(details)
         li = item.build()

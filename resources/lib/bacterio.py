@@ -92,9 +92,9 @@ def _show_seasons(show_id: int = 0, show_title: str = "") -> None:
 
 
 @route("/show/:show_id/season/:season_number/episodes/")
-def _show_episodes(show_id: int = 0, season_number: int = 0, show_title: str = "") -> None:
+def _show_episodes(show_id: int = 0, season_number: int = 0) -> None:
     from views.shows import show_episodes
-    show_episodes(show_id, show_title, season_number)
+    show_episodes(show_id, season_number)
 
 
 # ── Home ──────────────────────────────────────────────────────────────────────
