@@ -68,7 +68,7 @@ def _build_episode(
 
     return {
         "episodeid": str(ep_info.get("id", -1)),
-        "tvshowid": str(show_details.get("show_id", -1)),
+        "tvshowid": str(show_details.get("id", -1)),
         "title": str(ep_info.get("name", "Episode")),
         "season": str(ep_info.get("season_number", -1)),
         "episode": str(ep_info.get("episode_number", -1)),

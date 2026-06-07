@@ -568,7 +568,7 @@ def _select_source(
         h = s.get("hash", "").lower()
         tag = ""
         if h in cached:
-            tag += "[Cached✓] "
+            tag += "[Cached] "
         quality = s.get("quality", "?")
         size = s.get("size")
         size_str = f"  {size:.1f} GB" if isinstance(size, (int, float)) else ""
