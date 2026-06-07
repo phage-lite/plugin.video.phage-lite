@@ -4,7 +4,6 @@ import xbmc
 import xbmcgui
 
 from services.tmdb import Tmdb
-from utils.logger import log
 from utils.router import url
 
 
@@ -118,12 +117,18 @@ class EpisodeItem(ListItemBase):
 
         episodes: list[dict[str, Any]] = season_details.get("episodes", [])
         self.season_number: int = season_details.get("season_number", 0)
-        self._episode_details: dict[str, Any] = next((e for e in episodes if e["episode_number"] == episode_number))
+        self._episode_details: dict[str, Any] = next(
+            (e for e in episodes if e["episode_number"] == episode_number)
+        )
         self.show_title: str = show_details.get("name", "Unknown")
         self._show_id: int = show_details.get("id", -1)
         self._season_poster_path: str = season_details.get("poster_path", "")
         self.play_url: str = url(
-            "/play/", type="episode", id=self._show_id, season=self.season_number, episode=self.episode_number
+            "/play/",
+            type="episode",
+            id=self._show_id,
+            season=self.season_number,
+            episode=self.episode_number,
         )
         self._art: dict[str, Any] = self.extract_art(show_details)
 
@@ -221,18 +226,70 @@ class MovieItem(ListItemBase):
     is_folder: bool = False
 
     def __init__(self, details: dict[str, Any], genre_str: str = ""):
+        self._id = int(details.get("id") or 0)
+        self.title = details.get("title", "Movie")
+        self.year_str = details.get("release_date", "")[:4]
+        self.poster_path = details.get("poster_path", "")
         self._details: dict[str, Any] = details
         self._genre_str: str = genre_str
         self._art: dict[str, str] = self.extract_art(details)
+        self.play_url: str = url(
+            "/play/",
+            type="movie",
+            id=self._id,
+        )
 
     @property
     def label(self) -> str:
         return self._details.get("title") or "Unknown"
 
+    def _addContextMenuItems(self, li: xbmcgui.ListItem) -> None:
+        fav = url(
+            "/favourite/add/",
+            type="movie",
+            id=self._id,
+            title=self.title,
+            year=self.year_str,
+            poster=self.poster_path,
+        )
+        wl = url("/trakt/watchlist/add/", type="movie", id=self._id)
+        mw = url(
+            "/trakt/watched/",
+            type="movies",
+            id=self._id,
+        )
+        ss = url(
+            "/play/select/",
+            type="menus",
+            id=self._id,
+        )
+        sw_torrentio = url(
+            "/play/select/",
+            type="menus",
+            id=self._id,
+            scraper="torrentio",
+        )
+        sw_cocos = url(
+            "/play/select/",
+            type="menus",
+            id=self._id,
+            scraper="cocoscrapers",
+        )
+        li.addContextMenuItems(
+            [
+                ("Add to Favourites", f"RunPlugin({fav})"),
+                ("Add to Watchlist", f"RunPlugin({wl})"),
+                ("Mark as Watched", f"RunPlugin({mw})"),
+                ("Select Source", f"PlayMedia({ss})"),
+                ("Scrape with Torrentio", f"PlayMedia({sw_torrentio})"),
+                ("Scrape with CocoScrapers", f"PlayMedia({sw_cocos})"),
+            ]
+        )
+
     def _apply_info(self, li: xbmcgui.ListItem, tag: Any) -> None:
         d = self._details
-        title = d.get("title") or ""
-        year_str: str = (d.get("release_date") or "")[:4]
+        title = d.get("title", "Movie")
+        year_str: str = d.get("release_date", "")[:4]
 
         external_ids: dict[str, Any] = d.get("external_ids") or {}
         imdb_id = str(external_ids.get("imdb_id") or d.get("imdb_id") or "")

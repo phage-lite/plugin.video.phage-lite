@@ -85,7 +85,7 @@ def _menus(
     wl = url("/trakt/watchlist/add/", type=media_type, id=tmdb_id)
     return [
         ("Add to Favourites", f"RunPlugin({fav})"),
-        ("Add to Trakt Watchlist", f"RunPlugin({wl})"),
+        ("Add to Watchlist", f"RunPlugin({wl})"),
     ]
 
 
@@ -101,14 +101,6 @@ def show_tv_categories():
         _dir_item(label, url(f"/shows/{key}/"), icon)
 
     xbmcplugin.endOfDirectory(HANDLE)
-
-
-def _genre_map() -> dict[int, str]:
-    try:
-        genres = Tmdb.tv_genres().get("genres", [])
-        return {int(g["id"]): str(g["name"]) for g in genres}
-    except Exception:
-        return {}
 
 
 def show_tv_list(subcategory: str, page: int = 1):
