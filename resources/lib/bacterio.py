@@ -1,6 +1,7 @@
 import sys
 import xbmcaddon
 
+from utils.logger import log
 from utils.router import route, dispatch
 
 HANDLE = int(sys.argv[1])
@@ -40,6 +41,7 @@ def _play(
     episode: str = "",
     scraper: str = "",
 ) -> None:
+    log(f"Called with type={type} id={id} season={season} ep={episode} handle={HANDLE}", "play")
     from services.player import resolve_and_play
 
     resolve_and_play(

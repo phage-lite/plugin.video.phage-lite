@@ -282,6 +282,7 @@ def _add_to_torbox(
 
 
 def _tag_playing(item_type: str, tmdb_id: str, season: str, episode: str) -> None:
+    log(f"type={item_type} id={tmdb_id} season={season} ep={episode}", "_tag_playing")
     win = xbmcgui.Window(10000)
     win.setProperty("bacterio.type", item_type)
     win.setProperty("bacterio.tmdb_id", tmdb_id)

@@ -93,14 +93,14 @@ def _extract_size(text: str) -> float:
 
 def _detect_language(name: str) ->str:
     upper = name.upper()
-    for token, lang in _LANG_PATTERNS:
-        if token in upper:
+    for lang, patterns in _LANG_PATTERNS.items():
+        if any(p in upper for p in patterns):
             return lang
     return "EN"
 
 def _detect_quality(name: str) -> str:
     upper = name.upper()
-    for token, quality in _QUALITY_PATTERNS:
-        if token in upper:
+    for quality, patterns in _QUALITY_PATTERNS.items():
+        if any(p in upper for p in patterns):
             return quality
     return "SD"
