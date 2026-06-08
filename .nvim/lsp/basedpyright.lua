@@ -1,7 +1,7 @@
 local cfg = {
-    pyright = {
+    basedpyright = {
         settings = {
-            pyright = {
+            basedpyright = {
                 analysis = {
                     typeCheckingMode = "standard",
                     autoSearchPaths = true,
