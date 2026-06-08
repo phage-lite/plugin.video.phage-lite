@@ -179,7 +179,7 @@ def _render_movies(
 
         item = MovieItem(details)
         li = item.build()
-        _ = xbmcplugin.addDirectoryItem(HANDLE, item.play_url, li, isFolder=False)
+        _ = xbmcplugin.addDirectoryItem(HANDLE, item.url, li, isFolder=False)
 
     if next_url:
         li = xbmcgui.ListItem(label="Next Page")

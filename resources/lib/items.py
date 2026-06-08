@@ -1,3 +1,5 @@
+from abc import ABC, abstractmethod
+import json
 from typing import Any
 from typing_extensions import cast
 import xbmc
@@ -7,32 +9,39 @@ from services.tmdb import Tmdb
 from utils.router import url
 
 
-class ListItemBase:
-    is_folder: bool = False
+class ListItemBase(ABC):
+    @property
+    def label(self) -> str: ...
 
     @property
-    def label(self) -> str:
-        raise NotImplementedError
+    def isPlayable(self) -> bool: ...
 
-    def build(self) -> xbmcgui.ListItem:
-        li = xbmcgui.ListItem(label=self.label, label2=self.label)
-        if not self.is_folder:
-            li.setProperty("IsPlayable", "true")
-            self._addContextMenuItems(li)
+    @property
+    def url(self) -> str: ...
 
-        tag = cast(xbmc.InfoTagVideo, li.getVideoInfoTag())
-        self._apply_info(li, tag)
-        self._apply_art(li)
-        return li
+    @property
+    def listItem(self) -> xbmcgui.ListItem:
+        return self._listItem
 
-    def _apply_info(self, li: xbmcgui.ListItem, tag: Any) -> None:
-        pass
+    def _build(self) -> None:
+        self._listItem: xbmcgui.ListItem = xbmcgui.ListItem(
+            label=self.label, label2=self.label
+        )
+        self._listItem.setProperty("IsPlayable", str(self.isPlayable))
+        self._addContextMenuItems(self._listItem)
 
-    def _apply_art(self, li: xbmcgui.ListItem) -> None:
-        pass
+        tag = cast(xbmc.InfoTagVideo, self._listItem.getVideoInfoTag())
+        self._apply_info(tag)
+        self._apply_art(self._listItem)
 
-    def _addContextMenuItems(self, li: xbmcgui.ListItem) -> None:
-        pass
+    @abstractmethod
+    def _apply_info(self, tag: xbmc.InfoTagVideo) -> None: ...
+
+    @abstractmethod
+    def _apply_art(self, li: xbmcgui.ListItem) -> None: ...
+
+    @abstractmethod
+    def _addContextMenuItems(self, li: xbmcgui.ListItem) -> None: ...
 
     @staticmethod
     def extract_art(details: dict[str, Any]) -> dict[str, str]:
@@ -104,8 +113,6 @@ class ListItemBase:
 
 
 class EpisodeItem(ListItemBase):
-    is_folder: bool = False
-
     def __init__(
         self,
         episode_number: int,
@@ -120,17 +127,13 @@ class EpisodeItem(ListItemBase):
         self._episode_details: dict[str, Any] = next(
             (e for e in episodes if e["episode_number"] == episode_number)
         )
+        self._id: int = self._episode_details.get("id", -1)
         self.show_title: str = show_details.get("name", "Unknown")
         self._show_id: int = show_details.get("id", -1)
         self._season_poster_path: str = season_details.get("poster_path", "")
-        self.play_url: str = url(
-            "/play/",
-            type="episode",
-            id=self._show_id,
-            season=self.season_number,
-            episode=self.episode_number,
-        )
         self._art: dict[str, Any] = self.extract_art(show_details)
+
+        self._build()
 
     @property
     def label(self) -> str:
@@ -138,7 +141,22 @@ class EpisodeItem(ListItemBase):
         ep_name = self._episode_details.get("name") or f"Episode {ep_num}"
         return f"{ep_num:02d} - {ep_name}"
 
-    def _apply_info(self, li: xbmcgui.ListItem, tag: xbmc.InfoTagVideo) -> None:
+    @property
+    def url(self) -> str:
+        return url(
+            "/play/",
+            type="episode",
+            id=self._show_id,
+            season=self.season_number,
+            episode=self.episode_number,
+            meta=self._build_metadata(),
+        )
+
+    @property
+    def isPlayable(self) -> bool:
+        return True
+
+    def _apply_info(self, tag: xbmc.InfoTagVideo) -> None:
         ep = self._episode_details
         ep_num = ep.get("episode_number", 0)
         ep_name = ep.get("name") or f"Episode {ep_num}"
@@ -160,6 +178,48 @@ class EpisodeItem(ListItemBase):
         tag.setIMDBNumber(imdb_id)
         tag.setUniqueIDs({"tmdb": str(self._show_id), "imdb": imdb_id, "tvdb": tvdb_id})
         tag.setCast(self._build_cast(self._show_details.get("credits") or {}))
+
+    def _build_metadata(self) -> str:
+        images = self._show_details.get("images", {})
+        clearlogodata: dict[str, Any] = next(
+            (i for i in images["logos"]),
+            {"file_path": ""},
+        )
+        clearlogo = clearlogodata.get("file_path")
+
+        return json.dumps(
+            {
+                "episodeid": self._id,
+                "tvshowid": self._show_id,
+                "title": self.label,
+                "season": self.season_number,
+                "episode": self.episode_number,
+                "showtitle": self.show_title,
+                "plot": str(self._episode_details.get("overview", "")),
+                "playcount": int(self._episode_details.get("vote_count", 0)),
+                "rating": int(self._episode_details.get("vote_average", 0)),
+                "firstaired": str(self._episode_details.get("air_date", "1999-12-31")),
+                "runtime": int(self._episode_details.get("runtime") or 30) * 60,
+                "art": {
+                    "thumb": Tmdb.get_image_url(
+                        str(self._episode_details.get("still_path")), "w500"
+                    ),
+                    "tvshow.clearart": Tmdb.get_image_url(
+                        str(self._show_details.get("backdrop_path")), "w500"
+                    ),
+                    "tvshow.clearlogo": Tmdb.get_image_url(str(clearlogo)),
+                    "tvshow.fanart": Tmdb.get_image_url(
+                        str(self._show_details.get("backdrop_path")), "w780"
+                    ),
+                    "tvshow.landscape": Tmdb.get_image_url(
+                        str(self._episode_details.get("still_path")), "w500"
+                    ),
+                    "tvshow.poster": Tmdb.get_image_url(
+                        str(self._show_details.get("poster_path")), "w500"
+                    ),
+                },
+            }
+        )
 
     def _apply_art(self, li: xbmcgui.ListItem) -> None:
         art = self._art
@@ -223,21 +283,27 @@ class EpisodeItem(ListItemBase):
 
 
 class MovieItem(ListItemBase):
-    is_folder: bool = False
-
     def __init__(self, details: dict[str, Any], genre_str: str = ""):
-        self._id = int(details.get("id") or 0)
-        self.title = details.get("title", "Movie")
-        self.year_str = details.get("release_date", "")[:4]
-        self.poster_path = details.get("poster_path", "")
+        self._id: int = int(details.get("id") or 0)
+        self.title: str = details.get("title", "Movie")
+        self.year_str: str = details.get("release_date", "")[:4]
+        self.poster_path: str = details.get("poster_path", "")
         self._details: dict[str, Any] = details
         self._genre_str: str = genre_str
         self._art: dict[str, str] = self.extract_art(details)
-        self.play_url: str = url(
+        self._build()
+
+    @property
+    def url(self) -> str:
+        return url(
             "/play/",
             type="movie",
             id=self._id,
         )
+
+    @property
+    def isPlayable(self) -> bool:
+        return True
 
     @property
     def label(self) -> str:
@@ -253,6 +319,7 @@ class MovieItem(ListItemBase):
             poster=self.poster_path,
         )
         wl = url("/trakt/watchlist/add/", type="movie", id=self._id)
+        rem = url("/trakt/watchlist/remove/", type="movie", id=self._id)
         mw = url(
             "/trakt/watched/",
             type="movies",
@@ -279,6 +346,7 @@ class MovieItem(ListItemBase):
             [
                 ("Add to Favourites", f"RunPlugin({fav})"),
                 ("Add to Watchlist", f"RunPlugin({wl})"),
+                ("Remove From Watchlist", f"RunPlugin({rem})"),
                 ("Mark as Watched", f"RunPlugin({mw})"),
                 ("Select Source", f"PlayMedia({ss})"),
                 ("Scrape with Torrentio", f"PlayMedia({sw_torrentio})"),
@@ -286,7 +354,7 @@ class MovieItem(ListItemBase):
             ]
         )
 
-    def _apply_info(self, li: xbmcgui.ListItem, tag: Any) -> None:
+    def _apply_info(self, tag: xbmc.InfoTagVideo) -> None:
         d = self._details
         title = d.get("title", "Movie")
         year_str: str = d.get("release_date", "")[:4]
@@ -359,17 +427,48 @@ class MovieItem(ListItemBase):
 
 class ShowItem(ListItemBase):
     is_folder: bool = True
+    media_type: str = "show"
 
     def __init__(self, details: dict[str, Any], genre_str: str = ""):
         self._details: dict[str, Any] = details
         self._genre_str: str = genre_str
         self._art: dict[str, str] = self.extract_art(details)
+        self._id: int = details.get("id", -1)
+        self._year_str: str = details.get("first_air_date", "")[:4]
+        self.poster_path: str = details.get("poster_path", "")
+
+    @property
+    def url(self) -> str:
+        return url("/show/:show_id/seasons/", show_id=self._id, show_title=self.label)
 
     @property
     def label(self) -> str:
-        return self._details.get("name") or "Unknown"
+        return self._details.get("name", "TV Show")
 
-    def _apply_info(self, li: xbmcgui.ListItem, tag: Any) -> None:
+    @property
+    def isPlayable(self) -> bool:
+        return False
+
+    def _addContextMenuItems(self, li: xbmcgui.ListItem) -> None:
+        fav = url(
+            "/favourite/add/",
+            type=self.media_type,
+            id=self._id,
+            title=self.label,
+            year=self._year_str,
+            poster=self.poster_path,
+        )
+        wl = url("/trakt/watchlist/add/", type=self.media_type, id=self._id)
+        mw = url("/trakt/watched/", type=self.media_type, id=self._id)
+        li.addContextMenuItems(
+            [
+                ("Add to Favourites", f"RunPlugin({fav})"),
+                ("Add to Watchlist", f"RunPlugin({wl})"),
+                ("Mark as Watched", f"RunPlugin({mw})"),
+            ]
+        )
+
+    def _apply_info(self, tag: xbmc.InfoTagVideo) -> None:
         d = self._details
         title = d.get("name") or ""
         year_str = (d.get("first_air_date") or "")[:4]
@@ -379,7 +478,7 @@ class ShowItem(ListItemBase):
         tvdb_id = str(external_ids.get("tvdb_id") or "")
         tmdb_id = str(d.get("id") or "")
 
-        genres = [g["name"] for g in (d.get("genres") or [])]
+        genres: list[str] = [g["name"] for g in (d.get("genres") or [])]
         credits: dict[str, Any] = d.get("credits") or {}
 
         tag.setMediaType("tvshow")
@@ -408,14 +507,17 @@ class ShowItem(ListItemBase):
 
 
 class SeasonItem(ListItemBase):
-    is_folder: bool = True
-
     def __init__(
         self, season: dict[str, Any], show_title: str, show_art: dict[str, str]
     ):
         self._season: dict[str, Any] = season
         self._show_title: str = show_title
         self._show_art: dict[str, str] = show_art
+        self._build()
+
+    @property
+    def isPlayable(self) -> bool:
+        return False
 
     @property
     def label(self) -> str:
@@ -424,7 +526,7 @@ class SeasonItem(ListItemBase):
         name = self._season.get("name") or f"Season {season_num}"
         return f"{name}  ({episode_count} episodes)"
 
-    def _apply_info(self, li: xbmcgui.ListItem, tag: Any) -> None:
+    def _apply_info(self, tag: xbmc.InfoTagVideo) -> None:
         s = self._season
         tag.setMediaType("season")
         tag.setTitle(self.label)
@@ -446,3 +548,6 @@ class SeasonItem(ListItemBase):
                 "landscape": art.get("landscape", ""),
             }
         )
+
+    def _addContextMenuItems(self, li: xbmcgui.ListItem) -> None:
+        pass

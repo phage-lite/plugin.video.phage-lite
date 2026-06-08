@@ -19,6 +19,7 @@ _HISTORY_LIMIT = 25
 
 # ── Search history ────────────────────────────────────────────────────────────
 
+
 def _history_path() -> str:
     profile = xbmcvfs.translatePath(xbmcaddon.Addon().getAddonInfo("profile"))
     os.makedirs(profile, exist_ok=True)
@@ -57,8 +58,18 @@ def _clear_history() -> None:
 
 # ── Context menus ─────────────────────────────────────────────────────────────
 
-def _menus(media_type: str, tmdb_id: int, title: str, year: str, poster: str) -> list[tuple[str, str]]:
-    fav = url("/favourite/add/", type=media_type, id=tmdb_id, title=title, year=year, poster=poster)
+
+def _menus(
+    media_type: str, tmdb_id: int, title: str, year: str, poster: str
+) -> list[tuple[str, str]]:
+    fav = url(
+        "/favourite/add/",
+        type=media_type,
+        id=tmdb_id,
+        title=title,
+        year=year,
+        poster=poster,
+    )
     wl = url("/trakt/watchlist/add/", type=media_type, id=tmdb_id)
     return [
         ("Add to Favourites", f"RunPlugin({fav})"),
@@ -67,6 +78,7 @@ def _menus(media_type: str, tmdb_id: int, title: str, year: str, poster: str) ->
 
 
 # ── Public API ────────────────────────────────────────────────────────────────
+
 
 def do_search(query: str = "", page: int = 1):
     if not query:
@@ -84,7 +96,9 @@ def do_search(query: str = "", page: int = 1):
         xbmcplugin.endOfDirectory(HANDLE)
         return
 
-    results = [r for r in data.get("results", []) if r.get("media_type") in ("movie", "tv")]
+    results = [
+        r for r in data.get("results", []) if r.get("media_type") in ("movie", "tv")
+    ]
     total_pages: int = data.get("total_pages", 1)
 
     if not results:
@@ -104,7 +118,13 @@ def do_search(query: str = "", page: int = 1):
         next_url = url("/search/", query=query, page=page + 1)
         li = xbmcgui.ListItem(label=f"Next Page → ({page + 1} / {total_pages})")
         li.setProperty("SpecialSort", "bottom")
-        p = os.path.join(xbmcaddon.Addon().getAddonInfo("path"), "resources", "media", "icons", "nextpage.png")
+        p = os.path.join(
+            xbmcaddon.Addon().getAddonInfo("path"),
+            "resources",
+            "media",
+            "icons",
+            "nextpage.png",
+        )
         li.setArt({"icon": p, "thumb": p, "poster": p})
         _ = xbmcplugin.addDirectoryItem(HANDLE, next_url, li, isFolder=True)
 
@@ -117,6 +137,7 @@ def clear_search_history():
 
 
 # ── Prompt helpers ────────────────────────────────────────────────────────────
+
 
 def _prompt_with_history() -> str:
     history = _load_history()
@@ -138,32 +159,31 @@ def _prompt_with_history() -> str:
 
 # ── Item renderers ────────────────────────────────────────────────────────────
 
+
 def _add_movie(movie: dict[str, Any]):
     tmdb_id = int(movie.get("id") or 0)
     title = movie.get("title", "Unknown")
-    year_str = (movie.get("release_date") or "")[:4]
-    poster = movie.get("poster_path") or ""
     try:
         details = Tmdb.movie_rich_details(tmdb_id)
     except Exception:
         return
-    li = MovieItem(details).build()
-    li.setLabel(f"[MOVIE] {title}")
-    li.addContextMenuItems(_menus("movie", tmdb_id, title, year_str, poster))
-    _ = xbmcplugin.addDirectoryItem(HANDLE, url("/play/", type="movie", id=tmdb_id), li, isFolder=False)
+    movie_item = MovieItem(details)
+    movie_item.listItem.setLabel(f"[MOVIE] {title}")
+    movie_item.listItem.setLabel2(f"[MOVIE] {title}")
+    _ = xbmcplugin.addDirectoryItem(
+        HANDLE, movie_item.url, movie_item.listItem, isFolder=False
+    )
 
 
 def _add_show(show: dict[str, Any]):
     tmdb_id = int(show.get("id") or 0)
     title = show.get("name", "Unknown")
-    year_str = (show.get("first_air_date") or "")[:4]
-    poster = show.get("poster_path") or ""
     try:
         details = Tmdb.tv_show_details(tmdb_id)
     except Exception:
         return
-    li = ShowItem(details).build()
-    li.setLabel(f"[TV] {title}")
-    li.addContextMenuItems(_menus("show", tmdb_id, title, year_str, poster))
-    show_url = url("/show/:show_id/seasons/", show_id=tmdb_id, show_title=title)
-    _ = xbmcplugin.addDirectoryItem(HANDLE, show_url, li, isFolder=True)
+    show_item = ShowItem(details)
+    show_item.listItem.setLabel(f"[TV] {title}")
+    _ = xbmcplugin.addDirectoryItem(
+        HANDLE, show_item.url, show_item.listItem, isFolder=True
+    )

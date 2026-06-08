@@ -71,24 +71,6 @@ _FETCHERS: dict[str, Callable[[int], dict[str, Any]]] = {
 }
 
 
-def _menus(
-    media_type: str, tmdb_id: int, title: str, year: str, poster: str
-) -> list[tuple[str, str]]:
-    fav = url(
-        "/favourite/add/",
-        type=media_type,
-        id=tmdb_id,
-        title=title,
-        year=year,
-        poster=poster,
-    )
-    wl = url("/trakt/watchlist/add/", type=media_type, id=tmdb_id)
-    return [
-        ("Add to Favourites", f"RunPlugin({fav})"),
-        ("Add to Watchlist", f"RunPlugin({wl})"),
-    ]
-
-
 def _dir_item(label: str, url: str, icon: str) -> None:
     li = xbmcgui.ListItem(label=label)
     icon_path = _icon(icon)
@@ -207,9 +189,8 @@ def show_episodes(show_id: int, season_number: int):
     for ep in episodes:
         ep_num = ep.get("episode_number", 0)
         item = EpisodeItem(ep_num, season_details, show_details)
-        li = item.build()
 
-        _ = xbmcplugin.addDirectoryItem(HANDLE, item.play_url, li)
+        _ = xbmcplugin.addDirectoryItem(HANDLE, item.url, item.listItem)
 
     xbmcplugin.endOfDirectory(HANDLE)
 
@@ -249,20 +230,11 @@ def _render_shows(
     for show in results:
         tmdb_id = int(show.get("id") or 0)
         details = details_map.get(tmdb_id, show)
-        title = details.get("name") or show.get("name") or "Unknown"
-        year_str = (details.get("first_air_date") or show.get("first_air_date") or "")[
-            :4
-        ]
-        poster_path = details.get("poster_path") or show.get("poster_path") or ""
-
         item = ShowItem(details)
-        li = item.build()
-        li.addContextMenuItems(_menus("show", tmdb_id, title, year_str, poster_path))
-        show_url = url("/show/:show_id/seasons/", show_id=tmdb_id, show_title=title)
-        _ = xbmcplugin.addDirectoryItem(HANDLE, show_url, li, isFolder=True)
+        _ = xbmcplugin.addDirectoryItem(HANDLE, item.url, item.listItem, isFolder=True)
 
     if next_url:
-        li = xbmcgui.ListItem(label="Next Page →")
+        li = xbmcgui.ListItem(label="Next Page")
         li.setProperty("SpecialSort", "bottom")
         p = _icon("nextpage")
         li.setArt({"icon": p, "thumb": p, "poster": p})

@@ -40,14 +40,24 @@ def _save(favs: list[dict[str, Any]]) -> None:
         pass
 
 
-def add_favourite(item_type: str, tmdb_id: str, title: str, year: str = "", poster: str = "") -> None:
+def add_favourite(
+    item_type: str, tmdb_id: str, title: str, year: str = "", poster: str = ""
+) -> None:
     favs = _load()
     key = f"{item_type}:{tmdb_id}"
     if any(f.get("key") == key for f in favs):
         xbmcgui.Dialog().notification("Bacterio", "Already in Favourites", time=2000)
         return
-    favs.append({"key": key, "type": item_type, "tmdb_id": tmdb_id,
-                 "title": title, "year": year, "poster": poster})
+    favs.append(
+        {
+            "key": key,
+            "type": item_type,
+            "tmdb_id": tmdb_id,
+            "title": title,
+            "year": year,
+            "poster": poster,
+        }
+    )
     _save(favs)
     xbmcgui.Dialog().notification("Bacterio", f"Added: {title}", time=2000)
 
@@ -58,7 +68,9 @@ def remove_favourite(key: str) -> None:
     favs = [f for f in favs if f.get("key") != key]
     _save(favs)
     if entry:
-        xbmcgui.Dialog().notification("Bacterio", f"Removed: {entry.get('title', '')}", time=2000)
+        xbmcgui.Dialog().notification(
+            "Bacterio", f"Removed: {entry.get('title', '')}", time=2000
+        )
 
 
 def show_movie_favourites() -> None:
@@ -98,36 +110,23 @@ def _render_favourites(favs: list[dict[str, Any]]) -> None:
     for fav in favs:
         item_type = fav.get("type", "movie")
         tmdb_id = fav.get("tmdb_id", "")
-        title = fav.get("title", "Unknown")
-        year = fav.get("year", "")
-        key = fav.get("key", "")
-
-        remove_url = url("/favourite/remove/", key=key)
-        wl_type = "movie" if item_type == "movie" else "show"
-        wl_url = url("/trakt/watchlist/add/", type=wl_type, id=tmdb_id)
-        mw_url = url("/trakt/watched/", type=wl_type, id=tmdb_id)
-        context_menus = [
-            ("Remove from Favourites", f"RunPlugin({remove_url})"),
-            ("Add to Trakt Watchlist", f"RunPlugin({wl_url})"),
-            ("Mark as Watched", f"RunPlugin({mw_url})"),
-        ]
-
         if item_type == "movie":
             try:
                 details = Tmdb.movie_rich_details(int(tmdb_id))
             except Exception:
                 continue
-            li = MovieItem(details).build()
-            li.addContextMenuItems(context_menus)
-            _ = xbmcplugin.addDirectoryItem(HANDLE, url("/play/", type="movie", id=tmdb_id), li, isFolder=False)
+            movie_item = MovieItem(details)
+            _ = xbmcplugin.addDirectoryItem(
+                HANDLE, movie_item.url, movie_item.listItem, isFolder=False
+            )
         else:
             try:
                 details = Tmdb.tv_show_details(int(tmdb_id))
             except Exception:
                 continue
-            li = ShowItem(details).build()
-            li.addContextMenuItems(context_menus)
-            show_url = url("/show/:show_id/seasons/", show_id=tmdb_id, show_title=title)
-            _ = xbmcplugin.addDirectoryItem(HANDLE, show_url, li, isFolder=True)
+            show_item = ShowItem(details)
+            _ = xbmcplugin.addDirectoryItem(
+                HANDLE, show_item.url, show_item.listItem, isFolder=True
+            )
 
     xbmcplugin.endOfDirectory(HANDLE)

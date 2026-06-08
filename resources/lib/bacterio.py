@@ -1,3 +1,4 @@
+import json
 import sys
 import xbmcaddon
 
@@ -40,6 +41,7 @@ def _play(
     season: str = "",
     episode: str = "",
     scraper: str = "",
+    meta: str = ""
 ) -> None:
     log(f"Called with type={type} id={id} season={season} ep={episode} handle={HANDLE}", "play")
     from services.player import resolve_and_play
@@ -51,6 +53,7 @@ def _play(
         season=season,
         episode=episode,
         scraper_filter=scraper,
+        metadata=json.loads(meta)
     )
 
 
@@ -61,6 +64,7 @@ def _play_select(
     season: str = "",
     episode: str = "",
     scraper: str = "",
+    meta: str = ""
 ) -> None:
     from services.player import resolve_and_play
 
@@ -72,6 +76,7 @@ def _play_select(
         episode=episode,
         force_select=True,
         scraper_filter=scraper,
+        metadata=json.loads(meta)
     )
 
 

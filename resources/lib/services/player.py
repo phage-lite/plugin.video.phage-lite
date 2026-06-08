@@ -1,5 +1,6 @@
 import re
 import time
+from typing_extensions import cast
 import xbmc
 import xbmcgui
 import xbmcplugin
@@ -290,11 +291,25 @@ def _tag_playing(item_type: str, tmdb_id: str, season: str, episode: str) -> Non
     win.setProperty("bacterio.episode", episode)
 
 
-def _play_url(direct_url: str, handle: int):
-    li = xbmcgui.ListItem(path=direct_url)
+def _play_url(direct_url: str, handle: int, media_type: str, metadata: dict[str, Any] = {}):
+    title = metadata.get("title", "")
+    listItem = xbmcgui.ListItem(label=metadata.get("title", ""), label2=metadata.get("title", ""), path=direct_url)
+    tag = cast(xbmc.InfoTagVideo, listItem.getVideoInfoTag())
+    tag.setMediaType(media_type)
+    tag.setTitle(title)
+    tag.setOriginalTitle(title)
+    if (media_type == "episode"):
+        tag.setTvShowTitle(metadata.get("showtitle", ""))
+        tag.setSeason(metadata.get("season", ""))
+        tag.setEpisode(metadata.get("episode", ""))
+    tag.setPlot(metadata.get("overview", ""))
+    tag.setDuration(metadata.get("runtime", 30) * 60)
+    tag.setRating(metadata.get("vote_average", 0))
+    tag.setFirstAired(metadata.get("firstaired", ""))
+    listItem.setArt(metadata.get("art", {}))
     log(direct_url, "play_url")
-    li.setContentLookup(False)
-    xbmcplugin.setResolvedUrl(handle, True, li)
+    listItem.setContentLookup(False)
+    xbmcplugin.setResolvedUrl(handle, True, listItem)
 
 
 # ── Public API ────────────────────────────────────────────────────────────────
@@ -308,6 +323,7 @@ def resolve_and_play(
     episode: str = "",
     force_select: bool = False,
     scraper_filter: str = "",
+    metadata: dict[str, Any] = {}
 ):
     def _fail(msg: str):
         log(msg, "resolve_and_play")
@@ -515,7 +531,7 @@ def resolve_and_play(
             )
             if direct_url and direct_url != "Cancel":
                 _tag_playing(item_type, tmdb_id, season, episode)
-                _play_url(direct_url, handle)
+                _play_url(direct_url, handle, item_type, metadata)
                 return
             elif direct_url == "Cancel":
                 _fail("Cancelled")
@@ -534,6 +550,7 @@ def resolve_magnet_and_play(
     tmdb_id: str = "",
     season: str = "",
     episode: str = "",
+    metadata: dict[str, Any] = {}
 ) -> None:
     """Resolve a single magnet directly - used when the caller already has a magnet URI."""
     use_rd = _rd_ok()
@@ -550,7 +567,7 @@ def resolve_magnet_and_play(
     if direct_url:
         if tmdb_id:
             _tag_playing(item_type, tmdb_id, season, episode)
-        _play_url(direct_url, handle)
+        _play_url(direct_url, handle, item_type, metadata)
     else:
         error("Failed to resolve magnet via any debrid provider.")
         xbmcplugin.setResolvedUrl(handle, False, xbmcgui.ListItem())
