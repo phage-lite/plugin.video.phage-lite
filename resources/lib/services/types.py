@@ -3,7 +3,6 @@ from enum import Enum
 from typing import Any, TypedDict
 
 from settings.settings import get_setting, set_setting
-from utils.logger import log
 
 
 class AuthData(TypedDict):

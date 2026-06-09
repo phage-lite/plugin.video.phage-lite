@@ -41,9 +41,12 @@ def _play(
     season: str = "",
     episode: str = "",
     scraper: str = "",
-    meta: str = ""
+    meta: str = "{}",
 ) -> None:
-    log(f"Called with type={type} id={id} season={season} ep={episode} handle={HANDLE}", "play")
+    log(
+        f"Called with type={type} id={id} season={season} ep={episode} handle={HANDLE}",
+        "play",
+    )
     from services.player import resolve_and_play
 
     resolve_and_play(
@@ -53,7 +56,7 @@ def _play(
         season=season,
         episode=episode,
         scraper_filter=scraper,
-        metadata=json.loads(meta)
+        metadata=json.loads(meta),
     )
 
 
@@ -64,7 +67,7 @@ def _play_select(
     season: str = "",
     episode: str = "",
     scraper: str = "",
-    meta: str = ""
+    meta: str = "{}",
 ) -> None:
     from services.player import resolve_and_play
 
@@ -76,7 +79,7 @@ def _play_select(
         episode=episode,
         force_select=True,
         scraper_filter=scraper,
-        metadata=json.loads(meta)
+        metadata=json.loads(meta),
     )
 
 
@@ -288,10 +291,10 @@ def _show_list(subcategory: str = "", page: int = 1) -> None:
 
 
 @route("/show/:show_id/seasons/")
-def _show_seasons(show_id: int = 0, show_title: str = "") -> None:
+def _show_seasons(show_id: int = 0) -> None:
     from views.shows import show_seasons
 
-    show_seasons(show_id, show_title)
+    show_seasons(show_id)
 
 
 @route("/show/:show_id/season/:season_number/episodes/")

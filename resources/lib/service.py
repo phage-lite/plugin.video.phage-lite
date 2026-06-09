@@ -1,3 +1,4 @@
+import json
 import threading
 from base64 import b64encode
 from json import dumps
@@ -52,7 +53,7 @@ def _find_next(
         return {
             "current_episode": current_episode,
             "next_episode": next_episode,
-            "play_url": url("/play/", type="episode", id=show_id, season=next_season, episode=next_ep)
+            "play_url": url("/play/", type="episode", id=show_id, season=next_season, episode=next_ep, meta=json.dumps(next_episode))
         }
     except Exception as e:
         log(f"find_next_error {e}")
@@ -60,31 +61,31 @@ def _find_next(
 
 
 def _build_episode(
-    ep_info: dict[str, Any], show_details: dict[str, Any]
+    episode_details: dict[str, Any], show_details: dict[str, Any]
 ) -> dict[str, Any]:
     images = show_details.get("images", {})
     clearlogodata: dict[str, Any] = next((i for i in images["logos"]), { "file_path": "" },)
     clearlogo = clearlogodata.get("file_path")
 
     return {
-        "episodeid": str(ep_info.get("id", -1)),
+        "episodeid": str(episode_details.get("id", -1)),
         "tvshowid": str(show_details.get("id", -1)),
-        "title": str(ep_info.get("name", "Episode")),
-        "season": str(ep_info.get("season_number", -1)),
-        "episode": str(ep_info.get("episode_number", -1)),
-        "showtitle": str(show_details.get("title", "")),
-        "plot": str(ep_info.get("overview", "")),
-        "playcount": int(ep_info.get("vote_count", 0)),
-        "rating": int(ep_info.get("vote_average", 0)),
-        "firstaired": str(ep_info.get("air_date", "1999-12-31")),
-        "runtime": int(ep_info.get("runtime", 30) * 60),
+        "title": str(episode_details.get("name", "Episode")),
+        "season": str(episode_details.get("season_number", -1)),
+        "episode": str(episode_details.get("episode_number", -1)),
+        "showtitle": str(show_details.get("name", "")),
+        "plot": str(episode_details.get("overview", "")),
+        "playcount": int(episode_details.get("vote_count", 0)),
+        "rating": int(episode_details.get("vote_average", 0)),
+        "firstaired": str(episode_details.get("air_date", "1999-12-31")),
+        "runtime": int(episode_details.get("runtime") or 30) * 60,
         "art": {
-            "thumb": Tmdb.get_image_url(str(ep_info.get("still_path")), "w500"),
-            "tvshow.clearart": Tmdb.get_image_url(str(show_details.get("backdrop_path")), "w500"),
+            "thumb": Tmdb.get_image_url(str(episode_details.get("still_path"))),
+            "tvshow.clearart": Tmdb.get_image_url(str(show_details.get("backdrop_path")), "w1280"),
             "tvshow.clearlogo": Tmdb.get_image_url(str(clearlogo)),
-            "tvshow.fanart": Tmdb.get_image_url(str(show_details.get("backdrop_path")), "w780"),
-            "tvshow.landscape": Tmdb.get_image_url(str(ep_info.get("still_path")), "w500"),
-            "tvshow.poster": Tmdb.get_image_url(str(show_details.get("poster_path")), "w500"),
+            "tvshow.fanart": Tmdb.get_image_url(str(show_details.get("backdrop_path")), "w1280"),
+            "tvshow.landscape": Tmdb.get_image_url(str(episode_details.get("still_path")), "w1280"),
+            "tvshow.poster": Tmdb.get_image_url(str(show_details.get("poster_path")), "w780"),
         },
     }
 

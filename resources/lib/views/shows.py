@@ -142,9 +142,9 @@ def show_shows_by_genre(genre_id: int, genre_name: str = "", page: int = 1):
     _render_shows(results, next_url)
 
 
-def show_seasons(show_id: int, show_title: str = ""):
+def show_seasons(show_id: int):
     try:
-        details = Tmdb.tv_show_details(show_id)
+        show_details = Tmdb.tv_show_details(show_id)
     except Exception as e:
         error(f"TMDB error: {e}")
         xbmcplugin.endOfDirectory(HANDLE)
@@ -152,21 +152,13 @@ def show_seasons(show_id: int, show_title: str = ""):
     log(f"{show_id}", "show_id")
 
     xbmcplugin.setContent(HANDLE, "tvshows")
-    seasons: list[dict[str, Any]] = details.get("seasons", [])
-    show_art = ShowItem.extract_art(details)
+    seasons: list[dict[str, Any]] = show_details.get("seasons", [])
+    show_art = ShowItem.extract_art(show_details)
 
     for season in seasons:
         log(f"{season}", "season")
-        item = SeasonItem(season, show_title, show_art)
-        li = item.build()
-        season_num = season.get("season_number", 0)
-        ep_url = url(
-            "/show/:show_id/season/:season_number/episodes/",
-            show_id=show_id,
-            season_number=season_num,
-            show_title=show_title,
-        )
-        _ = xbmcplugin.addDirectoryItem(HANDLE, ep_url, li, isFolder=True)
+        item = SeasonItem(season, show_details, show_art)
+        _ = xbmcplugin.addDirectoryItem(HANDLE, item.url, item.listItem, isFolder=True)
 
     xbmcplugin.endOfDirectory(HANDLE)
 

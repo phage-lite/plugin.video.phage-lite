@@ -202,20 +202,20 @@ class EpisodeItem(ListItemBase):
                 "runtime": int(self._episode_details.get("runtime") or 30) * 60,
                 "art": {
                     "thumb": Tmdb.get_image_url(
-                        str(self._episode_details.get("still_path")), "w500"
+                        str(self._episode_details.get("still_path"))
                     ),
                     "tvshow.clearart": Tmdb.get_image_url(
-                        str(self._show_details.get("backdrop_path")), "w500"
+                        str(self._show_details.get("backdrop_path")), "w1280"
                     ),
                     "tvshow.clearlogo": Tmdb.get_image_url(str(clearlogo)),
                     "tvshow.fanart": Tmdb.get_image_url(
-                        str(self._show_details.get("backdrop_path")), "w780"
+                        str(self._show_details.get("backdrop_path")), "w1280"
                     ),
                     "tvshow.landscape": Tmdb.get_image_url(
-                        str(self._episode_details.get("still_path")), "w500"
+                        str(self._episode_details.get("backdrop_path")), "w1280"
                     ),
                     "tvshow.poster": Tmdb.get_image_url(
-                        str(self._show_details.get("poster_path")), "w500"
+                        str(self._show_details.get("poster_path")), "w780"
                     ),
                 },
             }
@@ -426,7 +426,6 @@ class MovieItem(ListItemBase):
 
 
 class ShowItem(ListItemBase):
-    is_folder: bool = True
     media_type: str = "show"
 
     def __init__(self, details: dict[str, Any], genre_str: str = ""):
@@ -439,7 +438,7 @@ class ShowItem(ListItemBase):
 
     @property
     def url(self) -> str:
-        return url("/show/:show_id/seasons/", show_id=self._id, show_title=self.label)
+        return url("/show/:show_id/seasons/", show_id=self._id)
 
     @property
     def label(self) -> str:
@@ -508,16 +507,30 @@ class ShowItem(ListItemBase):
 
 class SeasonItem(ListItemBase):
     def __init__(
-        self, season: dict[str, Any], show_title: str, show_art: dict[str, str]
+        self,
+        season_details: dict[str, Any],
+        show_details: dict[str, Any],
+        show_art: dict[str, str],
     ):
-        self._season: dict[str, Any] = season
-        self._show_title: str = show_title
+        self._show_id: int = show_details.get("show_id", -1)
+        self._season: dict[str, Any] = season_details
+        self._show_title: str = show_details.get("show_title", "TV Show")
         self._show_art: dict[str, str] = show_art
+        self._season_number: int = self._season.get("season_number", -1)
         self._build()
 
     @property
     def isPlayable(self) -> bool:
         return False
+
+    @property
+    def url(self) -> str:
+        return url(
+            "/show/:show_id/season/:season_number/episodes/",
+            show_id=self._show_id,
+            season_number=self._season_number,
+            show_title=self._show_title,
+        )
 
     @property
     def label(self) -> str:
