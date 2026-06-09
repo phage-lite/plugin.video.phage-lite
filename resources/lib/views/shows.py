@@ -21,7 +21,7 @@ _SUBCATEGORIES = [
     ("Popular", "popular", "popular"),
     ("Trending", "trending", "trending"),
     ("Watchlist", "watchlist", "trakt"),
-    ("My Favourites", "favourites", "favorites"),
+    ("My Favourites", "favourites", "favourites"),
     ("My Calendar", "calendar", "calendar"),
     ("Recommended", "recommended", "discover"),
     ("Because You Watched", "because_you_watched", "because_you_watched"),

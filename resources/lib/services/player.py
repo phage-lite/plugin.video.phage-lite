@@ -78,8 +78,18 @@ def _sort_sources(
         return sorted(
             sources,
             key=lambda s: (
-                _LANG_RANK.get("PREFERRED" if s.get("language", "EN") == lang_pref else s.get("language", "EN"), 2),
-                _QUALITY_RANK.get("PREFERRED" if s.get("quality", "SD") == quality_pref else s.get("quality", "SD"), 9),
+                _LANG_RANK.get(
+                    "PREFERRED"
+                    if s.get("language", "EN") == lang_pref
+                    else s.get("language", "EN"),
+                    2,
+                ),
+                _QUALITY_RANK.get(
+                    "PREFERRED"
+                    if s.get("quality", "SD") == quality_pref
+                    else s.get("quality", "SD"),
+                    9,
+                ),
                 0 if s.get("hash", "").lower() in cached else 1,
                 -int(s.get("seeders") or 0),
             ),
@@ -88,15 +98,26 @@ def _sort_sources(
     return sorted(
         sources,
         key=lambda s: (
-            _LANG_RANK.get("PREFERRED" if s.get("language", "EN") == lang_pref else s.get("language", "EN"), 2),
+            _LANG_RANK.get(
+                "PREFERRED"
+                if s.get("language", "EN") == lang_pref
+                else s.get("language", "EN"),
+                2,
+            ),
             0 if s.get("hash", "").lower() in cached else 1,
-            _QUALITY_RANK.get("PREFERRED" if s.get("quality", "SD") == quality_pref else s.get("quality", "SD"), 9),
+            _QUALITY_RANK.get(
+                "PREFERRED"
+                if s.get("quality", "SD") == quality_pref
+                else s.get("quality", "SD"),
+                9,
+            ),
             -int(s.get("seeders") or 0),
         ),
     )
 
 
 def _add_to_rd(
+    progress: xbmcgui.DialogProgress,
     magnet: str,
     title: str,
     season: int | None = None,
@@ -107,8 +128,7 @@ def _add_to_rd(
     Returns the direct URL on success, or '' on any failure (error status,
     timeout, cancellation). Never calls setResolvedUrl itself.
     """
-    progress = xbmcgui.DialogProgress()
-    progress.create("Bacterio", f"Opening - {title}…" if title else "Opening…")
+    progress.update(0, f"Opening - {title}…" if title else "Opening…")
 
     try:
         torrent = RealDebrid.add_magnet(magnet)
@@ -213,14 +233,14 @@ def _pick_rd_link(
 
 
 def _add_to_torbox(
+    progress: xbmcgui.DialogProgress,
     magnet: str,
     title: str,
     season: int | None = None,
     episode: int | None = None,
     is_cached: bool = False,
 ) -> str:
-    progress = xbmcgui.DialogProgress()
-    progress.create("Bacterio", f"Opening - {title}…" if title else "Opening…")
+    progress.update(0, f"Opening - {title}…" if title else "Opening…")
     log(f"{title}, {season}x{episode} cached:{is_cached}", "_add_to_torbox")
 
     try:
@@ -291,14 +311,20 @@ def _tag_playing(item_type: str, tmdb_id: str, season: str, episode: str) -> Non
     win.setProperty("bacterio.episode", episode)
 
 
-def _play_url(direct_url: str, handle: int, media_type: str, metadata: dict[str, Any] = {}):
+def _play_url(
+    direct_url: str, handle: int, media_type: str, metadata: dict[str, Any] = {}
+):
     title = metadata.get("title", "")
-    listItem = xbmcgui.ListItem(label=metadata.get("title", ""), label2=metadata.get("title", ""), path=direct_url)
+    listItem = xbmcgui.ListItem(
+        label=metadata.get("title", ""),
+        label2=metadata.get("title", ""),
+        path=direct_url,
+    )
     tag = cast(xbmc.InfoTagVideo, listItem.getVideoInfoTag())
     tag.setMediaType(media_type)
     tag.setTitle(title)
     tag.setOriginalTitle(title)
-    if (media_type == "episode"):
+    if media_type == "episode":
         tag.setTvShowTitle(metadata.get("showtitle", ""))
         tag.setSeason(metadata.get("season", -1))
         tag.setEpisode(metadata.get("episode", -1))
@@ -323,7 +349,7 @@ def resolve_and_play(
     episode: str = "",
     force_select: bool = False,
     scraper_filter: str = "",
-    metadata: dict[str, Any] = {}
+    metadata: dict[str, Any] = {},
 ):
     def _fail(msg: str):
         log(msg, "resolve_and_play")
@@ -438,7 +464,6 @@ def resolve_and_play(
         )
 
     progress.update(100)
-    progress.close()
 
     # Merge: cocoscrapers first, then any new hashes from Torrentio
     seen: set[str] = {s.get("hash", "").lower() for s in sources}
@@ -519,9 +544,12 @@ def resolve_and_play(
         ep_episode = int(episode) if episode else None
         for provider in providers:
             direct_url = (
-                _add_to_rd(magnet, title, season=ep_season, episode=ep_episode)
+                _add_to_rd(
+                    progress, magnet, title, season=ep_season, episode=ep_episode
+                )
                 if provider == "rd"
                 else _add_to_torbox(
+                    progress,
                     magnet,
                     title,
                     season=ep_season,
@@ -542,40 +570,6 @@ def resolve_and_play(
     _fail(f"All {len(ordered)} sources failed for {title}.")
 
 
-def resolve_magnet_and_play(
-    magnet: str,
-    handle: int,
-    title: str = "",
-    item_type: str = "movie",
-    tmdb_id: str = "",
-    season: str = "",
-    episode: str = "",
-    metadata: dict[str, Any] = {}
-) -> None:
-    """Resolve a single magnet directly - used when the caller already has a magnet URI."""
-    use_rd = _rd_ok()
-    use_tb = _tb_ok()
-    if not use_rd and not use_tb:
-        error("No debrid service configured.")
-        xbmcplugin.setResolvedUrl(handle, False, xbmcgui.ListItem())
-        return
-
-    direct_url = _add_to_torbox(magnet, title) if use_tb else _add_to_rd(magnet, title)
-    if not direct_url and use_rd and use_tb:
-        direct_url = _add_to_rd(magnet, title)
-
-    if direct_url:
-        if tmdb_id:
-            _tag_playing(item_type, tmdb_id, season, episode)
-        _play_url(direct_url, handle, item_type, metadata)
-    else:
-        error("Failed to resolve magnet via any debrid provider.")
-        xbmcplugin.setResolvedUrl(handle, False, xbmcgui.ListItem())
-
-
-# ── Helpers ───────────────────────────────────────────────────────────────────
-
-
 def _select_source(
     sources: list[dict[str, Any]],
     cached: set[str],
@@ -592,7 +586,7 @@ def _select_source(
         size_str = f"  {size:.1f} GB" if isinstance(size, (int, float)) else ""
         is_cached = bool(tag)
         seeders = s.get("seeders")
-        seed_str = f"  ↑{seeders}" if seeders and not is_cached else ""
+        seed_str = f"  Seeders: {seeders}" if seeders and not is_cached else ""
         name = (s.get("name") or "")[:55]
         labels.append(f"{tag}{quality}{size_str}{seed_str}  {name}")
 

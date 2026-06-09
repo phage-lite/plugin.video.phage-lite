@@ -435,6 +435,7 @@ class ShowItem(ListItemBase):
         self._id: int = details.get("id", -1)
         self._year_str: str = details.get("first_air_date", "")[:4]
         self.poster_path: str = details.get("poster_path", "")
+        self._build()
 
     @property
     def url(self) -> str:

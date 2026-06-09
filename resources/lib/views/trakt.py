@@ -99,9 +99,6 @@ def _add_up_next_item(item: dict[str, Any]):
     show_details = item["show_details"]
     season_details = item["season_details"]
 
-    # label = f"{show_title}: S{season:02d}E{episode_num:02d}"
-    # if ep_title and ep_title != f"Episode {episode_num}":
-    #     label += f" - {ep_title}"
     episode_item = EpisodeItem(episode_number, season_details, show_details)
     label = (
         f"{episode_item.show_title}: S{episode_item.season_number}E{episode_item.label}"
