@@ -8,7 +8,7 @@ import xbmcgui
 
 from services.tmdb import Tmdb
 from utils.router import url
-from utils.logger import log
+from utils.logger import debug, err, log
 
 _WIN_ID = 10000
 _PROP_TYPE = "bacterio.type"
@@ -56,7 +56,7 @@ def _find_next(
             "play_url": url("/play/", type="episode", id=show_id, season=next_season, episode=next_ep, meta=json.dumps(next_episode))
         }
     except Exception as e:
-        log(f"find_next_error {e}")
+        err(f"find_next_error {e}")
         return None
 
 
@@ -131,7 +131,7 @@ class _Player(xbmc.Player):
             if not Trakt.is_authenticated:
                 return
             m = self._meta
-            log(
+            debug(
                 f"scrobble {action} {m['type']} id={m['tmdb_id']} s={m['season']} e={m['episode']} p={progress:.1f}",
                 "service",
             )
@@ -144,7 +144,7 @@ class _Player(xbmc.Player):
                 int(m["episode"]),
             )
         except Exception as e:
-            log(str(e), "service._scrobble")
+            err(str(e), "service._scrobble")
 
     def _start_monitor(self) -> None:
         if not self._monitor_alive:
@@ -158,7 +158,7 @@ class _Player(xbmc.Player):
                 if self._meta is None:
                     self._meta = self._read_meta()
                     if self._meta:
-                        log(f"meta acquired: {self._meta}", "service")
+                        debug(f"meta acquired: {self._meta}", "service")
                 p = self._progress()
                 if p > 0:
                     self._last_progress = p
@@ -195,7 +195,7 @@ class _Player(xbmc.Player):
                 }
             )
         )
-        log(f"upnext signal sent: s{season}e{episode} '{show_id}'", "service")
+        debug(f"upnext signal sent: s{season}e{episode} '{show_id}'", "service")
 
     def onPlayBackStarted(self):
         log("onPlayBackStarted", "service")

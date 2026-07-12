@@ -2,7 +2,7 @@ import json
 import sys
 import xbmcaddon
 
-from utils.logger import log
+from utils.logger import debug
 from utils.router import route, dispatch
 
 HANDLE = int(sys.argv[1])
@@ -34,16 +34,22 @@ def _settings() -> None:
     xbmcaddon.Addon().openSettings()
 
 
+# TODO:
+#     Separate play and scrape into separate urls
+#     entries will call scrape
+#     scrape will call play with its result
+#     also allows player to be given any magnet to play
+
+
 @route("/play/")
 def _play(
     type: str = "movie",
     id: str = "",
     season: str = "",
     episode: str = "",
-    scraper: str = "",
     meta: str = "{}",
 ) -> None:
-    log(
+    debug(
         f"Called with type={type} id={id} season={season} ep={episode} handle={HANDLE}",
         "play",
     )
@@ -55,7 +61,6 @@ def _play(
         handle=HANDLE,
         season=season,
         episode=episode,
-        scraper_filter=scraper,
         metadata=json.loads(meta),
     )
 
@@ -66,7 +71,6 @@ def _play_select(
     id: str = "",
     season: str = "",
     episode: str = "",
-    scraper: str = "",
     meta: str = "{}",
 ) -> None:
     from services.player import resolve_and_play
@@ -78,7 +82,6 @@ def _play_select(
         season=season,
         episode=episode,
         force_select=True,
-        scraper_filter=scraper,
         metadata=json.loads(meta),
     )
 

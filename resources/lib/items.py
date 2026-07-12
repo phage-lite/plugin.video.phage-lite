@@ -132,6 +132,7 @@ class EpisodeItem(ListItemBase):
         self._show_id: int = show_details.get("id", -1)
         self._season_poster_path: str = season_details.get("poster_path", "")
         self._art: dict[str, Any] = self.extract_art(show_details)
+        self._metadata: str = self._build_metadata()
 
         self._build()
 
@@ -149,7 +150,7 @@ class EpisodeItem(ListItemBase):
             id=self._show_id,
             season=self.season_number,
             episode=self.episode_number,
-            meta=self._build_metadata(),
+            meta=self._metadata,
         )
 
     @property
@@ -255,29 +256,12 @@ class EpisodeItem(ListItemBase):
             id=self._show_id,
             season=self.season_number,
             episode=self.episode_number,
-        )
-        sw_torrentio = url(
-            "/play/select/",
-            type="episode",
-            id=self._show_id,
-            season=self.season_number,
-            episode=self.episode_number,
-            scraper="torrentio",
-        )
-        sw_cocos = url(
-            "/play/select/",
-            type="episode",
-            id=self._show_id,
-            season=self.season_number,
-            episode=self.episode_number,
-            scraper="cocoscrapers",
+            meta=self._metadata
         )
         li.addContextMenuItems(
             [
                 ("Mark as Watched", f"RunPlugin({mw})"),
                 ("Select Source", f"PlayMedia({ss})"),
-                ("Scrape with Torrentio", f"PlayMedia({sw_torrentio})"),
-                ("Scrape with CocoScrapers", f"PlayMedia({sw_cocos})"),
             ]
         )
 
@@ -330,18 +314,6 @@ class MovieItem(ListItemBase):
             type="menus",
             id=self._id,
         )
-        sw_torrentio = url(
-            "/play/select/",
-            type="menus",
-            id=self._id,
-            scraper="torrentio",
-        )
-        sw_cocos = url(
-            "/play/select/",
-            type="menus",
-            id=self._id,
-            scraper="cocoscrapers",
-        )
         li.addContextMenuItems(
             [
                 ("Add to Favourites", f"RunPlugin({fav})"),
@@ -349,8 +321,6 @@ class MovieItem(ListItemBase):
                 ("Remove From Watchlist", f"RunPlugin({rem})"),
                 ("Mark as Watched", f"RunPlugin({mw})"),
                 ("Select Source", f"PlayMedia({ss})"),
-                ("Scrape with Torrentio", f"PlayMedia({sw_torrentio})"),
-                ("Scrape with CocoScrapers", f"PlayMedia({sw_cocos})"),
             ]
         )
 
@@ -513,7 +483,7 @@ class SeasonItem(ListItemBase):
         show_details: dict[str, Any],
         show_art: dict[str, str],
     ):
-        self._show_id: int = show_details.get("show_id", -1)
+        self._show_id: int = show_details.get("id", -1)
         self._season: dict[str, Any] = season_details
         self._show_title: str = show_details.get("show_title", "TV Show")
         self._show_art: dict[str, str] = show_art
@@ -529,8 +499,7 @@ class SeasonItem(ListItemBase):
         return url(
             "/show/:show_id/season/:season_number/episodes/",
             show_id=self._show_id,
-            season_number=self._season_number,
-            show_title=self._show_title,
+            season_number=self._season_number
         )
 
     @property

@@ -1,18 +1,19 @@
 import re
 import time
+from typing import Any, Literal, NamedTuple
 from typing_extensions import cast
 import xbmc
 import xbmcgui
 import xbmcplugin
 from threading import Thread
-from typing import Any
 
 from services.tmdb import Tmdb
 from services.real_debrid import RealDebrid
 from services.torbox import TorBox
-from scrapers import torrentio as torrentio_scraper
+from services import scraper
+from utils.types import EpisodeScrapePayload, MovieScrapePayload, ScrapePayload, SourceResult
 from utils.notifications import error, info
-from utils.logger import log
+from utils.logger import debug, err, log, warn
 from settings.settings import get_setting
 
 _SCRAPE_TIMEOUT = 20
@@ -37,6 +38,10 @@ _LANG_RANK = {
     "EN": 1,
 }
 _RD_ERROR_STATUSES = {"magnet_error", "error", "dead", "virus"}
+
+
+class ScrapeCancelled(Exception):
+    """Raised when the user cancels the progress dialog while sources are still coming in."""
 
 
 def _match_episode_file(
@@ -68,8 +73,8 @@ def _tb_ok() -> bool:
 
 
 def _sort_sources(
-    sources: list[dict[str, Any]], cached: set[str]
-) -> list[dict[str, Any]]:
+    sources: list[SourceResult], cached: set[str]
+) -> list[SourceResult]:
     prefer_cached = get_setting("playback.prefer_cached")
     quality_pref = get_setting("playback.preferred_quality")
     lang_pref = get_setting("playback.preferred_lang")
@@ -79,15 +84,11 @@ def _sort_sources(
             sources,
             key=lambda s: (
                 _LANG_RANK.get(
-                    "PREFERRED"
-                    if s.get("language", "EN") == lang_pref
-                    else s.get("language", "EN"),
+                    "PREFERRED" if s.get("language", "EN") == lang_pref else s.get("language", "EN"),
                     2,
                 ),
                 _QUALITY_RANK.get(
-                    "PREFERRED"
-                    if s.get("quality", "SD") == quality_pref
-                    else s.get("quality", "SD"),
+                    "PREFERRED" if s.get("quality", "SD") == quality_pref else s.get("quality", "SD"),
                     9,
                 ),
                 0 if s.get("hash", "").lower() in cached else 1,
@@ -99,16 +100,12 @@ def _sort_sources(
         sources,
         key=lambda s: (
             _LANG_RANK.get(
-                "PREFERRED"
-                if s.get("language", "EN") == lang_pref
-                else s.get("language", "EN"),
+                "PREFERRED" if s.get("language", "EN") == lang_pref else s.get("language", "EN"),
                 2,
             ),
             0 if s.get("hash", "").lower() in cached else 1,
             _QUALITY_RANK.get(
-                "PREFERRED"
-                if s.get("quality", "SD") == quality_pref
-                else s.get("quality", "SD"),
+                "PREFERRED" if s.get("quality", "SD") == quality_pref else s.get("quality", "SD"),
                 9,
             ),
             -int(s.get("seeders") or 0),
@@ -146,12 +143,12 @@ def _add_to_rd(
             info_data = RealDebrid.get_torrent_info(torrent_id)
             status = info_data.get("status", "")
             if status in _RD_ERROR_STATUSES:
-                log(f"RD torrent error: {status}", "_add_to_rd")
+                warn(f"RD torrent error: {status}", "_add_to_rd")
                 return ""
             if status in ("waiting_files_selection", "downloaded"):
                 break
         else:
-            log("RD timed out waiting for file selection", "_add_to_rd")
+            warn("RD timed out waiting for file selection", "_add_to_rd")
             return ""
 
         if info_data.get("status") == "downloaded":
@@ -178,12 +175,12 @@ def _add_to_rd(
             pct = int(info_data.get("progress") or 0)
             progress.update(pct, f"RealDebrid: {status}")
             if status in _RD_ERROR_STATUSES:
-                log(f"RD download error: {status}", "_add_to_rd")
+                warn(f"RD download error: {status}", "_add_to_rd")
                 return ""
             if status == "downloaded":
                 break
         else:
-            log("RD timed out waiting for download", "_add_to_rd")
+            warn("RD timed out waiting for download", "_add_to_rd")
             return ""
 
         links = info_data.get("links", [])
@@ -194,7 +191,7 @@ def _add_to_rd(
         return result.get("download") or result.get("url") or ""
 
     except Exception as e:
-        log(str(e), "_add_to_rd")
+        err(str(e), "_add_to_rd")
         return ""
     finally:
         progress.close()
@@ -241,13 +238,13 @@ def _add_to_torbox(
     is_cached: bool = False,
 ) -> str:
     progress.update(0, f"Opening - {title}…" if title else "Opening…")
-    log(f"{title}, {season}x{episode} cached:{is_cached}", "_add_to_torbox")
+    debug(f"{title}, {season}x{episode} cached:{is_cached}", "_add_to_torbox")
 
     try:
         result = TorBox.add(magnet, is_cached)
-        log(f"{result}", "add_magnet")
+        debug(f"{result}", "add_magnet")
         if not result.get("success"):
-            log(f"TorBox add_magnet failed: {result}", "_add_to_torbox")
+            warn(f"TorBox add_magnet failed: {result}", "_add_to_torbox")
             return ""
 
         data = result.get("data")
@@ -266,18 +263,18 @@ def _add_to_torbox(
                 progress.close()
                 return "Cancel"
             torrent_status = TorBox.get_torrent_status(torrent_id)
-            log(f"{torrent_status}", "wait_for_download")
+            debug(f"{torrent_status}", "wait_for_download")
             status_data = torrent_status.get("data", {})
             state: str = status_data.get("download_state", "")
             pct = int(float(status_data.get("progress", 0)) * 100)
             progress.update(pct, f"TorBox: {state}")
             if state in _TB_ERROR_STATES:
-                log(f"TorBox error state: {state}", "_add_to_torbox")
+                warn(f"TorBox error state: {state}", "_add_to_torbox")
                 return ""
             if state in ("cached", "completed", "uploading", "seeding"):
                 break
         else:
-            log("TorBox timed out", "_add_to_torbox")
+            warn("TorBox timed out", "_add_to_torbox")
             return ""
 
         files: list[dict[str, Any]] = status_data.get("files") or []
@@ -296,14 +293,14 @@ def _add_to_torbox(
         return url if isinstance(url, str) else ""
 
     except Exception as e:
-        log(str(e), "_add_to_torbox")
+        err(str(e), "_add_to_torbox")
         return ""
     finally:
         progress.close()
 
 
 def _tag_playing(item_type: str, tmdb_id: str, season: str, episode: str) -> None:
-    log(f"type={item_type} id={tmdb_id} season={season} ep={episode}", "_tag_playing")
+    debug(f"type={item_type} id={tmdb_id} season={season} ep={episode}", "_tag_playing")
     win = xbmcgui.Window(10000)
     win.setProperty("bacterio.type", item_type)
     win.setProperty("bacterio.tmdb_id", tmdb_id)
@@ -333,206 +330,123 @@ def _play_url(
     tag.setRating(float(metadata.get("vote_average", 0)))
     tag.setFirstAired(metadata.get("firstaired", ""))
     listItem.setArt(metadata.get("art", {}))
-    log(direct_url, "play_url")
+    debug(direct_url, "play_url")
     listItem.setContentLookup(False)
     xbmcplugin.setResolvedUrl(handle, True, listItem)
 
 
-# ── Public API ────────────────────────────────────────────────────────────────
+# ── Scraping ───────────────────────────────────────────────────────────────
 
 
-def resolve_and_play(
+class _TitleInfo(NamedTuple):
+    title: str
+    year: str
+    imdb_id: str
+
+
+def _fetch_metadata(item_type: str, tmdb_id: str) -> _TitleInfo:
+    """Look up title, year and IMDB id from TMDB for a movie or show."""
+    if item_type == "episode":
+        ext = Tmdb.tv_external_ids(int(tmdb_id))
+        details = Tmdb.tv_show_details(int(tmdb_id))
+        title = details.get("name", "")
+        year = (details.get("first_air_date") or "")[:4]
+    else:
+        ext = Tmdb.movie_external_ids(int(tmdb_id))
+        details = Tmdb.movie_details(int(tmdb_id))
+        title = details.get("title", "")
+        year = (details.get("release_date") or "")[:4]
+    return _TitleInfo(title=title, year=year, imdb_id=ext.get("imdb_id") or "")
+
+
+def _build_payload(
+    meta: _TitleInfo, item_type: str, season: str, episode: str
+) -> ScrapePayload:
+    """Build the payload Magneto's providers expect for a scrape() call."""
+    if item_type == "episode":
+        return EpisodeScrapePayload(
+            tvshowtitle=meta.title,
+            title=meta.title,
+            year=meta.year,
+            imdb=meta.imdb_id,
+            season=int(season),
+            episode=int(episode),
+            aliases=[],
+        )
+    return MovieScrapePayload(
+        title=meta.title, year=meta.year, imdb=meta.imdb_id, aliases=[]
+    )
+
+
+def get_sources(
+    payload: ScrapePayload,
+    progress: xbmcgui.DialogProgress,
+    timeout: int = _SCRAPE_TIMEOUT,
+) -> list[SourceResult]:
+    """Run the Magneto scrape in a background thread while driving *progress*.
+
+    Raises ScrapeCancelled if the user cancels before the scrape completes.
+    """
+    sources: list[SourceResult] = []
+    scrape_thread = Thread(
+        target=lambda: sources.extend(scraper.scrape(payload, timeout)), daemon=True
+    )
+    scrape_thread.start()
+
+    start = time.monotonic()
+    while scrape_thread.is_alive():
+        elapsed = time.monotonic() - start
+        pct = min(int((elapsed / timeout) * 100), 99)
+        progress.update(pct, f"Found {len(sources)} sources…")
+        if progress.iscanceled():
+            raise ScrapeCancelled()
+        xbmc.sleep(300)
+
+    progress.update(100)
+    return sources
+
+
+def _check_availability(hashes: list[str], use_tb: bool) -> set[str]:
+    if not use_tb:
+        return set()
+    try:
+        return TorBox.check_instant_availability(hashes)
+    except Exception as e:
+        err(str(e), "_check_availability")
+        return set()
+
+
+# ── Playback ─────────────────────────────────────────────────────────────────
+
+_TryOutcome = Literal["played", "cancelled", "exhausted"]
+
+
+def _try_sources(
+    ordered: list[SourceResult],
+    cached: set[str],
+    use_rd: bool,
+    use_tb: bool,
     item_type: str,
     tmdb_id: str,
     handle: int,
-    season: str = "",
-    episode: str = "",
-    force_select: bool = False,
-    scraper_filter: str = "",
-    metadata: dict[str, Any] = {},
-):
-    def _fail(msg: str):
-        log(msg, "resolve_and_play")
-        error(msg)
-        xbmcplugin.setResolvedUrl(handle, False, xbmcgui.ListItem())
+    season: str,
+    episode: str,
+    title: str,
+    progress: xbmcgui.DialogProgress,
+    metadata: dict[str, Any],
+) -> _TryOutcome:
+    """Try each source in order, falling back to the next on failure."""
+    ep_season = int(season) if season else None
+    ep_episode = int(episode) if episode else None
 
-    use_rd = _rd_ok()
-    use_tb = _tb_ok()
-    log(
-        f"use_tb={use_tb} use_rd={use_rd} type={item_type} id={tmdb_id} s={season} e={episode}",
-        "resolve_and_play",
-    )
-    if not use_rd and not use_tb:
-        _fail("No debrid service configured. Add Real Debrid or TorBox in Settings.")
-        return
-
-    # 1. Fetch TMDB metadata ──────────────────────────────────────────────────
-    try:
-        if item_type == "episode":
-            ext = Tmdb.tv_external_ids(int(tmdb_id))
-            details = Tmdb.tv_show_details(int(tmdb_id))
-            title = details.get("name", "")
-            year = (details.get("first_air_date") or "")[:4]
-        else:
-            ext = Tmdb.movie_external_ids(int(tmdb_id))
-            details = Tmdb.movie_details(int(tmdb_id))
-            title = details.get("title", "")
-            year = (details.get("release_date") or "")[:4]
-    except Exception as e:
-        log(str(e), "resolve_and_play/tmdb")
-        _fail("Could not fetch metadata from TMDB.")
-        return
-
-    imdb_id = ext.get("imdb_id") or ""
-    log(f"title={title!r} year={year} imdb={imdb_id}", "resolve_and_play")
-    if not imdb_id:
-        _fail("No IMDB ID found for this title.")
-        return
-
-    # 2. Build scraper payload ────────────────────────────────────────────────
-    if item_type == "episode":
-        scrape_data: dict[str, Any] = {
-            "tvshowtitle": title,
-            "title": title,  # show title - scrapers use this as the primary search key
-            "year": year,
-            "imdb": imdb_id,
-            "season": int(season),
-            "episode": int(episode),
-            "aliases": [],
-        }
-    else:
-        scrape_data = {
-            "title": title,
-            "year": year,
-            "imdb": imdb_id,
-            "aliases": [],
-        }
-
-    # 3. Scrape ──────────────────────────────────────────────────────────────
-    from services import cocoscrapers as cocos
-
-    use_torrentio = scraper_filter == "torrentio" or (
-        not scraper_filter and get_setting("scrapers.torrentio") != "false"
-    )
-    use_cocos = (
-        scraper_filter == "cocoscrapers"
-        or (not scraper_filter and get_setting("scrapers.cocoscrapers") != "false")
-    ) and cocos.is_available()
-
-    sources: list[dict[str, Any]] = []
-    torrentio_sources: list[dict[str, Any]] = []
-
-    def _run_torrentio() -> None:
-        if item_type == "episode":
-            torrentio_sources.extend(
-                torrentio_scraper.scrape(imdb_id, int(season), int(episode))
-            )
-        else:
-            torrentio_sources.extend(torrentio_scraper.scrape(imdb_id))
-
-    torrentio_thread: Thread | None = None
-    if use_torrentio:
-        torrentio_thread = Thread(target=_run_torrentio, daemon=True)
-        torrentio_thread.start()
-
-    if use_cocos:
-        scrape_thread: Thread | None = Thread(
-            target=lambda: sources.extend(cocos.scrape(scrape_data)), daemon=True
-        )
-        scrape_thread.start()
-    else:
-        scrape_thread = None
-
-    progress = xbmcgui.DialogProgress()
-    progress.create("Bacterio", f"Searching - {title}…")
-    start = time.monotonic()
-
-    active = scrape_thread
-    while active and active.is_alive():
-        elapsed = time.monotonic() - start
-        pct = min(int((elapsed / _SCRAPE_TIMEOUT) * 100), 99)
-        progress.update(pct, f"Found {len(sources) + len(torrentio_sources)} sources…")
-        if progress.iscanceled():
-            progress.close()
-            _fail("Cancelled.")
-            return
-        xbmc.sleep(300)
-
-    if torrentio_thread:
-        torrentio_thread.join(
-            timeout=max(0.0, _SCRAPE_TIMEOUT - (time.monotonic() - start))
-        )
-
-    progress.update(100)
-
-    # Merge: cocoscrapers first, then any new hashes from Torrentio
-    seen: set[str] = {s.get("hash", "").lower() for s in sources}
-    for s in torrentio_sources:
-        h = s.get("hash", "").lower()
-        if h and h not in seen:
-            sources.append(s)
-            seen.add(h)
-
-    log(f"raw sources={len(sources)}", "resolve_and_play")
-    raw_sources = sources[:]
-    sources = [s for s in sources if len(s.get("hash", "")) == 40]
-    # Also accept sources whose hash is embedded in the magnet URL
-    if not sources:
-
-        def _with_hash(s: dict[str, Any]) -> dict[str, Any] | None:
-            url = s.get("url", "")
-            lower = url.lower()
-            if "btih:" in lower:
-                h = url[lower.index("btih:") + 5 :].split("&")[0]
-                if len(h) == 40:
-                    return {**s, "hash": h}
-            return None
-
-        sources = [h for s in raw_sources if (h := _with_hash(s)) is not None]
-
-    log(f"filtered sources={len(sources)}", "resolve_and_play")
-    if not sources:
-        _fail(f"No sources found for {title}.")
-        return
-
-    # 4. Check instant availability across enabled providers ─────────────────
-    hashes = list({s["hash"].lower() for s in sources})
-    tb_cached: set[str] = set()
-
-    if use_tb:
-        try:
-            tb_cached = TorBox.check_instant_availability(hashes)
-        except Exception as e:
-            log(str(e), "resolve_and_play/tb_cache")
-
-    all_cached = tb_cached
-    sorted_src = _sort_sources(sources, all_cached)
-    auto_play = not force_select and get_setting("playback.auto_play") == "true"
-
-    # 5. Source selection ─────────────────────────────────────────────────────
-    if auto_play:
-        ordered = sorted_src
-    else:
-        source = _select_source(sorted_src, tb_cached, title)
-        if source is None:
-            xbmcplugin.setResolvedUrl(handle, False, xbmcgui.ListItem())
-            return
-        others = [s for s in sorted_src if s is not source]
-        ordered = [source] + others
-
-    # 6. Try sources with automatic fallback ─────────────────────────────────
     for i, src in enumerate(ordered):
-        h = src.get("hash", "").lower()
-        magnet = (
-            src.get("url")
-            or f"magnet:?xt=urn:btih:{src['hash']}&dn={src.get('name', '')}"
-        )
-        log(str(src), "try_source")
+        h = src["hash"]
+        magnet = src["url"]
+        debug(str(src), "try_source")
 
-        # Prefer whichever provider has this hash cached; fall back to the other
+        is_cached = h in cached
         providers: list[str] = []
-        is_cached = h in all_cached
-        if use_tb and h in tb_cached:
+        if use_tb and is_cached:
             providers.append("torbox")
         if not providers:
             if use_tb:
@@ -540,13 +454,9 @@ def resolve_and_play(
             if use_rd:
                 providers.append("rd")
 
-        ep_season = int(season) if season else None
-        ep_episode = int(episode) if episode else None
         for provider in providers:
             direct_url = (
-                _add_to_rd(
-                    progress, magnet, title, season=ep_season, episode=ep_episode
-                )
+                _add_to_rd(progress, magnet, title, season=ep_season, episode=ep_episode)
                 if provider == "rd"
                 else _add_to_torbox(
                     progress,
@@ -560,31 +470,125 @@ def resolve_and_play(
             if direct_url and direct_url != "Cancel":
                 _tag_playing(item_type, tmdb_id, season, episode)
                 _play_url(direct_url, handle, item_type, metadata)
-                return
-            elif direct_url == "Cancel":
-                _fail("Cancelled")
-                return
-            elif i < len(ordered):
-                info(f"Source {i + 1} failed - trying next ({i + 1}/{len(ordered)})…")
+                return "played"
+            if direct_url == "Cancel":
+                return "cancelled"
+            info(f"Source {i + 1} failed - trying next ({i + 1}/{len(ordered)})…")
 
-    _fail(f"All {len(ordered)} sources failed for {title}.")
+    return "exhausted"
+
+
+# ── Public API ────────────────────────────────────────────────────────────────
+
+
+def resolve_and_play(
+    item_type: str,
+    tmdb_id: str,
+    handle: int,
+    season: str = "",
+    episode: str = "",
+    force_select: bool = False,
+    metadata: dict[str, Any] = {},
+):
+    def _fail(msg: str):
+        err(msg, "resolve_and_play")
+        error(msg)
+        xbmcplugin.setResolvedUrl(handle, False, xbmcgui.ListItem())
+
+    use_rd = _rd_ok()
+    use_tb = _tb_ok()
+    debug(
+        f"use_tb={use_tb} use_rd={use_rd} type={item_type} id={tmdb_id} s={season} e={episode}",
+        "resolve_and_play",
+    )
+    if not use_rd and not use_tb:
+        _fail("No debrid service configured. Add Real Debrid or TorBox in Settings.")
+        return
+
+    try:
+        meta = _fetch_metadata(item_type, tmdb_id)
+    except Exception as e:
+        err(str(e), "resolve_and_play/tmdb")
+        _fail("Could not fetch metadata from TMDB.")
+        return
+
+    debug(f"title={meta.title!r} year={meta.year} imdb={meta.imdb_id}", "resolve_and_play")
+    if not meta.imdb_id:
+        _fail("No IMDB ID found for this title.")
+        return
+
+    payload = _build_payload(meta, item_type, season, episode)
+
+    progress = xbmcgui.DialogProgress()
+    progress.create("Bacterio", f"Searching - {meta.title}…")
+
+    try:
+        sources = get_sources(payload, progress)
+    except ScrapeCancelled:
+        progress.close()
+        _fail("Cancelled.")
+        return
+
+    if not sources:
+        progress.close()
+        _fail(f"No sources found for {meta.title}.")
+        return
+
+    hashes = list({s["hash"] for s in sources})
+    cached = _check_availability(hashes, use_tb)
+
+    sorted_src = _sort_sources(sources, cached)
+    auto_play = not force_select and get_setting("playback.auto_play") == "true"
+
+    if auto_play:
+        ordered = sorted_src
+    else:
+        source = _select_source(sorted_src, cached, meta.title)
+        if source is None:
+            progress.close()
+            xbmcplugin.setResolvedUrl(handle, False, xbmcgui.ListItem())
+            return
+        others = [s for s in sorted_src if s is not source]
+        ordered = [source] + others
+
+    outcome = _try_sources(
+        ordered,
+        cached,
+        use_rd,
+        use_tb,
+        item_type,
+        tmdb_id,
+        handle,
+        season,
+        episode,
+        meta.title,
+        progress,
+        metadata,
+    )
+    if outcome == "cancelled":
+        _fail("Cancelled")
+    elif outcome == "exhausted":
+        _fail(f"All {len(ordered)} sources failed for {meta.title}.")
 
 
 def _select_source(
-    sources: list[dict[str, Any]],
+    sources: list[SourceResult],
     cached: set[str],
     title: str = "",
-) -> dict[str, Any] | None:
+) -> SourceResult | None:
     labels: list[str] = []
     for s in sources:
         h = s.get("hash", "").lower()
-        tag = ""
-        if h in cached:
-            tag += "[Cached] "
+        is_cached = h in cached
+        tag = "[Cached] " if is_cached else ""
+        package = s.get("package")
+        if package == "show":
+            tag += "[Show Pack] "
+        elif package == "season":
+            tag += "[Pack] "
         quality = s.get("quality", "?")
         size = s.get("size")
         size_str = f"  {size:.1f} GB" if isinstance(size, (int, float)) else ""
-        is_cached = bool(tag)
         seeders = s.get("seeders")
         seed_str = f"  Seeders: {seeders}" if seeders and not is_cached else ""
         name = (s.get("name") or "")[:55]

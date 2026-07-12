@@ -6,7 +6,7 @@ import sys
 from collections.abc import Callable
 from urllib.parse import parse_qsl, quote, unquote, urlencode
 
-from utils.logger import log
+from utils.logger import debug
 
 BASE: str = "plugin://plugin.video.bacterio"
 
@@ -32,7 +32,7 @@ def dispatch() -> None:
     """Match the current plugin URL path to a registered handler and call it."""
     path = sys.argv[0].removeprefix(BASE) or "/"
     query: dict[str, str] = dict(parse_qsl(sys.argv[2].lstrip("?")))
-    log(f"path={path}\nquery={query}\n argv[0]={sys.argv[0]} \nargv[1]={sys.argv[1]} \nargv[2]={sys.argv[2]}")
+    debug(f"path={path}\nquery={query}\n argv[0]={sys.argv[0]} \nargv[1]={sys.argv[1]} \nargv[2]={sys.argv[2]}")
     for regex, param_names, handler in _routes:
         m = regex.fullmatch(path)
         if m is None:

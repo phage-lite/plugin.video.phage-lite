@@ -7,7 +7,6 @@
     "exclude": [
         "resources/lib/modules",
         "resources/lib/windows",
-        "resources/lib/scrapers",
         "resources/lib/segno",
         "resources/lib/services/imdb.py"
     ],

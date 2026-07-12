@@ -4,7 +4,7 @@ from typing import Any
 
 from services.types import AuthData, PollStatus, Service
 from settings.ids import SettingID as SID
-from utils.logger import log
+from utils.logger import debug, err, log, warn
 
 import re
 
@@ -61,10 +61,9 @@ class TorBoxAPI(Service):
 
         match response.status_code:
             case 200:
-                log(f"{response.json()}")
-                log(f"{response.json()['success']}")
+                debug(f"{response.json()}")
                 if response.json()["success"]:
-                    log(f"{data}")
+                    debug(f"{data}")
                     self.access_token = data["access_token"]
                     return PollStatus.SUCCESS
 
@@ -170,10 +169,10 @@ class TorBoxAPI(Service):
                 data: dict[str, Any] = info.get("data", {})
                 seeds: int = data.get("seeds", 0)
                 if seeds <= 0:
-                    log("seeds are too low", "tb.add")
+                    warn("seeds are too low", "tb.add")
                     return {"success": False}
             else:
-                log("couldn't get info", "tb.add")
+                err("couldn't get info", "tb.add")
                 return {"success": False}
 
         return self.add_magnet(magnet, not is_cached)
@@ -201,7 +200,7 @@ class TorBoxAPI(Service):
                     ):
                         return t
         except Exception as e:
-            log(str(e), "torbox.find_torrent_by_hash")
+            err(str(e), "torbox.find_torrent_by_hash")
         return None
 
     def check_instant_availability(self, hashes: list[str]) -> set[str]:

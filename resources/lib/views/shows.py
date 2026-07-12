@@ -9,7 +9,7 @@ import xbmcplugin
 
 from items import EpisodeItem, SeasonItem, ShowItem
 from services.tmdb import Tmdb
-from utils.logger import log
+from utils.logger import debug, log
 from utils.notifications import error
 from utils.router import url
 
@@ -149,14 +149,13 @@ def show_seasons(show_id: int):
         error(f"TMDB error: {e}")
         xbmcplugin.endOfDirectory(HANDLE)
         return
-    log(f"{show_id}", "show_id")
+    debug(f"{show_id}", "show_id")
 
     xbmcplugin.setContent(HANDLE, "tvshows")
     seasons: list[dict[str, Any]] = show_details.get("seasons", [])
     show_art = ShowItem.extract_art(show_details)
 
     for season in seasons:
-        log(f"{season}", "season")
         item = SeasonItem(season, show_details, show_art)
         _ = xbmcplugin.addDirectoryItem(HANDLE, item.url, item.listItem, isFolder=True)
 

@@ -19,7 +19,7 @@ A Kodi video plugin for browsing and streaming movies and TV shows.
 
 - Kodi 20 (Nexus) or later
 - A [TorBox](https://torbox.app) or [Real Debrid](https://real-debrid.com) account
-- [script.module.cocoscrapers](https://github.com/ArnePi/script.module.cocoscrapers) (for source scraping)
+- script.module.magneto (for source scraping)
 
 ## Setup
 

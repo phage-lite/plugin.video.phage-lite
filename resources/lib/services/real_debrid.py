@@ -1,7 +1,7 @@
 from typing import Any
 import requests
 from services.types import Service, AuthData, PollStatus
-from utils.logger import log
+from utils.logger import debug, err, log
 from settings.ids import SettingID as SID
 
 
@@ -39,7 +39,7 @@ class RealDebridAPI(Service):
 
         self.user_code = response["user_code"]
         self.device_code = response["device_code"]
-        log(response)
+        debug(response)
 
         return {
             "verification_url": response["verification_url"],
@@ -54,15 +54,12 @@ class RealDebridAPI(Service):
         poll_status = PollStatus.PENDING
         poll_url: str = f"{self.auth_url}/device/credentials?client_id={self.app_id}&code={self.device_code}"
         response = requests.get(poll_url, timeout=20).json()
-        log(poll_url, "poll")
-        log(response, "poll")
+        debug(response, "poll")
         if "error" in response:
             poll_status = PollStatus.PENDING
         else:
             self.client_id = response["client_id"]
             self.client_secret = response["client_secret"]
-            log(self.client_id)
-            log(self.client_secret)
             poll_status = PollStatus.SUCCESS
         return poll_status
 
@@ -76,7 +73,7 @@ class RealDebridAPI(Service):
             }
             try:
                 response = requests.post(self.token_url, data=data, timeout=20).json()
-                log(response)
+                debug(response)
                 self.access_token = response["access_token"]
                 self.refresh_token = response["refresh_token"]
                 self._set_setting(SID.ACCESS_TOKEN, self.access_token)
@@ -84,7 +81,7 @@ class RealDebridAPI(Service):
                 self._set_setting(SID.CLIENT_SECRET, self.client_secret)
                 self._set_setting(SID.CLIENT_ID, self.client_id)
             except Exception as e:
-                log(str(e))
+                err(str(e))
 
     def _refresh_token(self) -> bool:
         if not self.refresh_token or not self.client_id or not self.client_secret:
@@ -105,7 +102,7 @@ class RealDebridAPI(Service):
             self._set_setting(SID.REFRESH_TOKEN, self.refresh_token)
             return True
         except Exception as e:
-            log(str(e), "_refresh_token")
+            err(str(e), "_refresh_token")
             return False
 
     def _api_get(

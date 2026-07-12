@@ -53,22 +53,6 @@
             </group>
         </category>
 
-        <!-- ======================== SCRAPERS ======================== -->
-        <category id="scrapers" label="30417">
-            <group id="1" label="30417">
-                <setting id="scrapers.torrentio" type="boolean" label="30418" help="30419">
-                    <level>0</level>
-                    <default>true</default>
-                    <control type="toggle" />
-                </setting>
-                <setting id="scrapers.cocoscrapers" type="boolean" label="30420" help="30421">
-                    <level>0</level>
-                    <default>true</default>
-                    <control type="toggle" />
-                </setting>
-            </group>
-        </category>
-
         <!-- ======================== GENERAL ======================== -->
         <category id="general" label="30001">
 

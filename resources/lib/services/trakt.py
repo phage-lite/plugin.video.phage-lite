@@ -2,7 +2,7 @@ import json
 import requests
 from typing import Any
 
-from utils.logger import log
+from utils.logger import debug, err, log
 from utils import cache as _cache
 from services.types import AuthData, PollStatus, Service
 from settings.ids import SettingID as SID
@@ -40,7 +40,7 @@ class TraktAPI(Service):
         data = response.json()
         self.user_code = data["user_code"]
         self.device_code = data["device_code"]
-        log(data)
+        debug(data)
         return {
             "verification_url": data["verification_url"],
             "direct_verification_url": f"{data['verification_url']}/{data['user_code']}",
@@ -112,7 +112,7 @@ class TraktAPI(Service):
             self._set_setting(SID.REFRESH_TOKEN, self.refresh_token)
             return True
         except Exception as e:
-            log(str(e), "_refresh_access_token")
+            err(str(e), "_refresh_access_token")
             return False
 
     @property
@@ -186,7 +186,7 @@ class TraktAPI(Service):
         try:
             _ = self._api_post(f"scrobble/{action}", body)
         except Exception as e:
-            log(str(e), f"scrobble/{action}")
+            err(str(e), f"scrobble/{action}")
 
     # ── Watchlist sync ────────────────────────────────────────────────────────
 
