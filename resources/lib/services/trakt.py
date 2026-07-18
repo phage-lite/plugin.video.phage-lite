@@ -207,7 +207,7 @@ class TraktAPI(Service):
         )
         return result if isinstance(result, dict) else {}
 
-    def my_calendar(self, days: int = 7) -> dict[str, list[dict[str, Any]]]:
+    def my_calendar(self, days: int = 7) -> list[dict[str, Any]]:
         from datetime import date
 
         start = date.today().isoformat()
@@ -215,7 +215,7 @@ class TraktAPI(Service):
             f"calendars/my/shows/{start}/{days}",
             {"extended": "full"},
         )
-        return result if isinstance(result, dict) else {}
+        return result if isinstance(result, list) else []
 
     def mark_watched_movie(self, tmdb_id: int) -> None:
         _ = self._api_post("sync/history", {"movies": [{"ids": {"tmdb": tmdb_id}}]})

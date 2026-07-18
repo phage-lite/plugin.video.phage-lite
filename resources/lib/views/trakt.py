@@ -287,13 +287,13 @@ def _add_recommendation_movie(item: dict[str, Any]):
 
 def show_calendar():
     try:
-        data = Trakt.my_calendar(days=7)
+        items = Trakt.my_calendar(days=7)
     except Exception as e:
         error(f"Trakt error: {e}")
         xbmcplugin.endOfDirectory(HANDLE)
         return
 
-    if not data:
+    if not items:
         _ = xbmcgui.Dialog().ok(
             "My Calendar",
             "No upcoming episodes in the next 7 days.\n\nMake sure shows are in your Trakt Watchlist.",
@@ -301,21 +301,17 @@ def show_calendar():
         xbmcplugin.endOfDirectory(HANDLE)
         return
 
-    all_items = [ep_item for eps in data.values() for ep_item in eps]
     _warm_details(
-        [
-            (int(i.get("show", {}).get("ids", {}).get("tmdb") or 0), "tv")
-            for i in all_items
-        ]
+        [(int(i.get("show", {}).get("ids", {}).get("tmdb") or 0), "tv") for i in items]
     )
     xbmcplugin.setContent(HANDLE, "episodes")
-    for date_str in sorted(data.keys()):
-        for ep_item in data[date_str]:
-            _add_calendar_item(date_str, ep_item)
+    for item in items:
+        _add_calendar_item(item)
     xbmcplugin.endOfDirectory(HANDLE)
 
 
-def _add_calendar_item(date_str: str, item: dict[str, Any]):
+def _add_calendar_item(item: dict[str, Any]):
+    date_str = item.get("first_aired")
     show = item.get("show", {})
     ep_data = item.get("episode", {})
     tmdb_id: int = int(show.get("ids", {}).get("tmdb") or 0)
