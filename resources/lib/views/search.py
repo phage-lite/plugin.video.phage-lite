@@ -7,7 +7,8 @@ import xbmcplugin
 import xbmcvfs
 from typing import Any
 
-from items import MovieItem, ShowItem
+from menu_items.movie import MovieItem
+from menu_items.show import ShowItem
 from services.tmdb import Tmdb
 from utils.notifications import error
 from utils.router import url

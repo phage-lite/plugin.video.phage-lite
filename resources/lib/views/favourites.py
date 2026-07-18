@@ -7,9 +7,9 @@ import xbmcplugin
 import xbmcvfs
 from typing import Any
 
-from items import MovieItem, ShowItem
+from menu_items.movie import MovieItem
+from menu_items.show import ShowItem
 from services.tmdb import Tmdb
-from utils.router import url
 
 HANDLE = int(sys.argv[1])
 _IMG = "https://image.tmdb.org/t/p/w500"

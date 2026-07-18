@@ -2,7 +2,7 @@ import json
 import requests
 from typing import Any
 
-from utils.logger import debug, err, log
+from utils.logger import debug, err
 from utils import cache as _cache
 from services.types import AuthData, PollStatus, Service
 from settings.ids import SettingID as SID

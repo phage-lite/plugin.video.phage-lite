@@ -7,7 +7,9 @@ import xbmcaddon
 import xbmcgui
 import xbmcplugin
 
-from items import EpisodeItem, SeasonItem, ShowItem
+from menu_items.episode import EpisodeItem
+from menu_items.season import SeasonItem
+from menu_items.show import ShowItem
 from services.tmdb import Tmdb
 from utils.logger import debug, log
 from utils.notifications import error
@@ -93,7 +95,7 @@ def show_tv_list(subcategory: str, page: int = 1):
     try:
         data = fetch(page)
     except Exception as e:
-        error(f"TMDB error: {e}")
+        error(f"Fetcher error: {e}")
         xbmcplugin.endOfDirectory(HANDLE)
         return
     results: list[dict[str, Any]] = data.get("results", [])

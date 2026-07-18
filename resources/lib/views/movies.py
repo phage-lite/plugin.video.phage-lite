@@ -7,7 +7,7 @@ import xbmcaddon
 import xbmcgui
 import xbmcplugin
 
-from items import MovieItem
+from menu_items.movie import MovieItem
 from services.tmdb import Tmdb
 from utils.notifications import error
 from utils.router import url
@@ -178,8 +178,7 @@ def _render_movies(
         details = details_map.get(tmdb_id, movie)
 
         item = MovieItem(details)
-        li = item.build()
-        _ = xbmcplugin.addDirectoryItem(HANDLE, item.url, li, isFolder=False)
+        _ = xbmcplugin.addDirectoryItem(HANDLE, item.url, item.listItem)
 
     if next_url:
         li = xbmcgui.ListItem(label="Next Page")
