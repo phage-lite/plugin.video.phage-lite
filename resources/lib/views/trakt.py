@@ -6,7 +6,9 @@ import xbmcplugin
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any
 
-from items import EpisodeItem, MovieItem, ShowItem
+from menu_items.episode import EpisodeItem
+from menu_items.movie import MovieItem
+from menu_items.show import ShowItem
 from services.trakt import Trakt, PAGE_SIZE
 from services.tmdb import Tmdb
 from utils.notifications import error
