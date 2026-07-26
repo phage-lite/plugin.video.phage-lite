@@ -1,4 +1,3 @@
-import json
 from typing import Any
 import xbmc
 import xbmcgui
@@ -29,7 +28,6 @@ class EpisodeItem(MenuItem):
         self._show_id: int = show_details.get("id", -1)
         self._season_poster_path: str = season_details.get("poster_path", "")
         self._art: dict[str, Any] = self.extract_art(show_details)
-        self._metadata: str = self._build_metadata()
 
         self._build()
 
@@ -47,7 +45,6 @@ class EpisodeItem(MenuItem):
             id=self._show_id,
             season=self.season_number,
             episode=self.episode_number,
-            meta=self._metadata,
         )
 
     @property
@@ -76,48 +73,6 @@ class EpisodeItem(MenuItem):
         tag.setIMDBNumber(imdb_id)
         tag.setUniqueIDs({"tmdb": str(self._show_id), "imdb": imdb_id, "tvdb": tvdb_id})
         tag.setCast(self._build_cast(self._show_details.get("credits") or {}))
-
-    def _build_metadata(self) -> str:
-        images = self._show_details.get("images", {})
-        clearlogodata: dict[str, Any] = next(
-            (i for i in images["logos"]),
-            {"file_path": ""},
-        )
-        clearlogo = clearlogodata.get("file_path")
-
-        return json.dumps(
-            {
-                "episodeid": self._id,
-                "tvshowid": self._show_id,
-                "title": self.label,
-                "season": self.season_number,
-                "episode": self.episode_number,
-                "showtitle": self.show_title,
-                "plot": str(self._episode_details.get("overview", "")),
-                "playcount": int(self._episode_details.get("vote_count", 0)),
-                "rating": int(self._episode_details.get("vote_average", 0)),
-                "firstaired": str(self._episode_details.get("air_date", "1999-12-31")),
-                "runtime": int(self._episode_details.get("runtime") or 30) * 60,
-                "art": {
-                    "thumb": Tmdb.get_image_url(
-                        str(self._episode_details.get("still_path"))
-                    ),
-                    "tvshow.clearart": Tmdb.get_image_url(
-                        str(self._show_details.get("backdrop_path")), "w1280"
-                    ),
-                    "tvshow.clearlogo": Tmdb.get_image_url(str(clearlogo)),
-                    "tvshow.fanart": Tmdb.get_image_url(
-                        str(self._show_details.get("backdrop_path")), "w1280"
-                    ),
-                    "tvshow.landscape": Tmdb.get_image_url(
-                        str(self._episode_details.get("backdrop_path")), "w1280"
-                    ),
-                    "tvshow.poster": Tmdb.get_image_url(
-                        str(self._show_details.get("poster_path")), "w780"
-                    ),
-                },
-            }
-        )
 
     def _apply_art(self, li: xbmcgui.ListItem) -> None:
         art = self._art
@@ -153,7 +108,6 @@ class EpisodeItem(MenuItem):
             id=self._show_id,
             season=self.season_number,
             episode=self.episode_number,
-            meta=self._metadata
         )
         li.addContextMenuItems(
             [

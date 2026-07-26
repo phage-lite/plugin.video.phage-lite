@@ -7,6 +7,7 @@ ever talks to this module. See docs/adr/0001-scraper-backend-interface.md.
 
 import time
 from threading import Lock, Thread
+from typing import Callable
 
 from services.magneto import Magneto
 from utils.types import ScrapePayload, ScraperBackend, SourceResult
@@ -17,8 +18,15 @@ _SCRAPE_TIMEOUT = 20
 BACKENDS: list[ScraperBackend] = [Magneto()]
 
 
-def scrape(payload: ScrapePayload, timeout: int = _SCRAPE_TIMEOUT) -> list[SourceResult]:
-    """Query every available backend concurrently and return their combined results."""
+def scrape(
+    payload: ScrapePayload,
+    timeout: int = _SCRAPE_TIMEOUT,
+    on_result: Callable[[SourceResult], None] | None = None,
+) -> list[SourceResult]:
+    """Query every available backend concurrently and return their combined results.
+
+    If given, *on_result* is called for each source as soon as any backend finds it.
+    """
     active = [b for b in BACKENDS if b.is_available()]
     if not active:
         return []
@@ -28,7 +36,7 @@ def scrape(payload: ScrapePayload, timeout: int = _SCRAPE_TIMEOUT) -> list[Sourc
 
     def _run(backend: ScraperBackend) -> None:
         try:
-            found = backend.scrape(payload, timeout) or []
+            found = backend.scrape(payload, timeout, on_result) or []
             with lock:
                 results.extend(found)
         except Exception as e:

@@ -92,12 +92,20 @@ class Magneto:
         except Exception:
             return False
 
-    def scrape(self, payload: ScrapePayload, timeout: int) -> list[SourceResult]:
+    def scrape(
+        self,
+        payload: ScrapePayload,
+        timeout: int,
+        on_result: Callable[[SourceResult], None] | None = None,
+    ) -> list[SourceResult]:
         """Query every enabled provider concurrently and return normalized results.
 
         Episode payloads also trigger each pack-capable provider's season-pack
         search (`sources_packs`) alongside the single-episode search - the debrid
         layer matches the right file out of a pack by season/episode once it's added.
+
+        Each provider normalizes and reports its own results via *on_result* as
+        soon as it returns, instead of waiting for every provider to finish.
         """
         if not _inject_path():
             return []
@@ -109,14 +117,18 @@ class Magneto:
             err(str(e), "scrape")
             return []
 
-        raw_results: list[dict[str, Any]] = []
+        normalized: list[SourceResult] = []
         lock = Lock()
 
         def _run(name: str, fn: _ProviderCall, host_dict: list[Any]) -> None:
             try:
-                results = fn(payload, host_dict) or []
+                raw_results = fn(payload, host_dict) or []
+                found = [n for raw in raw_results if (n := _normalize(raw)) is not None]
                 with lock:
-                    raw_results.extend(results)
+                    normalized.extend(found)
+                if on_result:
+                    for n in found:
+                        on_result(n)
             except Exception as e:
                 err(f"{name}: {e}", "scrape")
 
@@ -143,4 +155,4 @@ class Magneto:
                 break
             t.join(timeout=max(remaining, 0))
 
-        return [n for raw in raw_results if (n := _normalize(raw)) is not None]
+        return normalized

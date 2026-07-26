@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Protocol
+from typing import Callable, Protocol
 from typing_extensions import NotRequired, TypedDict
 
 
@@ -68,7 +68,16 @@ class ScraperBackend(Protocol):
         """Whether this backend's dependencies are installed and usable right now."""
         ...
 
-    def scrape(self, payload: ScrapePayload, timeout: int) -> list[SourceResult]:
-        """Search for sources matching *payload*, waiting at most *timeout* seconds."""
+    def scrape(
+        self,
+        payload: ScrapePayload,
+        timeout: int,
+        on_result: Callable[[SourceResult], None] | None = None,
+    ) -> list[SourceResult]:
+        """Search for sources matching *payload*, waiting at most *timeout* seconds.
+
+        If given, *on_result* is called for each source as soon as it's found,
+        so callers can report live progress instead of waiting for the full batch.
+        """
         ...
 

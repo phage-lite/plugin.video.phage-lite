@@ -51,7 +51,7 @@ class MovieItem(MenuItem):
         )
         ss = url(
             "/play/select/",
-            type="menus",
+            type="movie",
             id=self._id,
         )
         li.addContextMenuItems(

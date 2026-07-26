@@ -1,4 +1,3 @@
-import json
 import threading
 from base64 import b64encode
 from json import dumps
@@ -53,7 +52,7 @@ def _find_next(
         return {
             "current_episode": current_episode,
             "next_episode": next_episode,
-            "play_url": url("/play/", type="episode", id=show_id, season=next_season, episode=next_ep, meta=json.dumps(next_episode))
+            "play_url": url("/play/", type="episode", id=show_id, season=next_season, episode=next_ep)
         }
     except Exception as e:
         err(f"find_next_error {e}")

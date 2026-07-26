@@ -1,7 +1,6 @@
 import re
 import time
 from typing import Any, Literal, NamedTuple
-from typing_extensions import cast
 import xbmc
 import xbmcgui
 import xbmcplugin
@@ -11,15 +10,20 @@ from services.tmdb import Tmdb
 from services.real_debrid import RealDebrid
 from services.torbox import TorBox
 from services import scraper
-from utils.types import EpisodeScrapePayload, MovieScrapePayload, ScrapePayload, SourceResult
-from utils.notifications import error, info
-from utils.logger import debug, err, log, warn
+from menu_items.movie import MovieItem
+from menu_items.episode import EpisodeItem
+from utils.types import (
+    EpisodeScrapePayload,
+    MovieScrapePayload,
+    ScrapePayload,
+    SourceResult,
+)
+from utils.notifications import error
+from utils.logger import debug, err, warn
 from settings.settings import get_setting
 
 _SCRAPE_TIMEOUT = 20
 _POLL_INTERVAL = 500  # ms
-_RD_INITIAL_WAIT = 30  # seconds to wait for waiting_files_selection
-_RD_DOWNLOAD_WAIT = 60  # seconds to wait for downloaded
 _TB_DOWNLOAD_WAIT = 60  # seconds to wait for TorBox download
 _TB_ERROR_STATES = {"error", "failed", "dead"}
 
@@ -72,9 +76,7 @@ def _tb_ok() -> bool:
     return TorBox.is_enabled and TorBox.is_authenticated
 
 
-def _sort_sources(
-    sources: list[SourceResult], cached: set[str]
-) -> list[SourceResult]:
+def _sort_sources(sources: list[SourceResult], cached: set[str]) -> list[SourceResult]:
     prefer_cached = get_setting("playback.prefer_cached")
     quality_pref = get_setting("playback.preferred_quality")
     lang_pref = get_setting("playback.preferred_lang")
@@ -84,11 +86,15 @@ def _sort_sources(
             sources,
             key=lambda s: (
                 _LANG_RANK.get(
-                    "PREFERRED" if s.get("language", "EN") == lang_pref else s.get("language", "EN"),
+                    "PREFERRED"
+                    if s.get("language", "EN") == lang_pref
+                    else s.get("language", "EN"),
                     2,
                 ),
                 _QUALITY_RANK.get(
-                    "PREFERRED" if s.get("quality", "SD") == quality_pref else s.get("quality", "SD"),
+                    "PREFERRED"
+                    if s.get("quality", "SD") == quality_pref
+                    else s.get("quality", "SD"),
                     9,
                 ),
                 0 if s.get("hash", "").lower() in cached else 1,
@@ -100,133 +106,21 @@ def _sort_sources(
         sources,
         key=lambda s: (
             _LANG_RANK.get(
-                "PREFERRED" if s.get("language", "EN") == lang_pref else s.get("language", "EN"),
+                "PREFERRED"
+                if s.get("language", "EN") == lang_pref
+                else s.get("language", "EN"),
                 2,
             ),
             0 if s.get("hash", "").lower() in cached else 1,
             _QUALITY_RANK.get(
-                "PREFERRED" if s.get("quality", "SD") == quality_pref else s.get("quality", "SD"),
+                "PREFERRED"
+                if s.get("quality", "SD") == quality_pref
+                else s.get("quality", "SD"),
                 9,
             ),
             -int(s.get("seeders") or 0),
         ),
     )
-
-
-def _add_to_rd(
-    progress: xbmcgui.DialogProgress,
-    magnet: str,
-    title: str,
-    season: int | None = None,
-    episode: int | None = None,
-) -> str:
-    """
-    Add a magnet to RealDebrid and wait for a streamable URL.
-    Returns the direct URL on success, or '' on any failure (error status,
-    timeout, cancellation). Never calls setResolvedUrl itself.
-    """
-    progress.update(0, f"Opening - {title}…" if title else "Opening…")
-
-    try:
-        torrent = RealDebrid.add_magnet(magnet)
-        torrent_id = torrent.get("id")
-        if not torrent_id:
-            return ""
-
-        info_data: dict[str, Any] = {}
-        deadline = time.monotonic() + _RD_INITIAL_WAIT
-        while time.monotonic() < deadline:
-            xbmc.sleep(_POLL_INTERVAL)
-            if progress.iscanceled():
-                progress.close()
-                return "Cancel"
-            info_data = RealDebrid.get_torrent_info(torrent_id)
-            status = info_data.get("status", "")
-            if status in _RD_ERROR_STATUSES:
-                warn(f"RD torrent error: {status}", "_add_to_rd")
-                return ""
-            if status in ("waiting_files_selection", "downloaded"):
-                break
-        else:
-            warn("RD timed out waiting for file selection", "_add_to_rd")
-            return ""
-
-        if info_data.get("status") == "downloaded":
-            # Already cached — pick the right file from the existing links
-            links: list[str] = info_data.get("links", [])
-            if not links:
-                return ""
-            link = _pick_rd_link(info_data, links, season, episode)
-            result = RealDebrid.unrestrict_link(link)
-            return result.get("download") or result.get("url") or ""
-
-        # waiting_files_selection — select the specific episode file if possible
-        file_ids = _find_rd_file_id(info_data, season, episode)
-        RealDebrid.select_files(torrent_id, file_ids)
-
-        deadline = time.monotonic() + _RD_DOWNLOAD_WAIT
-        while time.monotonic() < deadline:
-            xbmc.sleep(_POLL_INTERVAL)
-            if progress.iscanceled():
-                progress.close()
-                return "Cancel"
-            info_data = RealDebrid.get_torrent_info(torrent_id)
-            status = info_data.get("status", "")
-            pct = int(info_data.get("progress") or 0)
-            progress.update(pct, f"RealDebrid: {status}")
-            if status in _RD_ERROR_STATUSES:
-                warn(f"RD download error: {status}", "_add_to_rd")
-                return ""
-            if status == "downloaded":
-                break
-        else:
-            warn("RD timed out waiting for download", "_add_to_rd")
-            return ""
-
-        links = info_data.get("links", [])
-        if not links:
-            return ""
-
-        result = RealDebrid.unrestrict_link(links[0])
-        return result.get("download") or result.get("url") or ""
-
-    except Exception as e:
-        err(str(e), "_add_to_rd")
-        return ""
-    finally:
-        progress.close()
-
-
-def _find_rd_file_id(
-    info_data: dict[str, Any], season: int | None, episode: int | None
-) -> str:
-    """Return a comma-separated file ID string to pass to select_files, or 'all'."""
-    if season is None or episode is None:
-        return "all"
-    files: list[dict[str, Any]] = info_data.get("files", [])
-    idx = _match_episode_file(files, season, episode)
-    if idx is not None:
-        file_id = files[idx].get("id")
-        if file_id:
-            return str(file_id)
-    return "all"
-
-
-def _pick_rd_link(
-    info_data: dict[str, Any],
-    links: list[str],
-    season: int | None,
-    episode: int | None,
-) -> str:
-    """Pick the correct download link from an already-downloaded RD torrent."""
-    if season is None or episode is None or len(links) <= 1:
-        return links[0]
-    files: list[dict[str, Any]] = info_data.get("files", [])
-    selected = [f for f in files if f.get("selected")]
-    idx = _match_episode_file(selected, season, episode)
-    if idx is not None and idx < len(links):
-        return links[idx]
-    return links[0]
 
 
 def _add_to_torbox(
@@ -237,7 +131,6 @@ def _add_to_torbox(
     episode: int | None = None,
     is_cached: bool = False,
 ) -> str:
-    progress.update(0, f"Opening - {title}…" if title else "Opening…")
     debug(f"{title}, {season}x{episode} cached:{is_cached}", "_add_to_torbox")
 
     try:
@@ -295,8 +188,6 @@ def _add_to_torbox(
     except Exception as e:
         err(str(e), "_add_to_torbox")
         return ""
-    finally:
-        progress.close()
 
 
 def _tag_playing(item_type: str, tmdb_id: str, season: str, episode: str) -> None:
@@ -308,33 +199,6 @@ def _tag_playing(item_type: str, tmdb_id: str, season: str, episode: str) -> Non
     win.setProperty("bacterio.episode", episode)
 
 
-def _play_url(
-    direct_url: str, handle: int, media_type: str, metadata: dict[str, Any] = {}
-):
-    title = metadata.get("title", "")
-    listItem = xbmcgui.ListItem(
-        label=metadata.get("title", ""),
-        label2=metadata.get("title", ""),
-        path=direct_url,
-    )
-    tag = cast(xbmc.InfoTagVideo, listItem.getVideoInfoTag())
-    tag.setMediaType(media_type)
-    tag.setTitle(title)
-    tag.setOriginalTitle(title)
-    if media_type == "episode":
-        tag.setTvShowTitle(metadata.get("showtitle", ""))
-        tag.setSeason(metadata.get("season", -1))
-        tag.setEpisode(metadata.get("episode", -1))
-    tag.setPlot(metadata.get("overview", ""))
-    tag.setDuration(int(metadata.get("runtime") or 30) * 60)
-    tag.setRating(float(metadata.get("vote_average", 0)))
-    tag.setFirstAired(metadata.get("firstaired", ""))
-    listItem.setArt(metadata.get("art", {}))
-    debug(direct_url, "play_url")
-    listItem.setContentLookup(False)
-    xbmcplugin.setResolvedUrl(handle, True, listItem)
-
-
 # ── Scraping ───────────────────────────────────────────────────────────────
 
 
@@ -344,19 +208,30 @@ class _TitleInfo(NamedTuple):
     imdb_id: str
 
 
-def _fetch_metadata(item_type: str, tmdb_id: str) -> _TitleInfo:
-    """Look up title, year and IMDB id from TMDB for a movie or show."""
+def _build_play_item(
+    item_type: str, tmdb_id: str, season: str, episode: str
+) -> tuple[xbmcgui.ListItem, _TitleInfo]:
+    """Rebuild the same ListItem the listing built, from the same TMDB calls.
+
+    Since this hits the same cached TMDB responses the listing just fetched,
+    it avoids both a second network round trip and hand-rolled field copying.
+    """
     if item_type == "episode":
-        ext = Tmdb.tv_external_ids(int(tmdb_id))
-        details = Tmdb.tv_show_details(int(tmdb_id))
-        title = details.get("name", "")
-        year = (details.get("first_air_date") or "")[:4]
+        show_details = Tmdb.tv_show_details(int(tmdb_id))
+        season_details = Tmdb.tv_season(int(tmdb_id), int(season))
+        item = EpisodeItem(int(episode), season_details, show_details)
+        ext: dict[str, Any] = show_details.get("external_ids") or {}
+        title = show_details.get("name", "")
+        year = (show_details.get("first_air_date") or "")[:4]
+        imdb_id = str(ext.get("imdb_id") or "")
     else:
-        ext = Tmdb.movie_external_ids(int(tmdb_id))
-        details = Tmdb.movie_details(int(tmdb_id))
+        details = Tmdb.movie_rich_details(int(tmdb_id))
+        item = MovieItem(details)
+        ext = details.get("external_ids") or {}
         title = details.get("title", "")
         year = (details.get("release_date") or "")[:4]
-    return _TitleInfo(title=title, year=year, imdb_id=ext.get("imdb_id") or "")
+        imdb_id = str(ext.get("imdb_id") or details.get("imdb_id") or "")
+    return item.listItem, _TitleInfo(title=title, year=year, imdb_id=imdb_id)
 
 
 def _build_payload(
@@ -389,7 +264,8 @@ def get_sources(
     """
     sources: list[SourceResult] = []
     scrape_thread = Thread(
-        target=lambda: sources.extend(scraper.scrape(payload, timeout)), daemon=True
+        target=lambda: scraper.scrape(payload, timeout, on_result=sources.append),
+        daemon=True,
     )
     scrape_thread.start()
 
@@ -424,8 +300,6 @@ _TryOutcome = Literal["played", "cancelled", "exhausted"]
 def _try_sources(
     ordered: list[SourceResult],
     cached: set[str],
-    use_rd: bool,
-    use_tb: bool,
     item_type: str,
     tmdb_id: str,
     handle: int,
@@ -433,47 +307,41 @@ def _try_sources(
     episode: str,
     title: str,
     progress: xbmcgui.DialogProgress,
-    metadata: dict[str, Any],
+    listItem: xbmcgui.ListItem,
 ) -> _TryOutcome:
     """Try each source in order, falling back to the next on failure."""
     ep_season = int(season) if season else None
     ep_episode = int(episode) if episode else None
 
     for i, src in enumerate(ordered):
+        progress.update(0, f"Trying source {i+1}/{len(ordered)}")
         h = src["hash"]
         magnet = src["url"]
         debug(str(src), "try_source")
 
         is_cached = h in cached
-        providers: list[str] = []
-        if use_tb and is_cached:
-            providers.append("torbox")
-        if not providers:
-            if use_tb:
-                providers.append("torbox")
-            if use_rd:
-                providers.append("rd")
 
-        for provider in providers:
-            direct_url = (
-                _add_to_rd(progress, magnet, title, season=ep_season, episode=ep_episode)
-                if provider == "rd"
-                else _add_to_torbox(
-                    progress,
-                    magnet,
-                    title,
-                    season=ep_season,
-                    episode=ep_episode,
-                    is_cached=is_cached,
-                )
-            )
-            if direct_url and direct_url != "Cancel":
-                _tag_playing(item_type, tmdb_id, season, episode)
-                _play_url(direct_url, handle, item_type, metadata)
-                return "played"
-            if direct_url == "Cancel":
-                return "cancelled"
-            info(f"Source {i + 1} failed - trying next ({i + 1}/{len(ordered)})…")
+        direct_url = _add_to_torbox(
+            progress,
+            magnet,
+            title,
+            season=ep_season,
+            episode=ep_episode,
+            is_cached=is_cached,
+        )
+        if direct_url and direct_url != "Cancel":
+            _tag_playing(item_type, tmdb_id, season, episode)
+            listItem.setPath(direct_url)
+            listItem.setContentLookup(False)
+            progress.update(100, "Success.\nOpening...")
+            progress.close()
+            debug(direct_url, "play_url")
+            xbmcplugin.setResolvedUrl(handle, True, listItem)
+            return "played"
+        if direct_url == "Cancel":
+            progress.close()
+            return "cancelled"
+        progress.close()
 
     return "exhausted"
 
@@ -488,31 +356,31 @@ def resolve_and_play(
     season: str = "",
     episode: str = "",
     force_select: bool = False,
-    metadata: dict[str, Any] = {},
 ):
     def _fail(msg: str):
         err(msg, "resolve_and_play")
         error(msg)
         xbmcplugin.setResolvedUrl(handle, False, xbmcgui.ListItem())
 
-    use_rd = _rd_ok()
     use_tb = _tb_ok()
     debug(
-        f"use_tb={use_tb} use_rd={use_rd} type={item_type} id={tmdb_id} s={season} e={episode}",
+        f"use_tb={use_tb} type={item_type} id={tmdb_id} s={season} e={episode}",
         "resolve_and_play",
     )
-    if not use_rd and not use_tb:
-        _fail("No debrid service configured. Add Real Debrid or TorBox in Settings.")
+    if not use_tb:
+        _fail("No debrid service configured. Add TorBox in Settings.")
         return
 
     try:
-        meta = _fetch_metadata(item_type, tmdb_id)
+        listItem, meta = _build_play_item(item_type, tmdb_id, season, episode)
     except Exception as e:
         err(str(e), "resolve_and_play/tmdb")
         _fail("Could not fetch metadata from TMDB.")
         return
 
-    debug(f"title={meta.title!r} year={meta.year} imdb={meta.imdb_id}", "resolve_and_play")
+    debug(
+        f"title={meta.title!r} year={meta.year} imdb={meta.imdb_id}", "resolve_and_play"
+    )
     if not meta.imdb_id:
         _fail("No IMDB ID found for this title.")
         return
@@ -554,8 +422,6 @@ def resolve_and_play(
     outcome = _try_sources(
         ordered,
         cached,
-        use_rd,
-        use_tb,
         item_type,
         tmdb_id,
         handle,
@@ -563,7 +429,7 @@ def resolve_and_play(
         episode,
         meta.title,
         progress,
-        metadata,
+        listItem,
     )
     if outcome == "cancelled":
         _fail("Cancelled")
